@@ -1,0 +1,362 @@
+{
+  "name": "Multilingual AI Hotel Guest Assistant",
+  "nodes": [
+    {
+      "id": "wf1-webhook",
+      "name": "Inbound Message Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "guest-inbound-hook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "guest-inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "wf1-normalize",
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0],
+      "parameters": {
+        "jsCode": "const b = ($input.first().json.body) || {};\nreturn [{\n  json: {\n    guestId: b.guest_id || b.from || 'unknown',\n    channel: String(b.channel || 'whatsapp').toLowerCase(),\n    sender: b.from || '',\n    guestName: b.profile_name || b.name || 'Guest',\n    message: String(b.text || b.message || '').trim(),\n    receivedAt: new Date().toISOString()\n  }\n}];"
+      }
+    },
+    {
+      "id": "wf1-agent",
+      "name": "Guest Assistant Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [480, 0],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node['Normalize Payload'].json.message }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the AI Guest Assistant for a hospitality group that runs hotels and vacation rentals.\n\nLANGUAGE RULES:\n- Detect the language of each guest message. You support Greek, English, Bulgarian and other languages.\n- Always answer in the same language the guest wrote in. Mirror their tone and keep replies short and warm.\n\nKNOWLEDGE:\n- Check in 15:00, check out 11:00. Early check in and late check out on request.\n- Breakfast 07:00 to 10:30 in the lobby restaurant.\n- Free WiFi, network HotelGuest, password is on the welcome card.\n- Pets allowed in selected rooms. Parking available on request.\n- Reception is open 24 hours.\n\nESCALATION RULES:\n- If the guest asks about refunds, booking changes, complaints, payments, medical or safety issues, or anything you cannot confirm, set escalate to true and tell the guest in their own language that you are connecting them with the front desk team.\n- Never invent prices, availability or policies.\n\nAlways return your answer through the structured output with language, reply, escalate and category."
+        }
+      }
+    },
+    {
+      "id": "wf1-model",
+      "name": "GPT 4o mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [380, 240],
+      "parameters": {
+        "model": { "__rl": true, "mode": "list", "value": "gpt-4o-mini" },
+        "options": { "temperature": 0.3 }
+      },
+      "credentials": {
+        "openAiApi": { "id": "REPLACE_OPENAI", "name": "OpenAI account" }
+      }
+    },
+    {
+      "id": "wf1-memory",
+      "name": "Guest Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [540, 240],
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $node['Normalize Payload'].json.guestId }}",
+        "contextWindowLength": 12
+      }
+    },
+    {
+      "id": "wf1-parser",
+      "name": "Reply Structure Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [700, 240],
+      "parameters": {
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"language\": \"en\",\n  \"reply\": \"Your reply to the guest in their own language.\",\n  \"escalate\": false,\n  \"category\": \"general\"\n}"
+      }
+    },
+    {
+      "id": "wf1-if",
+      "name": "Needs Human?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [800, 0],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-escalate",
+              "leftValue": "={{ $json.output.escalate }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "wf1-notify",
+      "name": "Notify Front Desk",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [1040, -180],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "mode": "name", "value": "front-desk" },
+        "text": "=:bellhop_bell: *Guest escalation* from {{ $node['Normalize Payload'].json.guestName }} ({{ $node['Normalize Payload'].json.channel }})\nMessage: {{ $node['Normalize Payload'].json.message }}\nCategory: {{ $node['Guest Assistant Agent'].json.output.category }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": { "id": "REPLACE_SLACK", "name": "Slack account" }
+      }
+    },
+    {
+      "id": "wf1-switch",
+      "name": "Route By Channel",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1280, 0],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "whatsapp",
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "loose" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node['Normalize Payload'].json.channel }}",
+                    "rightValue": "whatsapp",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              }
+            },
+            {
+              "outputKey": "viber",
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "loose" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node['Normalize Payload'].json.channel }}",
+                    "rightValue": "viber",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "wf1-send-wa",
+      "name": "Send WhatsApp Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, -120],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v20.0/REPLACE_WHATSAPP_PHONE_ID/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({ messaging_product: 'whatsapp', to: $node['Normalize Payload'].json.sender, type: 'text', text: { body: $node['Guest Assistant Agent'].json.output.reply } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": { "id": "REPLACE_WA_AUTH", "name": "WhatsApp Cloud API" }
+      }
+    },
+    {
+      "id": "wf1-send-viber",
+      "name": "Send Viber Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 120],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "parameters": {
+        "method": "POST",
+        "url": "https://chatapi.viber.com/pa/send_message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({ receiver: $node['Normalize Payload'].json.sender, type: 'text', text: $node['Guest Assistant Agent'].json.output.reply }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": { "id": "REPLACE_VIBER_AUTH", "name": "Viber Bot Token" }
+      }
+    },
+    {
+      "id": "wf1-log",
+      "name": "Log Conversation",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1800, 0],
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "mode": "id", "value": "REPLACE_SHEET_ID" },
+        "sheetName": { "__rl": true, "mode": "name", "value": "Conversations" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $node['Normalize Payload'].json.receivedAt }}",
+            "guest_id": "={{ $node['Normalize Payload'].json.guestId }}",
+            "channel": "={{ $node['Normalize Payload'].json.channel }}",
+            "language": "={{ $node['Guest Assistant Agent'].json.output.language }}",
+            "message": "={{ $node['Normalize Payload'].json.message }}",
+            "reply": "={{ $node['Guest Assistant Agent'].json.output.reply }}",
+            "escalated": "={{ $node['Guest Assistant Agent'].json.output.escalate }}",
+            "category": "={{ $node['Guest Assistant Agent'].json.output.category }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": { "id": "REPLACE_SHEETS", "name": "Google Sheets account" }
+      }
+    },
+    {
+      "id": "wf1-respond",
+      "name": "Respond to Guest Gateway",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2060, 0],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ ({ status: 'sent', language: $node['Guest Assistant Agent'].json.output.language, escalated: $node['Guest Assistant Agent'].json.output.escalate }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "wf1-error-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [800, 360],
+      "parameters": {}
+    },
+    {
+      "id": "wf1-alert",
+      "name": "Alert Engineering",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [1040, 360],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "mode": "name", "value": "automation-alerts" },
+        "text": "=:rotating_light: *Guest Assistant workflow failed*\nWorkflow: {{ $json.workflow.name }}\nNode: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": { "id": "REPLACE_SLACK", "name": "Slack account" }
+      }
+    },
+    {
+      "id": "wf1-sticky-overview",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-760, -200],
+      "parameters": {
+        "color": 7,
+        "width": 560,
+        "height": 820,
+        "content": "## \ud83c\udfe8 Multilingual AI Hotel Guest Assistant\n\nAnswers guest messages from WhatsApp and Viber in their own language (Greek, English, Bulgarian and more), pulls from the hotel knowledge base, escalates anything sensitive to the front desk, and logs every exchange to Google Sheets.\n\n**Perfect for:** hospitality teams running hotels or vacation rentals who want 24/7 guest support without adding headcount.\n\n---\n\n## How it works\n\n1. **Inbound Message Webhook** \u2014 Receives messages from the WhatsApp or Viber gateway.\n2. **Normalize Payload** \u2014 Extracts guest id, channel, sender and message text into a clean shape.\n3. **Guest Assistant Agent** \u2014 LLM agent that detects language, answers from hotel knowledge, and decides when to escalate.\n4. **GPT 4o mini** \u2014 The language model powering the agent.\n5. **Guest Conversation Memory** \u2014 Per guest memory so the bot remembers context across messages.\n6. **Reply Structure Parser** \u2014 Forces clean JSON output (language, reply, escalate, category).\n7. **Needs Human?** \u2014 Routes escalations to staff.\n8. **Notify Front Desk** \u2014 Posts the escalation to the front desk Slack channel.\n9. **Route By Channel** \u2014 Sends the reply back through the right messaging channel.\n10. **Send WhatsApp Reply** / **Send Viber Reply** \u2014 Deliver the answer (with retries on failure).\n11. **Log Conversation** \u2014 Appends every exchange to Google Sheets.\n12. **Respond to Guest Gateway** \u2014 Acknowledges the gateway.\n13. **Error Trigger \u2192 Alert Engineering** \u2014 Catches any failure and alerts the team.\n\n---\n\n## Setup (~15 minutes)\n\n1. **OpenAI** \u2014 Add your key in the *GPT 4o mini* node.\n2. **WhatsApp Cloud API** \u2014 Add header auth in *Send WhatsApp Reply* and set your phone id in the URL.\n3. **Viber** \u2014 Add your bot token header in *Send Viber Reply*.\n4. **Slack** \u2014 Connect your account in *Notify Front Desk* and *Alert Engineering*.\n5. **Google Sheets** \u2014 Connect in *Log Conversation* and set your sheet id.\n> Point your WhatsApp and Viber webhooks at the production URL of *Inbound Message Webhook*. The payload should include channel, from and text."
+      }
+    },
+    {
+      "id": "wf1-sticky-intake",
+      "name": "Section Intake",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -140],
+      "parameters": {
+        "color": 5,
+        "width": 520,
+        "height": 320,
+        "content": "## 1\ufe0f\u20e3 Intake\n\nThe **Inbound Message Webhook** receives every guest message from the WhatsApp and Viber gateway. **Normalize Payload** flattens the raw body into a consistent structure (guest id, channel, sender, message) so the rest of the workflow never has to care which channel it came from."
+      }
+    },
+    {
+      "id": "wf1-sticky-ai",
+      "name": "Section AI Core",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [320, -140],
+      "parameters": {
+        "color": 3,
+        "width": 480,
+        "height": 560,
+        "content": "## 2\ufe0f\u20e3 AI Core\n\nThe **Guest Assistant Agent** detects the guest language and replies in it, grounded in the hotel knowledge base. **GPT 4o mini** is the model, **Guest Conversation Memory** keeps per guest context, and the **Reply Structure Parser** guarantees a clean JSON answer with an escalate flag the rest of the flow can branch on."
+      }
+    },
+    {
+      "id": "wf1-sticky-delivery",
+      "name": "Section Delivery",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [740, -280],
+      "parameters": {
+        "color": 6,
+        "width": 1000,
+        "height": 640,
+        "content": "## 3\ufe0f\u20e3 Routing & Delivery\n\n**Needs Human?** checks the escalate flag and, when true, **Notify Front Desk** alerts staff in Slack. **Route By Channel** then sends the reply back through the correct channel using **Send WhatsApp Reply** or **Send Viber Reply**, both of which retry up to three times before giving up so a flaky API call never drops a guest message."
+      }
+    },
+    {
+      "id": "wf1-sticky-logging",
+      "name": "Section Logging",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1760, -200],
+      "parameters": {
+        "color": 4,
+        "width": 540,
+        "height": 760,
+        "content": "## 4\ufe0f\u20e3 Logging & Error Handling\n\n**Log Conversation** appends every exchange (language, message, reply, escalation) to Google Sheets for analytics and audit, and **Respond to Guest Gateway** acknowledges the gateway. Separately, the **Error Trigger** fires on any unhandled failure and **Alert Engineering** posts the failing node and error message to the alerts channel so issues are caught fast."
+      }
+    }
+  ],
+  "connections": {
+    "Inbound Message Webhook": { "main": [[{ "node": "Normalize Payload", "type": "main", "index": 0 }]] },
+    "Normalize Payload": { "main": [[{ "node": "Guest Assistant Agent", "type": "main", "index": 0 }]] },
+    "GPT 4o mini": { "ai_languageModel": [[{ "node": "Guest Assistant Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Guest Conversation Memory": { "ai_memory": [[{ "node": "Guest Assistant Agent", "type": "ai_memory", "index": 0 }]] },
+    "Reply Structure Parser": { "ai_outputParser": [[{ "node": "Guest Assistant Agent", "type": "ai_outputParser", "index": 0 }]] },
+    "Guest Assistant Agent": { "main": [[{ "node": "Needs Human?", "type": "main", "index": 0 }]] },
+    "Needs Human?": { "main": [[{ "node": "Notify Front Desk", "type": "main", "index": 0 }], [{ "node": "Route By Channel", "type": "main", "index": 0 }]] },
+    "Notify Front Desk": { "main": [[{ "node": "Route By Channel", "type": "main", "index": 0 }]] },
+    "Route By Channel": { "main": [[{ "node": "Send WhatsApp Reply", "type": "main", "index": 0 }], [{ "node": "Send Viber Reply", "type": "main", "index": 0 }]] },
+    "Send WhatsApp Reply": { "main": [[{ "node": "Log Conversation", "type": "main", "index": 0 }]] },
+    "Send Viber Reply": { "main": [[{ "node": "Log Conversation", "type": "main", "index": 0 }]] },
+    "Log Conversation": { "main": [[{ "node": "Respond to Guest Gateway", "type": "main", "index": 0 }]] },
+    "Error Trigger": { "main": [[{ "node": "Alert Engineering", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}
