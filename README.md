@@ -1,8 +1,23 @@
 # n8n Workflow Portfolio
 
-A collection of production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, marketing, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
+A collection of production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
 
-These were built as client and personal projects to solve real operational problems: recovering abandoned carts, routing leads, extracting data from invoices, answering guest and employee questions with grounded AI, and keeping teams informed without manual busywork.
+These solve real operational problems: recovering abandoned carts, qualifying and routing leads, extracting data from invoices, answering questions with grounded AI, and keeping teams informed without manual busywork.
+
+> **By [Redowan Ahmed Farhan](https://github.com/Redsf)** — AI Automation Engineer. Several of these workflows are the credential-free reference builds of systems I've shipped to production for clients. The numbers below are results from those live deployments.
+
+## Real-world impact
+
+| Workflow in this repo | Where it ran | Outcome |
+|---|---|---|
+| [Abandoned Cart Recovery Engine](abandoned_cart_recovery_engine) | Shopify store | **14%** of abandoned carts recovered · **+9%** monthly revenue |
+| [Order & Fulfillment Sync](order_fulfillment_sync_automation) | E-commerce ops | **1,500+ orders/mo** on autopilot · **−95%** entry errors · 3 hrs/day saved |
+| [AI Review & Reputation Manager](ai_review_reputation_manager) | Local business | **100%** review coverage · rating climbed **4.2 → 4.7★** in 6 months |
+| [Appointment Reminder & No-Show Killer](appointment_noshow_killer) | Clinics & services | **−42%** no-shows in 60 days |
+| [Automated Invoice Processing](automated_invoice_document_processing) | Finance team | Month-end close from **3 days → near zero** |
+| [Cold Email Outreach Automation](cold_email_outreach_automation) | B2B SaaS | **−87%** manual work · **10–12 meetings/mo** booked |
+| [AI Applicant Screening (CV pipeline)](cv_processing_workflow) | HR / recruiting | **200+ CVs/opening** · **−80%** screening time |
+| [Automated Client Ad Reporting](automated_client_ad_reporting) | Agency ops | **12 hrs/mo saved per client** · 100% reports on time |
 
 ## How to use a workflow
 
@@ -85,6 +100,14 @@ Credentials are referenced by name only — no API keys, tokens, or secrets are 
 ## Stack
 
 Built primarily on **n8n**, with LLM providers (OpenAI, Groq, Google Gemini, Mistral), vector stores (Pinecone, Supabase, Qdrant, PGVector), and integrations spanning Shopify, Gmail, Slack, WhatsApp, Telegram, Google Workspace, Notion, Airtable, and BambooHR.
+
+## About the author
+
+**Redowan Ahmed Farhan** — AI Automation Engineer building n8n workflows, AI agents, and RAG systems that automate real business operations.
+
+- 💼 LinkedIn — [redowan-ahmed-farhan](https://linkedin.com/in/redowan-ahmed-farhan)
+- ✉️ Email — redowanfarhan@gmail.com
+- 📍 Dhaka, Bangladesh · Open to freelance and full-time automation roles
 
 ## License
 
