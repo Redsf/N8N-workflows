@@ -1,0 +1,402 @@
+{
+  "id": "ChF9fjYjQZyn0bTh",
+  "meta": {
+    "instanceId": "8247b806b0e6f94d28ae959e03ad09e53ffbc2a7aafba4df32b48bec8415d11b",
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Ecommerce Order Notifier and Logger",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "e34682ea-2fe6-42b9-8ba4-3e3ab25784c3",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        -160
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 560,
+        "height": 792,
+        "content": "## 🛒 Ecommerce Order Notifier and Logger\n\nReceives every new store order through a webhook, records it to a Google Sheet, and alerts the right Slack channel based on order value.\n\n**Perfect for:** small online store owners and ecommerce operations teams.\n\n## How it works\n\n1. **New Order Received**: webhook that accepts the order payload from your store.\n2. **Format Order Data**: pulls order id, customer, email, total and items into clean fields.\n3. **Log Order to Sheet**: appends the order as a new row in your orders sheet.\n4. **Is High Value Order**: checks whether the total is above 200.\n5. **Notify VIP Channel**: posts to your priority channel for high value orders.\n6. **Notify Orders Channel**: posts to the standard orders channel for everything else.\n7. **Respond to Store**: returns a confirmation back to the store.\n\n## Setup (about 10 minutes)\n\n1. **Webhook**: point your store order event to the *New Order Received* URL.\n2. **Google Sheets**: connect your account in *Log Order to Sheet* and set your sheet id.\n3. **Slack**: connect Slack and set the channel ids in *Notify VIP Channel* and *Notify Orders Channel*.\n> Adjust the 200 threshold in *Is High Value Order* to match your average order value."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b43b38c3-b3ea-4092-876c-6c4f8cb59201",
+      "name": "1️⃣ Order Intake",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -16
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 600,
+        "height": 400,
+        "content": "## 1️⃣ Order Intake\n\nThe **New Order Received** webhook accepts the order payload from your store, and **Format Order Data** maps the raw body into clean fields like order id, customer and total."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "dc97e4fd-e550-4202-a8eb-8dd2ae2e9094",
+      "name": "2️⃣ Log and Route",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        848,
+        -16
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 600,
+        "height": 416,
+        "content": "## 2️⃣ Log and Route\n\n**Log Order to Sheet** appends every order as a row for reporting, then **Is High Value Order** checks the total against your threshold to decide which channel gets notified."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c978e9d2-2dac-40f1-9dd7-d8b139201247",
+      "name": "3️⃣ Notify Team",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1472,
+        -64
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 496,
+        "height": 560,
+        "content": "## 3️⃣ Notify Team\n\nHigh value orders go to **Notify VIP Channel** so they get priority attention, while all other orders post to **Notify Orders Channel**."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "cf2bcb3c-ff01-4a82-8917-68c0abc9e170",
+      "name": "4️⃣ Confirm",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2000,
+        80
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 320,
+        "height": 320,
+        "content": "## 4️⃣ Confirm\n\n**Respond to Store** returns a confirmation object so your store knows the order was captured."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "7fe70520-b15e-44ba-8f9d-d51b011c9eb9",
+      "name": "New Order Received",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        400,
+        224
+      ],
+      "webhookId": "891900b9-1605-4a4e-b1f1-74bec91b3097",
+      "parameters": {
+        "path": "new-order",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "11a9c3fa-aa89-41d4-82cc-5e7d476bc185",
+      "name": "Format Order Data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        688,
+        224
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14d622ed-4d66-4fbf-b880-7dffe34401e8",
+              "name": "order_id",
+              "type": "string",
+              "value": "={{$json.body.order_id}}"
+            },
+            {
+              "id": "f71abfb9-761f-446f-9987-f1a2ec0044e8",
+              "name": "customer",
+              "type": "string",
+              "value": "={{$json.body.customer_name}}"
+            },
+            {
+              "id": "ca7e70e5-ec6a-4181-a572-47b1037551fb",
+              "name": "email",
+              "type": "string",
+              "value": "={{$json.body.email}}"
+            },
+            {
+              "id": "e05a6140-9351-4551-a194-d3eefe90ac57",
+              "name": "total",
+              "type": "string",
+              "value": "={{$json.body.total}}"
+            },
+            {
+              "id": "4f858c8a-f868-43b1-bd4d-f97c2a979aae",
+              "name": "items",
+              "type": "string",
+              "value": "={{$json.body.items}}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "83bb002c-a3b8-473d-b744-efed695145ed",
+      "name": "Log Order to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        960,
+        224
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Order ID": "={{ $json.order_id }}"
+          },
+          "schema": [
+            {
+              "id": "Order ID",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Order ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Order ID"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EV68pHdgAY4B5vTAk2djVSGEfXWhaXpSSy2GNjdCjYU/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1EV68pHdgAY4B5vTAk2djVSGEfXWhaXpSSy2GNjdCjYU",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EV68pHdgAY4B5vTAk2djVSGEfXWhaXpSSy2GNjdCjYU/edit?usp=drivesdk",
+          "cachedResultName": "Orders"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "542sEl8Ubi0hta4Q",
+          "name": "Google Sheets OAuth2 API"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "4e9a7e77-23d5-4a0c-8b74-29ccba5cdc4f",
+      "name": "Is High Value Order",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1248,
+        224
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3c9ca2c7-bf81-472d-885b-7581908a3757",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ Number($node[\"Format Order Data\"].json.total) }}",
+              "rightValue": 200
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "8018ca8f-c501-4301-a2ad-f1b789c6c445",
+      "name": "Notify VIP Channel",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1648,
+        96
+      ],
+      "webhookId": "74012baf-0a13-4a7b-bc93-fddb2320016b",
+      "parameters": {
+        "text": "High value order from {{$node[\"Format Order Data\"].json.customer}} totalling {{$node[\"Format Order Data\"].json.total}}. Order {{$node[\"Format Order Data\"].json.order_id}}.",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C0AK5VBUE1Z",
+          "cachedResultName": "vip-orders"
+        },
+        "otherOptions": {},
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "3XUm67E2jVrrkrwz",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "6f1cb649-efba-462e-bccd-d7d1286d4742",
+      "name": "Notify Orders Channel",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1648,
+        336
+      ],
+      "webhookId": "28a0662b-4988-40ec-8655-8e33174de230",
+      "parameters": {
+        "text": "New order {{$node[\"Format Order Data\"].json.order_id}} from {{$node[\"Format Order Data\"].json.customer}}, total {{$node[\"Format Order Data\"].json.total}}.",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C0B4D54BBFB",
+          "cachedResultName": "new-orders"
+        },
+        "otherOptions": {},
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "3XUm67E2jVrrkrwz",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "b500a7a2-721e-4e21-a4d3-5bb382859db0",
+      "name": "Respond to Store",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2112,
+        240
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"received\", \"order_id\": $node[\"Format Order Data\"].json.order_id } }}"
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "executionOrder": "v1"
+  },
+  "versionId": "fbdbd548-65d3-4501-bdf5-3aee8512b327",
+  "nodeGroups": [],
+  "connections": {
+    "Format Order Data": {
+      "main": [
+        [
+          {
+            "node": "Log Order to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Order to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Is High Value Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Order Received": {
+      "main": [
+        [
+          {
+            "node": "Format Order Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify VIP Channel": {
+      "main": [
+        [
+          {
+            "node": "Respond to Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is High Value Order": {
+      "main": [
+        [
+          {
+            "node": "Notify VIP Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Orders Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Orders Channel": {
+      "main": [
+        [
+          {
+            "node": "Respond to Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

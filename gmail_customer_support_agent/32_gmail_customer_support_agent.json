@@ -1,0 +1,172 @@
+{
+  "name": "Gmail Customer Support Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "id": "d442bb39-b82e-4174-91e9-4ad5fcd2cbd0",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -240
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aHcgQQsf06BLwOqC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.headers.from }}",
+        "subject": "=Re: {{ $('Gmail Trigger').item.json.headers.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "="
+        }
+      },
+      "id": "05ee498a-ebd9-4e8c-ab21-8cdaa46a40af",
+      "name": "Gmail Send Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1072,
+        -240
+      ],
+      "webhookId": "6da0d30b-421d-4820-a453-143116a17627",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aHcgQQsf06BLwOqC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        736,
+        -16
+      ],
+      "id": "cee04c53-2d58-4352-9294-30ecc635fb9a",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "bbFHFebZmcdzhurG",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You have received a new customer email. Please analyze it and provide a complete, professional response. Use proper e-mail format while generating response. send a single response to particular e-mail address each time. don't write response until new e-mail is arrived from that e-mail.\n\nCUSTOMER EMAIL INFORMATION:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nEMAIL CONTENT:{{ $json.snippet }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTASK:\nRead the customer's email carefully and identify what they are asking about:\n\n1. DELIVERY INQUIRY?\n   - Are they asking about delivery to a specific location?\n   - Are they outside Dhaka? → Politely inform them we only deliver in Dhaka\n   - Are they in Dhaka? → Confirm we can deliver (2-5 business days)\n   - Are they asking about delivery time/status?\n\n2. REFUND REQUEST?\n   - What is the reason for refund?\n   - Is it size mismatch? → Check if within 3 days, then provide instructions\n   - Is it another reason (color, changed mind, etc.)? → Politely decline, explain policy\n   - How many days since delivery? → If more than 3 days, cannot process refund\n\n3. GENERAL INQUIRY?\n   - Product questions\n   - Order status\n   - Other concerns\n\nBased on your analysis, write a complete email response that:\n✓ Directly answers their question\n✓ References the correct policy (delivery or refund)\n✓ Is professional and courteous\n✓ Provides clear next steps (if applicable)\n✓ Ends with a proper closing\n\nRemember:\n- Be empathetic but stick to policies\n- Don't make promises we can't keep\n- Keep the tone friendly even when saying \"no\"\n- Provide the complete ready-to-send email response\n\nGenerate the email response now:",
+        "options": {
+          "systemMessage": "=You are a professional customer support AI agent for a business based in Dhaka, Bangladesh. Your primary responsibility is to handle customer inquiries regarding orders, delivery, and refunds. reply  within 50 words. Focus on replying the actual quarry that is asked. In output don't include the subject or anything only the response. Use customer name :\n{{ $json.From }} take the name only don't include g-mail and use this while writing the response.\n\nYOUR CORE KNOWLEDGE:\n\nDELIVERY POLICY:\n- We ONLY deliver within Dhaka city\n- We do NOT deliver to any other districts in Bangladesh\n- If a customer is located outside Dhaka, politely inform them that we cannot deliver to their location at this time\n- Delivery timeframe within Dhaka: 2-5 business days (you can mention this if asked)\n\nREFUND POLICY:\n- Refunds are ONLY accepted for size mismatch issues\n- Refund request must be made within 3 days of receiving the product\n- After 3 days, we cannot process refund requests\n- For size mismatch, customer needs to contact us with their order number\n- Other reasons (change of mind, color preference, etc.) are NOT eligible for refund\n\nYOUR COMMUNICATION STYLE:\n- Professional, friendly, and empathetic\n- Clear and direct when explaining policies\n- Apologetic when declining requests, but firm on policies\n- Helpful in suggesting alternatives when possible\n\nRESPONSE GUIDELINES:\n1. Greet the customer warmly\n2. Address their specific question clearly\n3. Explain relevant policies (delivery or refund)\n4. If declining a request, be polite but firm\n5. Offer alternative solutions when appropriate\n6. Close professionally with an offer to help further\n\nIMPORTANT RULES:\n- Do NOT make exceptions to the delivery area (Dhaka only)\n- Do NOT make exceptions to the refund policy (size mismatch only, 3 days only)\n- Do NOT promise things outside of stated policies\n- If a customer is angry or frustrated, remain calm and professional\n- If a situation seems to need management intervention, suggest they can contact management directly\n\nBUSINESS HOURS:\n- Saturday to Thursday: 9:00 AM - 6:00 PM (Bangladesh Standard Time, GMT+6)\n- Friday: Closed (weekly holiday)\n\nWhen in doubt, stick to the policies. Be helpful, but be honest about what we can and cannot do. {{ $json.From }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        -240
+      ],
+      "id": "09d4cdc5-875e-4173-942f-6bea56199f57",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        -16
+      ],
+      "id": "bdd3b401-785e-48b9-8964-98855899cb24",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8a234cc9-75ea-4424-a42d-0436f6ed6a6e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "24d1a007ba9ae5c20f8e0d5a0c79a272e642bfd52bb700f8c6e591ccb42bad63"
+  },
+  "id": "y9xRYgOYDzuuvtjx",
+  "tags": []
+}

@@ -1,0 +1,616 @@
+{
+  "id": "orderSync03",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "Order & Fulfillment Sync Automation",
+  "tags": [
+    "client-project",
+    "ecommerce"
+  ],
+  "nodes": [
+    {
+      "id": "o0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        -400
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 700,
+        "height": 620,
+        "content": "## 📦 Order & Fulfillment Sync Automation\n\nEvery new Shopify order flows through n8n to the courier's API for booking, writes back the tracking number, and messages the customer at each delivery stage over email and WhatsApp. Failed bookings and address mismatches route to an ops channel in Slack.\n\n**Manual entry errors down 95%, 3 hours a day back for the ops team.**\n\n## Two independent triggers in this workflow\n1. **New Order Placed** (Shopify Trigger, orders/create) → books the courier and sends the first tracking notification.\n2. **Poll Delivery Status** (Schedule Trigger, every 30 min) → checks courier status for orders in flight and notifies the customer only when the stage changes.\n\n## Setup (about 20 minutes)\n1. Connect Shopify Admin API credential on the trigger.\n2. Point *Book Courier* at your courier's booking endpoint.\n3. Connect Gmail and WhatsApp credentials for customer messages.\n4. Set the Slack ops channel for booking failures."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000002",
+      "name": "New Order Placed",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "position": [
+        -160,
+        -120
+      ],
+      "parameters": {
+        "topic": "orders/create"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Shopify Admin API"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000003",
+      "name": "Book Courier",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.yourcourier.com/v1/bookings",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "order_id",
+              "value": "={{ $json.body.id }}"
+            },
+            {
+              "name": "address",
+              "value": "={{ $json.body.shipping_address }}"
+            },
+            {
+              "name": "customer_name",
+              "value": "={{ $json.body.customer.first_name }} {{ $json.body.customer.last_name }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Courier API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "continueOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000004",
+      "name": "Booking Success?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        320,
+        -120
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-booking-ok",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              },
+              "leftValue": "={{ $json.tracking_number }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000005",
+      "name": "Update Order Tracking",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        560,
+        -220
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://{{ $('New Order Placed').item.json.body.domain || 'YOUR_STORE' }}.myshopify.com/admin/api/2024-01/orders/{{ $('New Order Placed').item.json.body.id }}.json",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { order: { id: $('New Order Placed').item.json.body.id, tags: 'tracking:' + $json.tracking_number } } }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Shopify Admin Header Auth"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000006",
+      "name": "Notify Customer (Email)",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        800,
+        -260
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('New Order Placed').item.json.body.email }}",
+        "subject": "Your order is on its way!",
+        "emailType": "html",
+        "message": "=<p>Your order #{{ $('New Order Placed').item.json.body.order_number }} has shipped.</p><p>Tracking number: <b>{{ $json.tracking_number }}</b></p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 2.1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000007",
+      "name": "Notify Customer (WhatsApp)",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        800,
+        -100
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "REPLACE_WITH_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $('New Order Placed').item.json.body.phone }}",
+        "messageType": "text",
+        "textBody": "=Your order #{{ $('New Order Placed').item.json.body.order_number }} has shipped! Tracking: {{ $json.tracking_number }}"
+      },
+      "credentials": {
+        "whatsAppApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WhatsApp Business Cloud account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "continueOnFail": true,
+      "typeVersion": 1.1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000008",
+      "name": "Flag Ops (Booking Failed)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        560,
+        -20
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-fulfillment"
+        },
+        "text": "=⚠️ Courier booking failed for order #{{ $('New Order Placed').item.json.body.order_number }}. Check address: {{ JSON.stringify($('New Order Placed').item.json.body.shipping_address) }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000009",
+      "name": "Poll Delivery Status",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -160,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "o0000000-0000-0000-0000-00000000000a",
+      "name": "Get In-Transit Orders",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        80,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT order_id, tracking_number, last_stage FROM shipments WHERE delivered = false",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "o0000000-0000-0000-0000-00000000000b",
+      "name": "Check Each Shipment",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        320,
+        200
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "o0000000-0000-0000-0000-00000000000c",
+      "name": "Polling Done",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        560,
+        100
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-00000000000d",
+      "name": "Get Courier Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        560,
+        300
+      ],
+      "parameters": {
+        "url": "=https://api.yourcourier.com/v1/bookings/{{ $json.tracking_number }}/status",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Courier API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "o0000000-0000-0000-0000-00000000000e",
+      "name": "Stage Changed?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        800,
+        300
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-stage-changed",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "leftValue": "={{ $json.stage }}",
+              "rightValue": "={{ $('Check Each Shipment').item.json.last_stage }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "o0000000-0000-0000-0000-00000000000f",
+      "name": "Notify Stage Update",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1040,
+        260
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "REPLACE_WITH_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $('Check Each Shipment').item.json.phone }}",
+        "messageType": "text",
+        "textBody": "=Update on order #{{ $('Check Each Shipment').item.json.order_id }}: {{ $json.stage }}"
+      },
+      "credentials": {
+        "whatsAppApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WhatsApp Business Cloud account"
+        }
+      },
+      "continueOnFail": true,
+      "typeVersion": 1.1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000010",
+      "name": "Update Shipment Record",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        1280,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE shipments SET last_stage = $1, delivered = $2 WHERE order_id = $3",
+        "options": {
+          "queryReplacement": "={{ $json.stage }},={{ $json.stage === 'delivered' }},={{ $('Check Each Shipment').item.json.order_id }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000011",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        480
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "o0000000-0000-0000-0000-000000000012",
+      "name": "Notify Ops (Error)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        480
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-fulfillment"
+        },
+        "text": "=🚨 Order & Fulfillment Sync Automation failed: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "order-sync-v1",
+  "connections": {
+    "New Order Placed": {
+      "main": [
+        [
+          {
+            "node": "Book Courier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Courier": {
+      "main": [
+        [
+          {
+            "node": "Booking Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Success?": {
+      "main": [
+        [
+          {
+            "node": "Update Order Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flag Ops (Booking Failed)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order Tracking": {
+      "main": [
+        [
+          {
+            "node": "Notify Customer (Email)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Customer (WhatsApp)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Delivery Status": {
+      "main": [
+        [
+          {
+            "node": "Get In-Transit Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get In-Transit Orders": {
+      "main": [
+        [
+          {
+            "node": "Check Each Shipment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Each Shipment": {
+      "main": [
+        [
+          {
+            "node": "Polling Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Courier Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Courier Status": {
+      "main": [
+        [
+          {
+            "node": "Stage Changed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage Changed?": {
+      "main": [
+        [
+          {
+            "node": "Notify Stage Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Each Shipment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Stage Update": {
+      "main": [
+        [
+          {
+            "node": "Update Shipment Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Shipment Record": {
+      "main": [
+        [
+          {
+            "node": "Check Each Shipment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops (Error)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

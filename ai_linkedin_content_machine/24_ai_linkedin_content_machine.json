@@ -1,0 +1,675 @@
+{
+  "name": "AI LinkedIn Content Machine",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst cutoffTime = now.getTime() - (72 * 60 * 60 * 1000); // 72 hours ago\n\n// ─── 1. REDDIT (Apify) ───────────────────────────────────────────\nconst apifyRaw = $('Reddit').all();\nconst redditTopics = [];\n\nfor (const item of apifyRaw) {\n  const post = item.json;\n  const title = post.title || post.name || '';\n  const score = post.score || post.ups || 0;\n  const url = post.url || post.permalink || '';\n  \n  let postDate = null;\n  if (post.createdAt) postDate = new Date(post.createdAt);\n  else if (post.created_utc) postDate = new Date(post.created_utc * 1000);\n  else if (post.created) postDate = new Date(post.created * 1000);\n\n  if (!title) continue;\n  if (postDate && postDate.getTime() < cutoffTime) continue; // too old\n\n  redditTopics.push({\n    source: 'Reddit',\n    title,\n    score,\n    url,\n    publishedAt: postDate ? postDate.toISOString() : null,\n    relevanceScore: 0\n  });\n}\n\n// ─── 2. RSS FEEDS (TechCrunch, The Verge, Wired) ─────────────────\nconst rssSources = ['TechCrunch', 'The Verge', 'Wired'];\nconst rssTopics = [];\n\nfor (const sourceName of rssSources) {\n  try {\n    const items = $('TechCrunch' === sourceName ? 'TechCrunch' : sourceName === 'The Verge' ? 'The Verge' : 'Wired').all();\n    for (const item of items) {\n      const feed = item.json;\n      const entries = feed.items || feed.entries || (Array.isArray(feed) ? feed : []);\n      \n      for (const entry of entries.slice(0, 5)) {\n        const title = entry.title || '';\n        const url = entry.link || entry.url || '';\n        const pubDate = entry.pubDate || entry.published || entry.isoDate || null;\n        \n        let articleDate = null;\n        if (pubDate) articleDate = new Date(pubDate);\n\n        if (!title) continue;\n        if (articleDate && articleDate.getTime() < cutoffTime) continue; // too old\n\n        rssTopics.push({\n          source: sourceName,\n          title,\n          score: 50, // baseline score for news articles\n          url,\n          publishedAt: articleDate ? articleDate.toISOString() : null,\n          relevanceScore: 0\n        });\n      }\n    }\n  } catch(e) {\n    // source unavailable, skip\n  }\n}\n\n// ─── 3. GOOGLE TRENDS (SerpAPI) ──────────────────────────────────\nconst trendsRaw = $('Google_trends search').first().json;\nconst trendTopics = [];\n\nconst timelineData = trendsRaw?.interest_over_time?.timeline_data || [];\nconst latestPoint = timelineData[timelineData.length - 1];\n\nif (latestPoint?.values) {\n  for (const v of latestPoint.values) {\n    trendTopics.push({\n      source: 'GoogleTrends',\n      title: v.query,\n      score: parseInt(v.value) || 0,\n      url: '',\n      publishedAt: new Date().toISOString(),\n      relevanceScore: 0\n    });\n  }\n}\n\n// ─── 4. MERGE ALL SOURCES ─────────────────────────────────────────\nconst allTopics = [...redditTopics, ...rssTopics, ...trendTopics];\n\n// ─── 5. REMOVE DUPLICATES ─────────────────────────────────────────\n// Normalize title for comparison: lowercase, remove punctuation\nconst normalize = (str) => str.toLowerCase().replace(/[^a-z0-9\\s]/g, '').replace(/\\s+/g, ' ').trim();\n\nconst seen = new Set();\nconst deduplicated = [];\n\nfor (const topic of allTopics) {\n  const normalized = normalize(topic.title);\n  \n  // Check for exact or near-duplicate (first 60 chars match)\n  const fingerprint = normalized.substring(0, 60);\n  \n  if (!seen.has(fingerprint)) {\n    seen.add(fingerprint);\n    deduplicated.push(topic);\n  }\n}\n\n// ─── 6. RELEVANCE SCORING ─────────────────────────────────────────\n// Keywords most relevant to AI/tech LinkedIn audience\nconst highRelevanceKeywords = [\n  'ai', 'artificial intelligence', 'machine learning', 'llm', 'gpt',\n  'automation', 'chatgpt', 'openai', 'deep learning', 'neural',\n  'robot', 'tech', 'startup', 'founder', 'saas', 'productivity',\n  'future of work', 'claude', 'gemini', 'agent', 'model'\n];\n\nconst mediumRelevanceKeywords = [\n  'software', 'data', 'cloud', 'cybersecurity', 'blockchain',\n  'venture', 'funding', 'apple', 'google', 'microsoft', 'meta',\n  'innovation', 'digital', 'platform', 'developer', 'code'\n];\n\nfor (const topic of deduplicated) {\n  const titleLower = topic.title.toLowerCase();\n  let relevance = 0;\n\n  for (const kw of highRelevanceKeywords) {\n    if (titleLower.includes(kw)) relevance += 10;\n  }\n  for (const kw of mediumRelevanceKeywords) {\n    if (titleLower.includes(kw)) relevance += 5;\n  }\n\n  // Recency boost: published within last 24 hours gets +20\n  if (topic.publishedAt) {\n    const age = now.getTime() - new Date(topic.publishedAt).getTime();\n    const hoursOld = age / (1000 * 60 * 60);\n    if (hoursOld <= 24) relevance += 20;\n    else if (hoursOld <= 48) relevance += 10;\n  }\n\n  // Source credibility boost\n  if (topic.source === 'GoogleTrends') relevance += 8;\n  if (['TechCrunch', 'The Verge', 'Wired'].includes(topic.source)) relevance += 6;\n\n  // Engagement boost from Reddit score\n  if (topic.score > 1000) relevance += 15;\n  else if (topic.score > 500) relevance += 10;\n  else if (topic.score > 100) relevance += 5;\n\n  topic.relevanceScore = relevance;\n}\n\n// ─── 7. FINAL SORT: Most relevant first ───────────────────────────\nconst sorted = deduplicated.sort((a, b) => b.relevanceScore - a.relevanceScore);\n\n// ─── 8. PICK TOP TOPIC & BUILD OUTPUT ────────────────────────────\nconst topTopic = sorted[0] || {\n  title: 'The Future of AI and Automation in the Workplace',\n  source: 'Fallback',\n  relevanceScore: 0\n};\n\nconst stats = {\n  totalBeforeDedup: allTopics.length,\n  totalAfterDedup: deduplicated.length,\n  duplicatesRemoved: allTopics.length - deduplicated.length,\n  sourceBreakdown: {\n    reddit: redditTopics.length,\n    rss: rssTopics.length,\n    googleTrends: trendTopics.length\n  }\n};\n\nreturn [{\n  json: {\n    topTopic,\n    allTopics: sorted.slice(0, 10),\n    stats,\n    generatedAt: now.toISOString()\n  }\n}];"
+      },
+      "id": "03541d09-a3b8-4780-a195-189dfebdc7ef",
+      "name": "Aggregate & Rank Topics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "1099dacc-ec62-4a2d-b6bf-425113f7ae7b",
+      "name": "Download Generated Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        784,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════\n// QUALITY GATE CHECK — Safe Version\n// ═══════════════════════════════════════════════════════════\n\n// ─── SAFE DATA FETCHING ───────────────────────────────────\nlet postContent = '';\nlet topTopic = {};\n\n// Safely get post content\ntry {\n  const linkedInNode = $('Generate LinkedIn Post').first();\n  \n  // Try different response structures\n  if (linkedInNode.json?.message?.content) {\n    postContent = linkedInNode.json.message.content;\n  } else if (linkedInNode.json?.choices?.[0]?.message?.content) {\n    postContent = linkedInNode.json.choices[0].message.content;\n  } else if (linkedInNode.json?.text) {\n    postContent = linkedInNode.json.text;\n  } else if (linkedInNode.json?.content) {\n    postContent = linkedInNode.json.content;\n  } else {\n    postContent = JSON.stringify(linkedInNode.json);\n  }\n} catch(e) {\n  // Try getting from current input instead\n  try {\n    const inputData = $input.first();\n    postContent = inputData.json?.message?.content \n               || inputData.json?.text \n               || inputData.json?.content \n               || '';\n  } catch(e2) {\n    postContent = '';\n  }\n}\n\n// Safely get topic\ntry {\n  topTopic = $('Aggregate & Rank Topics').first().json?.topTopic || {};\n} catch(e) {\n  try {\n    topTopic = $input.first().json?.topTopic || {};\n  } catch(e2) {\n    topTopic = { title: 'Unknown Topic', source: 'Unknown' };\n  }\n}\n\n// ─── EMPTY CONTENT GUARD ─────────────────────────────────\nif (!postContent || postContent.trim().length === 0) {\n  return [{\n    json: {\n      approved: false,\n      postContent: '',\n      topTopic,\n      qualityScore: 0,\n      totalChecks: 10,\n      passedChecks: 0,\n      scorePercent: '0%',\n      failedChecks: [{ \n        check: 'Content exists', \n        value: 'Empty', \n        fix: 'Generate LinkedIn Post node returned no content' \n      }],\n      warnings: [],\n      verdict: 'REJECTED — NO CONTENT',\n      confidence: 'POOR',\n      fixInstructions: 'No content was generated. Check the Generate LinkedIn Post node.',\n      stats: {\n        wordCount: 0,\n        characterCount: 0,\n        paragraphCount: 0,\n        hashtagCount: 0,\n        hashtags: [],\n        buzzwordsFound: []\n      },\n      checkResults: {},\n      generatedAt: new Date().toISOString()\n    }\n  }];\n}\n\nconst post = postContent.trim();\n\n// ═══════════════════════════════════════════════════════════\n// HELPER FUNCTIONS\n// ═══════════════════════════════════════════════════════════\n\nconst countWords = (text) => {\n  return text\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .split(' ')\n    .filter(w => w.length > 0).length;\n};\n\nconst getParagraphs = (text) => {\n  return text\n    .split(/\\n\\s*\\n/)\n    .map(p => p.trim())\n    .filter(p => p.length > 0);\n};\n\nconst getLongestParagraphLines = (text) => {\n  const paragraphs = getParagraphs(text);\n  let max = 0;\n  for (const para of paragraphs) {\n    const lines = para\n      .split('\\n')\n      .filter(l => l.trim().length > 0).length;\n    if (lines > max) max = lines;\n  }\n  return max;\n};\n\nconst extractHashtags = (text) => {\n  return text.match(/#[\\w]+/g) || [];\n};\n\nconst hashtagsOnlyAtBottom = (text) => {\n  const lines = text.split('\\n');\n  let firstHashtagLine = -1;\n\n  for (let i = 0; i < lines.length; i++) {\n    if (/#[\\w]+/.test(lines[i])) {\n      firstHashtagLine = i;\n      break;\n    }\n  }\n\n  if (firstHashtagLine === -1) return false;\n\n  // Check no hashtags appear before the first hashtag line\n  // (they should all be grouped at bottom)\n  const bodyLines = lines.slice(0, firstHashtagLine);\n  const hashtagInBody = bodyLines.some(l => /#[\\w]+/.test(l));\n  \n  return !hashtagInBody;\n};\n\nconst WEAK_OPENERS = [\n  \"in today's fast-paced world\",\n  \"as we navigate\",\n  \"it's no secret that\",\n  \"exciting news\",\n  \"thrilled to announce\",\n  \"i am excited\",\n  \"i'm excited\",\n  \"i am pleased\",\n  \"i'm pleased\",\n  \"in the world of\",\n  \"in this day and age\",\n  \"now more than ever\",\n  \"in recent years\",\n  \"as we all know\",\n  \"needless to say\"\n];\n\nconst hasWeakOpener = (text) => {\n  const firstLine = text.split('\\n')[0].toLowerCase();\n  return WEAK_OPENERS.some(opener => firstLine.includes(opener));\n};\n\nconst BUZZWORDS = [\n  'game-changer', 'game changer', 'synergy', 'synergize',\n  'leverage', 'leveraging', 'disruptive', 'disrupting the',\n  'thought leader', 'thought leadership', 'best practices',\n  'move the needle', 'low-hanging fruit', 'circle back',\n  'deep dive', 'double down', 'at the end of the day',\n  'bleeding edge', 'cutting-edge solutions', 'revolutionary',\n  'paradigm shift', 'value proposition', 'going forward',\n  'take it to the next level', 'bandwidth', 'holistic approach'\n];\n\nconst findBuzzwords = (text) => {\n  const lower = text.toLowerCase();\n  return BUZZWORDS.filter(bw => lower.includes(bw));\n};\n\nconst endsWithQuestion = (text) => {\n  const lines = text\n    .split('\\n')\n    .map(l => l.trim())\n    .filter(l => l.length > 0);\n\n  // Filter out hashtag-only lines\n  const nonHashtagLines = lines.filter(l => {\n    const withoutHashtags = l.replace(/#[\\w]+/g, '').trim();\n    return withoutHashtags.length > 0;\n  });\n\n  if (nonHashtagLines.length === 0) return false;\n\n  const lastLine = nonHashtagLines[nonHashtagLines.length - 1];\n  return lastLine.endsWith('?');\n};\n\nconst WEAK_QUESTIONS = [\n  'what do you think?',\n  'thoughts?',\n  'agree or disagree?',\n  'do you agree?',\n  'let me know what you think',\n  'share your thoughts'\n];\n\nconst hasWeakQuestion = (text) => {\n  const lower = text.toLowerCase();\n  const lastLines = lower.split('\\n').slice(-5).join(' ');\n  return WEAK_QUESTIONS.some(q => lastLines.includes(q));\n};\n\nconst startsWithI = (text) => {\n  return /^I[\\s,']/.test(text.trim());\n};\n\nconst hasSuspiciousStats = (text) => {\n  return /\\b(100%|0%|\\d{4,}%)\\b/.test(text);\n};\n\nconst hasProperLineSpacing = (text) => {\n  return /\\n\\s*\\n/.test(text);\n};\n\n// ═══════════════════════════════════════════════════════════\n// CALCULATE ALL VALUES FIRST\n// ═══════════════════════════════════════════════════════════\n\nconst wordCount      = countWords(post);\nconst hashtags       = extractHashtags(post);\nconst paragraphs     = getParagraphs(post);\nconst buzzwordsFound = findBuzzwords(post);\nconst longestPara    = getLongestParagraphLines(post);\nconst firstWord      = post.trim().split(/\\s/)[0] || '';\nconst firstLine      = post.split('\\n')[0].trim().substring(0, 80);\nconst questionExists = endsWithQuestion(post);\nconst weakQuestion   = hasWeakQuestion(post);\n\n// ═══════════════════════════════════════════════════════════\n// RUN ALL 10 QUALITY CHECKS\n// ═══════════════════════════════════════════════════════════\n\nconst checks = {\n\n  wordCount: {\n    label  : 'Word count is between 150 and 300',\n    passed : wordCount >= 150 && wordCount <= 300,\n    value  : `${wordCount} words`,\n    fix    : wordCount < 150\n               ? `Too short — ${wordCount} words. Expand with more insight or examples`\n               : `Too long — ${wordCount} words. Cut filler, keep only sharpest ideas`\n  },\n\n  hookStrength: {\n    label  : 'First line is not a weak opener',\n    passed : !hasWeakOpener(post),\n    value  : `\"${firstLine}...\"`,\n    fix    : 'Rewrite the first line — avoid clichés, open with a bold claim or surprising fact'\n  },\n\n  noStartWithI: {\n    label  : 'Post does not start with the word \"I\"',\n    passed : !startsWithI(post),\n    value  : `First word: \"${firstWord}\"`,\n    fix    : 'Rewrite the opening — start with the topic, a number, or an action word'\n  },\n\n  hasHashtags: {\n    label  : 'Contains 3 to 5 hashtags',\n    passed : hashtags.length >= 3 && hashtags.length <= 5,\n    value  : `${hashtags.length} hashtags found: ${hashtags.join(', ')}`,\n    fix    : hashtags.length < 3\n               ? `Only ${hashtags.length} hashtag(s) — add ${3 - hashtags.length} more relevant ones`\n               : `Too many hashtags (${hashtags.length}) — remove ${hashtags.length - 5} to keep only top 5`\n  },\n\n  hashtagsAtBottom: {\n    label  : 'All hashtags are placed at the end only',\n    passed : hashtags.length === 0 ? false : hashtagsOnlyAtBottom(post),\n    value  : 'Hashtag placement scan complete',\n    fix    : 'Move all hashtags to the very last line — never embed them inside body text'\n  },\n\n  endsWithQuestion: {\n    label  : 'Post ends with a strong engaging question',\n    passed : questionExists && !weakQuestion,\n    value  : questionExists\n               ? (weakQuestion ? 'Weak question detected' : 'Strong question found')\n               : 'No question detected',\n    fix    : weakQuestion\n               ? 'Replace the generic question with something specific and debatable'\n               : 'Add a specific, thought-provoking question just before the hashtags'\n  },\n\n  lineSpacing: {\n    label  : 'Uses blank lines between paragraphs',\n    passed : hasProperLineSpacing(post),\n    value  : `${paragraphs.length} paragraph(s) detected`,\n    fix    : 'Add blank lines between every paragraph — LinkedIn collapses walls of text'\n  },\n\n  paragraphLength: {\n    label  : 'No paragraph is longer than 3 lines',\n    passed : longestPara <= 3,\n    value  : `Longest paragraph: ${longestPara} line(s)`,\n    fix    : 'Break up long paragraphs — aim for max 2 sentences per block'\n  },\n\n  noBuzzwords: {\n    label  : 'No hollow corporate buzzwords used',\n    passed : buzzwordsFound.length === 0,\n    value  : buzzwordsFound.length > 0\n               ? `Found: ${buzzwordsFound.join(', ')}`\n               : 'Clean — no buzzwords detected',\n    fix    : `Replace these words with plain language: ${buzzwordsFound.join(', ')}`\n  },\n\n  characterLength: {\n    label  : 'Post is at least 500 characters',\n    passed : post.length >= 500,\n    value  : `${post.length} characters`,\n    fix    : `Too short — only ${post.length} chars. LinkedIn favors richer, longer content`\n  }\n\n};\n\n// ═══════════════════════════════════════════════════════════\n// SCORING\n// ═══════════════════════════════════════════════════════════\n\nconst checkKeys    = Object.keys(checks);\nconst totalChecks  = checkKeys.length;\nconst passedChecks = checkKeys.filter(k => checks[k].passed).length;\nconst failedChecks = checkKeys\n  .filter(k => !checks[k].passed)\n  .map(k => ({\n    check : checks[k].label,\n    value : checks[k].value,\n    fix   : checks[k].fix\n  }));\n\nconst scorePercent = Math.round((passedChecks / totalChecks) * 100);\n\n// ─── APPROVAL LOGIC ───────────────────────────────────────\n// Must score 7/10 AND pass all 3 critical checks\nconst CRITICAL_CHECKS  = ['wordCount', 'hasHashtags', 'endsWithQuestion'];\nconst criticalPassed   = CRITICAL_CHECKS.every(k => checks[k].passed);\nconst approved         = passedChecks >= 7 && criticalPassed;\n\n// ─── CONFIDENCE ───────────────────────────────────────────\nlet confidence;\nif (scorePercent >= 90)      confidence = 'EXCELLENT';\nelse if (scorePercent >= 70) confidence = 'GOOD';\nelse if (scorePercent >= 50) confidence = 'NEEDS WORK';\nelse                         confidence = 'POOR';\n\n// ─── VERDICT ──────────────────────────────────────────────\nlet verdict;\nif (approved && scorePercent >= 90)    verdict = 'APPROVED — EXCELLENT';\nelse if (approved)                     verdict = 'APPROVED — GOOD';\nelse if (!criticalPassed)              verdict = 'REJECTED — CRITICAL CHECKS FAILED';\nelse                                   verdict = 'REJECTED — NEEDS IMPROVEMENT';\n\n// ─── WARNINGS ─────────────────────────────────────────────\nconst warnings = [];\n\nif (wordCount >= 150 && wordCount < 170) {\n  warnings.push('Word count close to minimum — consider adding more depth');\n}\nif (wordCount > 260 && wordCount <= 300) {\n  warnings.push('Word count near limit — consider trimming for punchiness');\n}\nif (hashtags.length === 3) {\n  warnings.push('Only 3 hashtags — adding 1-2 more could improve reach');\n}\nif (paragraphs.length < 3) {\n  warnings.push('Very few paragraphs — more structure improves readability');\n}\nif (hasSuspiciousStats(post)) {\n  warnings.push('Unusual statistics detected — verify all numbers are accurate');\n}\n\n// ─── FIX INSTRUCTIONS FOR REGENERATE NODE ─────────────────\nconst fixInstructions = !approved && failedChecks.length > 0\n  ? `Fix these ${failedChecks.length} issue(s):\\n` +\n    failedChecks\n      .map((f, i) => `${i + 1}. ${f.check}\\n   → ${f.fix}`)\n      .join('\\n')\n  : null;\n\n// ═══════════════════════════════════════════════════════════\n// FINAL OUTPUT\n// ═══════════════════════════════════════════════════════════\n\nreturn [{\n  json: {\n    approved,\n    verdict,\n    confidence,\n    qualityScore   : passedChecks,\n    totalChecks,\n    scorePercent   : `${scorePercent}%`,\n    postContent    : post,\n    topTopic,\n    checkResults   : checks,\n    failedChecks,\n    warnings,\n    stats: {\n      wordCount,\n      characterCount : post.length,\n      paragraphCount : paragraphs.length,\n      hashtagCount   : hashtags.length,\n      hashtags,\n      buzzwordsFound\n    },\n    fixInstructions,\n    generatedAt    : new Date().toISOString()\n  }\n}];"
+      },
+      "id": "57cb914f-7f3e-47b5-bc31-080649038d93",
+      "name": "Quality Gate Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "quality-pass",
+              "leftValue": "={{ $json.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "552f9348-dac1-403e-b25c-fe7298a4bb4d",
+      "name": "Quality Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "d9882823-eda6-42f2-864a-2e5ee359c391",
+      "name": "Regenerate & Fix Post",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        976,
+        272
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "XJSH09UxiP4H9oxD",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let postContent;\nlet source;\n\ntry {\n  postContent = $('Regenerate & Fix Post').first().json.message.content;\n  source = 'regenerated';\n} catch(e) {\n  postContent = $('Quality Gate Check').first().json.postContent;\n  source = 'original';\n}\n\nconst imageData = $('Download Generated Image').first().binary;\nconst topTopic = $('Aggregate & Rank Topics').first().json.topTopic;\n\nreturn [{\n  json: {\n    postContent,\n    topTopic,\n    source,\n    scheduledAt: new Date().toISOString()\n  },\n  binary: imageData\n}];"
+      },
+      "id": "3fac7630-3992-4d80-8362-7e30dd57ddee",
+      "name": "Merge Post + Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "uploadMedia"
+      },
+      "id": "8dd4fdd9-b1bf-42f5-8a10-9424aa092f11",
+      "name": "Upload Image to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "person": "urn:li:person:{{ $credentials.linkedInPersonId }}",
+        "text": "={{ $('Merge Post + Image').first().json.postContent }}",
+        "shareMediaCategory": "IMAGE",
+        "additionalFields": {}
+      },
+      "id": "1377e1c0-cb1d-4724-b7be-2ee1efe17971",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const postResult = $('Post to LinkedIn').first().json;\nconst postContent = $('Merge Post + Image').first().json.postContent;\nconst topic = $('Aggregate & Rank Topics').first().json.topTopic;\n\nconst log = {\n  status: 'SUCCESS',\n  postedAt: new Date().toISOString(),\n  linkedInPostId: postResult?.id || 'unknown',\n  topic: topic.title,\n  source: topic.source,\n  contentLength: postContent.length,\n  wordCount: postContent.split(' ').length,\n  hashtags: (postContent.match(/#[\\w]+/g) || []).join(', ')\n};\n\nconsole.log('LinkedIn Post Published:', JSON.stringify(log, null, 2));\n\nreturn [{ json: log }];"
+      },
+      "id": "a0014f51-71b3-4481-ba10-fe0400e757f0",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const error = $input.first().json;\nconst topic = $('Aggregate & Rank Topics').first().json?.topTopic || {};\n\nreturn [{\n  json: {\n    status: 'FAILED',\n    failedAt: new Date().toISOString(),\n    error: JSON.stringify(error),\n    topic: topic.title || 'Unknown'\n  }\n}];"
+      },
+      "id": "66dee11c-64ab-40e1-9a45-226a29e4d656",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        256
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        64
+      ],
+      "id": "7aa6fe66-83f3-4a29-aa62-54dcd551281e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "RSijjMBLS6g1W11GY",
+          "mode": "list",
+          "cachedResultName": "Reddit Posts Scraper (parseforge/reddit-posts-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/RSijjMBLS6g1W11GY/input"
+        },
+        "customBody": "{\n  \"startUrls\": [\n    { \"url\": \"https://www.reddit.com/r/technology/hot/\" },\n    { \"url\": \"https://www.reddit.com/r/artificial/hot/\" },\n    { \"url\": \"https://www.reddit.com/r/MachineLearning/hot/\" }\n  ],\n  \"maxPostCount\": 10,\n  \"maxComments\": 0,\n  \"proxyConfiguration\": {\n    \"useApifyProxy\": true,\n    \"apifyProxyGroups\": [\"RESIDENTIAL\"]\n  }\n}",
+        "timeout": 60,
+        "authentication": "apifyOAuth2Api"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -160
+      ],
+      "id": "67b0a64b-f227-4aa2-8fb8-446048fe4217",
+      "name": "Reddit",
+      "credentials": {
+        "apifyOAuth2Api": {
+          "id": "16iHkfOqmFpnEEoI",
+          "name": "Apify OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        16
+      ],
+      "id": "77c80088-391d-4c5a-804d-e6d0c78b8b78",
+      "name": "TechCrunch",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "https://www.theverge.com/rss/index.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        160
+      ],
+      "id": "b7821361-108e-417c-ab6b-165aa8b03532",
+      "name": "The Verge"
+    },
+    {
+      "parameters": {
+        "url": "https://www.wired.com/feed/rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        320
+      ],
+      "id": "3850f731-b2a6-48a0-a3b6-3390e116eae4",
+      "name": "Wired"
+    },
+    {
+      "parameters": {
+        "operation": "google_trends",
+        "q": "artificial intelligence,machine learning,automation, N8n",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApi",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        496
+      ],
+      "id": "614e3c1a-6fe2-4713-98f3-4de11e6a813b",
+      "name": "Google_trends search",
+      "credentials": {
+        "serpApi": {
+          "id": "pYcRBXRwtuAdZM9n",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        48,
+        112
+      ],
+      "id": "f90982b2-efb8-4ec6-8241-e7bbb95ac50c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        144
+      ],
+      "id": "6489b753-8ca0-47cd-aaea-308dd0c15872",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "XJSH09UxiP4H9oxD",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        320
+      ],
+      "id": "19e905b4-69d8-459c-8405-603b3ee46d84",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kpWC5x3HCzShxCVr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        432
+      ],
+      "id": "a2c2fca3-06b3-4bb8-8153-9941695d9b34",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kpWC5x3HCzShxCVr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are writing a LinkedIn post for a thought leader in the AI and Technology space.\n\n═══════════════════════════════════════════════════════════\nTOPIC INTELLIGENCE\n═══════════════════════════════════════════════════════════\n\nTopic Title    : {{ $json.topTopic.title }}\nSource         : {{ $json.topTopic.source }}\nRelevance Score: {{ $json.topTopic.relevanceScore }}\nPublished At   : {{ $json.topTopic.publishedAt }}\n\nSupporting Topics Trending Right Now:\n{{ $json.allTopics.slice(1, 4).map((t, i) => `${i + 1}. ${t.title} (${t.source})`).join('\\n') }}\n\n═══════════════════════════════════════════════════════════\nYOUR TASK\n═══════════════════════════════════════════════════════════\n\nStep 1 — ANALYZE the topic and identify:\n  • The single most interesting angle for a LinkedIn audience\n  • What a senior professional would find surprising or valuable\n  • What question this topic raises that people are afraid to ask\n\nStep 2 — CHOOSE the best content format for this topic:\n  • Contrarian Take / Micro Story / List Post / Prediction / Behind the Scenes\n  • State which format you chose and why (one sentence only)\n\nStep 3 — WRITE the LinkedIn post following this exact structure:\n\n  ┌─────────────────────────────────────────────┐\n  │  LINE 1: The Hook (max 12 words)            │\n  │  LINE 2: The Setup — expand the tension     │\n  │  [blank line]                               │\n  │  BODY: 3 to 5 short paragraphs              │\n  │  Each paragraph = 1 to 2 sentences max      │\n  │  [blank line between each paragraph]        │\n  │  CLOSING LINE: The insight or lesson        │\n  │  [blank line]                               │\n  │  QUESTION: One direct engaging question     │\n  │  [blank line]                               │\n  │  HASHTAGS: 3 to 5 relevant hashtags         │\n  └─────────────────────────────────────────────┘\n\n═══════════════════════════════════════════════════════════\nQUALITY CHECKLIST — verify before outputting\n═══════════════════════════════════════════════════════════\n\nBefore you output the final post, silently check every item:\n\n  [ ] First line creates curiosity or provokes thought\n  [ ] No paragraph is longer than 2 sentences\n  [ ] Post is between 150 and 300 words\n  [ ] Ends with a genuine question (not \"what do you think?\")\n  [ ] Hashtags are at the bottom only\n  [ ] Zero corporate buzzwords used\n  [ ] The post delivers ONE clear idea\n  [ ] Tone is confident but not preachy\n  [ ] Does NOT start with the word \"I\"\n\n═══════════════════════════════════════════════════════════\nOUTPUT FORMAT\n═══════════════════════════════════════════════════════════\n\nReturn your response in this exact structure:\n\n---FORMAT CHOSEN---\n[Format name and one sentence reason]\n\n---LINKEDIN POST---\n[The complete LinkedIn post, ready to copy-paste]\n\n---QUALITY SCORE---\nChecks passed: X out of 9\nConfidence: [High / Medium / Low]",
+        "options": {
+          "systemMessage": "You are an elite LinkedIn Content Strategist and Ghostwriter with 10+ years of experience \ngrowing professional audiences in the AI, Technology, and Future of Work space.\n\nYour writing has helped founders, executives, and thought leaders generate millions of \nimpressions on LinkedIn. You understand the LinkedIn algorithm deeply and know exactly \nwhat makes content go viral on this platform.\n\n═══════════════════════════════════════════════════════════\nYOUR CORE WRITING PHILOSOPHY\n═══════════════════════════════════════════════════════════\n\n1. HOOK FIRST — The first line is everything. It must stop the scroll.\n2. STORY OVER FACTS — Wrap insights in narrative, not bullet dumps.\n3. ONE BIG IDEA — Each post communicates exactly one powerful idea.\n4. TENSION & RESOLUTION — Create a problem, then solve it.\n5. HUMAN VOICE — Write like a smart human, never like a press release.\n\n═══════════════════════════════════════════════════════════\nLINKEDIN ALGORITHM RULES YOU ALWAYS FOLLOW\n═══════════════════════════════════════════════════════════\n\n✅ First 2 lines must force the reader to click \"see more\"\n✅ Use white space — max 2 sentences per paragraph\n✅ 150 to 300 words is the sweet spot for engagement\n✅ End with ONE clear question to drive comments\n✅ Use 3 to 5 hashtags — placed at the very end, never mid-post\n✅ No clickbait — deliver on the promise of your hook\n✅ No corporate speak, no buzzword soup\n✅ Never start with \"I\" as the first word\n✅ Never use these weak openers:\n   - \"In today's fast-paced world...\"\n   - \"As we navigate...\"\n   - \"It's no secret that...\"\n   - \"Exciting news!\"\n   - \"Thrilled to announce...\"\n\n═══════════════════════════════════════════════════════════\nCONTENT FORMATS YOU MASTER\n═══════════════════════════════════════════════════════════\n\nFORMAT 1 — THE CONTRARIAN TAKE\n  → Challenge a widely accepted belief in your industry\n  → Structure: Bold claim → Why most people are wrong → Your evidence → Lesson\n\nFORMAT 2 — THE MICRO STORY\n  → A real or realistic scenario that teaches a lesson\n  → Structure: Scene setting → Conflict → Turning point → Insight → Question\n\nFORMAT 3 — THE LIST POST\n  → Numbered insights that are each genuinely valuable\n  → Structure: Hook → Numbered points (each 1-2 lines) → Closing insight → Question\n\nFORMAT 4 — THE PREDICTION\n  → A bold forward-looking statement about your industry\n  → Structure: Prediction → Why you believe it → What it means for the reader → Question\n\nFORMAT 5 — THE BEHIND THE SCENES\n  → Pull back the curtain on a process, decision, or lesson learned\n  → Structure: What happened → What I learned → Why it matters to you → Question\n\n═══════════════════════════════════════════════════════════\nTONE & VOICE CALIBRATION\n═══════════════════════════════════════════════════════════\n\nTONE:        Confident but not arrogant\nVOICE:       Direct, clear, and human\nENERGY:      Thoughtful and forward-thinking\nCOMPLEXITY:  Smart but accessible — a 16-year-old should understand it\nEMOTION:     Inspire curiosity, not fear or hype\n\n═══════════════════════════════════════════════════════════\nWHAT YOU NEVER DO\n═══════════════════════════════════════════════════════════\n\n❌ Never write generic content that could apply to any topic\n❌ Never use hollow phrases like \"game-changer\", \"disrupting\", \"synergy\", \"leverage\"\n❌ Never write more than 2 sentences in a row without a line break\n❌ Never place hashtags in the middle of the post\n❌ Never end with a call to action like \"Follow me for more\" or \"Like this post\"\n❌ Never fabricate specific statistics or fake quotes\n❌ Never write a conclusion that just repeats the intro"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        272,
+        288
+      ],
+      "id": "a7ebb9b7-4074-4fbc-9069-d2edb128ac03",
+      "name": "Image generation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are writing a LinkedIn post for a thought leader in the AI and Technology space.\n\n═══════════════════════════════════════════════════════════\nTOPIC INTELLIGENCE\n═══════════════════════════════════════════════════════════\n\nTopic Title    : {{ $json.topTopic.title }}\nSource         : {{ $json.topTopic.source }}\nRelevance Score: {{ $json.topTopic.relevanceScore }}\nPublished At   : {{ $json.topTopic.publishedAt }}\n\nSupporting Topics Trending Right Now:\n{{ $json.allTopics.slice(1, 4).map((t, i) => `${i + 1}. ${t.title} (${t.source})`).join('\\n') }}\n\n═══════════════════════════════════════════════════════════\nYOUR TASK\n═══════════════════════════════════════════════════════════\n\nStep 1 — ANALYZE the topic and identify:\n  • The single most interesting angle for a LinkedIn audience\n  • What a senior professional would find surprising or valuable\n  • What question this topic raises that people are afraid to ask\n\nStep 2 — CHOOSE the best content format for this topic:\n  • Contrarian Take / Micro Story / List Post / Prediction / Behind the Scenes\n  • State which format you chose and why (one sentence only)\n\nStep 3 — WRITE the LinkedIn post following this exact structure:\n\n  ┌─────────────────────────────────────────────┐\n  │  LINE 1: The Hook (max 12 words)            │\n  │  LINE 2: The Setup — expand the tension     │\n  │  [blank line]                               │\n  │  BODY: 3 to 5 short paragraphs              │\n  │  Each paragraph = 1 to 2 sentences max      │\n  │  [blank line between each paragraph]        │\n  │  CLOSING LINE: The insight or lesson        │\n  │  [blank line]                               │\n  │  QUESTION: One direct engaging question     │\n  │  [blank line]                               │\n  │  HASHTAGS: 3 to 5 relevant hashtags         │\n  └─────────────────────────────────────────────┘\n\n═══════════════════════════════════════════════════════════\nQUALITY CHECKLIST — verify before outputting\n═══════════════════════════════════════════════════════════\n\nBefore you output the final post, silently check every item:\n\n  [ ] First line creates curiosity or provokes thought\n  [ ] No paragraph is longer than 2 sentences\n  [ ] Post is between 150 and 300 words\n  [ ] Ends with a genuine question (not \"what do you think?\")\n  [ ] Hashtags are at the bottom only\n  [ ] Zero corporate buzzwords used\n  [ ] The post delivers ONE clear idea\n  [ ] Tone is confident but not preachy\n  [ ] Does NOT start with the word \"I\"\n\n═══════════════════════════════════════════════════════════\nOUTPUT FORMAT\n═══════════════════════════════════════════════════════════\n\nReturn your response in this exact structure:\n\n---FORMAT CHOSEN---\n[Format name and one sentence reason]\n\n---LINKEDIN POST---\n[The complete LinkedIn post, ready to copy-paste]\n\n---QUALITY SCORE---\nChecks passed: X out of 9\nConfidence: [High / Medium / Low]",
+        "options": {
+          "systemMessage": "You are an elite LinkedIn Content Strategist and Ghostwriter with 10+ years of experience \ngrowing professional audiences in the AI, Technology, and Future of Work space.\n\nYour writing has helped founders, executives, and thought leaders generate millions of \nimpressions on LinkedIn. You understand the LinkedIn algorithm deeply and know exactly \nwhat makes content go viral on this platform.\n\n═══════════════════════════════════════════════════════════\nYOUR CORE WRITING PHILOSOPHY\n═══════════════════════════════════════════════════════════\n\n1. HOOK FIRST — The first line is everything. It must stop the scroll.\n2. STORY OVER FACTS — Wrap insights in narrative, not bullet dumps.\n3. ONE BIG IDEA — Each post communicates exactly one powerful idea.\n4. TENSION & RESOLUTION — Create a problem, then solve it.\n5. HUMAN VOICE — Write like a smart human, never like a press release.\n\n═══════════════════════════════════════════════════════════\nLINKEDIN ALGORITHM RULES YOU ALWAYS FOLLOW\n═══════════════════════════════════════════════════════════\n\n✅ First 2 lines must force the reader to click \"see more\"\n✅ Use white space — max 2 sentences per paragraph\n✅ 150 to 300 words is the sweet spot for engagement\n✅ End with ONE clear question to drive comments\n✅ Use 3 to 5 hashtags — placed at the very end, never mid-post\n✅ No clickbait — deliver on the promise of your hook\n✅ No corporate speak, no buzzword soup\n✅ Never start with \"I\" as the first word\n✅ Never use these weak openers:\n   - \"In today's fast-paced world...\"\n   - \"As we navigate...\"\n   - \"It's no secret that...\"\n   - \"Exciting news!\"\n   - \"Thrilled to announce...\"\n\n═══════════════════════════════════════════════════════════\nCONTENT FORMATS YOU MASTER\n═══════════════════════════════════════════════════════════\n\nFORMAT 1 — THE CONTRARIAN TAKE\n  → Challenge a widely accepted belief in your industry\n  → Structure: Bold claim → Why most people are wrong → Your evidence → Lesson\n\nFORMAT 2 — THE MICRO STORY\n  → A real or realistic scenario that teaches a lesson\n  → Structure: Scene setting → Conflict → Turning point → Insight → Question\n\nFORMAT 3 — THE LIST POST\n  → Numbered insights that are each genuinely valuable\n  → Structure: Hook → Numbered points (each 1-2 lines) → Closing insight → Question\n\nFORMAT 4 — THE PREDICTION\n  → A bold forward-looking statement about your industry\n  → Structure: Prediction → Why you believe it → What it means for the reader → Question\n\nFORMAT 5 — THE BEHIND THE SCENES\n  → Pull back the curtain on a process, decision, or lesson learned\n  → Structure: What happened → What I learned → Why it matters to you → Question\n\n═══════════════════════════════════════════════════════════\nTONE & VOICE CALIBRATION\n═══════════════════════════════════════════════════════════\n\nTONE:        Confident but not arrogant\nVOICE:       Direct, clear, and human\nENERGY:      Thoughtful and forward-thinking\nCOMPLEXITY:  Smart but accessible — a 16-year-old should understand it\nEMOTION:     Inspire curiosity, not fear or hype\n\n═══════════════════════════════════════════════════════════\nWHAT YOU NEVER DO\n═══════════════════════════════════════════════════════════\n\n❌ Never write generic content that could apply to any topic\n❌ Never use hollow phrases like \"game-changer\", \"disrupting\", \"synergy\", \"leverage\"\n❌ Never write more than 2 sentences in a row without a line break\n❌ Never place hashtags in the middle of the post\n❌ Never end with a call to action like \"Follow me for more\" or \"Like this post\"\n❌ Never fabricate specific statistics or fake quotes\n❌ Never write a conclusion that just repeats the intro"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "dd4d479d-d416-4517-851d-6d8e7628e409",
+      "name": "For text content"
+    }
+  ],
+  "pinData": {
+    "For text content": [
+      {
+        "json": {
+          "output": "---FORMAT CHOSEN---\nContrarian Take — Because the obvious belief (bigger models win) is wrong; hardware and geopolitics will decide who actually gets AI advantage.\n\n---LINKEDIN POST---\nModels don't win AI — chips do.\nWhile teams chase larger models, national money and silicon supply chains are quietly deciding who gets compute.\n\nMost teams assume compute is a commodity: rent it from a cloud provider and scale.\n\nThat belief is cracking. Japan's $16 billion bet on Rapidus is a reminder — countries and corporations are racing to secure silicon capacity, not model weights.\n\nThe result is uneven compute access, sudden price spikes, and strategic lock-in for companies tied to a single provider.\n\nSenior leaders often miss the practical implication: your model roadmap depends on predictable, affordable compute over years, not bursts of capacity.\n\nThree simple moves change the game: diversify compute (multi-cloud, regional partners, edge), invest in model efficiency, and make hardware partnerships strategic commitments.\n\nIf you want an enduring AI advantage, treat compute as a strategic asset—not a utility.\n\nHow are you hardening your AI roadmap against chip geopolitics?\n\n#AI #Chips #TechStrategy #MachineLearning\n\n---QUALITY SCORE---\nChecks passed: 9 out of 9\nConfidence: High"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Aggregate & Rank Topics": {
+      "main": [
+        [
+          {
+            "node": "For text content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Gate Check": {
+      "main": [
+        [
+          {
+            "node": "Quality Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Gate": {
+      "main": [
+        [
+          {
+            "node": "Merge Post + Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Regenerate & Fix Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regenerate & Fix Post": {
+      "main": [
+        [
+          {
+            "node": "Merge Post + Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Generated Image": {
+      "main": [
+        [
+          {
+            "node": "Merge Post + Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Post + Image": {
+      "main": [
+        [
+          {
+            "node": "Upload Image to LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image to LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Post to LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Reddit",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TechCrunch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "The Verge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wired",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google_trends search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reddit": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "The Verge": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Wired": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Google_trends search": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate & Rank Topics",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Image generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "For text content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Download Generated Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Image generation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image generation": {
+      "main": [
+        []
+      ]
+    },
+    "For text content": {
+      "main": [
+        [
+          {
+            "node": "Quality Gate Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "593defdb-1e61-4e6c-8a6e-18714b446857",
+  "meta": {
+    "instanceId": "9d09e716638ba1d407b2b23b3c201ad7b0fc16d2bece82a69842d61b1bc095d9"
+  },
+  "id": "o74vB6FZG0UiUlPa",
+  "tags": []
+}

@@ -1,0 +1,654 @@
+{
+  "name": "AI Newsletter Generator (RSS → Email)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b9225e53-b36f-4766-a688-4fc7127d83b7",
+      "name": "Merge All RSS Items",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        240,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "pubDate",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e45240c6-0cd5-4e4a-a7fc-e88850e44852",
+      "name": "Sort by Date (Newest First)",
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        464,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e5bf66d-413f-4eca-a338-658e84f23d7f",
+              "name": "contentSnippet",
+              "value": "={{ $json.contentSnippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9d394ccf-cd95-4f9b-a790-01e246c33e95",
+      "name": "Extract Key Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "options": {
+          "ignoreSSL": true
+        }
+      },
+      "id": "ee636ca9-6fd0-4729-892f-c1f0a1f45758",
+      "name": "The verge",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {
+          "ignoreSSL": true
+        }
+      },
+      "id": "48a5d326-7bc5-424c-a8da-bbdbe228d686",
+      "name": "TechCrunch",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.contentSnippet }}",
+        "options": {
+          "systemMessage": "=You are a professional content assistant.\n\nYour task is to analyze the provided data and create a clear, professional summary formatted as the body of an email.\n\nInstructions:\n\n1. Read all provided items carefully.\n2. Summarize each item in a concise and professional manner.\n3. Maintain a clean structure so the email is easy to read.\n4. Separate each summarized item with a clear paragraph gap.\n5. Use simple, professional language suitable for a business email.\n6. Do NOT include a subject line.\n7. Start the email body with a short introduction such as:\n   \"Here is the summary of the latest updates:\"\n8. Present each summary as a numbered section.\n\nOutput Format:\n\nStart with a short introduction, followed by numbered summaries.\n\nExample structure:\n\nHere is the summary of the latest updates:\n\n1. First Update\n   Provide a short and clear summary of the first item.\n\n2. Second Update\n   Provide a short and clear summary of the second item.\n\n3. Third Update\n   Provide a short and clear summary of the third item.\n\nEnsure the final output looks like a clean professional email body with proper spacing between sections.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1648,
+        16
+      ],
+      "id": "cb8863be-5ac7-49fa-9036-43bfa2d4fe2b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = Date.now();\nconst cutoff = now - 24 * 60 * 60 * 1000;\n\nconst filtered = items.filter(item => {\n  const dateStr = item.json.isoDate || item.json.pubDate || item.json.date || null;\n  if (!dateStr) return false;\n  const pubTime = new Date(dateStr).getTime();\n  if (isNaN(pubTime)) return false;\n  return pubTime >= cutoff;\n});\n\nif (filtered.length === 0) {\n  return [{\n    json: {\n      _noArticles: true,\n      message: \"No articles found in the last 24 hours.\",\n      checkedAt: new Date().toISOString()\n    }\n  }];\n}\n\nconsole.log(`✅ ${filtered.length} articles passed the 24h filter (out of ${items.length} total)`);\n\nreturn filtered;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        144
+      ],
+      "id": "98683e99-6a03-45d4-83f6-4bd1a7d10cb4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "batchSize": 2,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1312,
+        80
+      ],
+      "id": "99edf1d9-7cb6-4956-a676-a6f570217812",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.professional_summary }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        0
+      ],
+      "id": "90cb396a-9b0c-434e-98e2-e90dae9b773f",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "sendTo": "subscriber@example.com",
+        "subject": "NEW AI",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3056,
+        368
+      ],
+      "id": "96d706db-ce6a-44d6-9a8a-1591cf5892f5",
+      "name": "Send a message1",
+      "webhookId": "d5e50ba4-b87a-449d-8b45-3bb151eff47e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hwkGRzmPHuB6NuZy",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 6
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        144
+      ],
+      "id": "4d6372ec-4bfd-4140-b477-29e5fd68ace4",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access workflow static memory\nconst store = $getWorkflowStaticData('global');\n\n// Initialize storage array if it doesn't exist\nif (!store.collectedSummaries) {\n  store.collectedSummaries = [];\n}\n\n// Push current loop item\nstore.collectedSummaries.push({\n  professional_summary: $json.professional_summary,\n  data: $json.data\n});\n\n// Return current item so the loop continues\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        16
+      ],
+      "id": "6123aab1-6bdc-4ba5-b445-bdbc5ffaf332",
+      "name": "memory"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        224
+      ],
+      "id": "17f90781-4deb-4211-9acf-7d58f49cfb0c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "zUI77WGbebONKXmE",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        64
+      ],
+      "id": "5bb7d544-2c50-415f-bb4d-333d5d5e6c5a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Next 3 Items",
+      "typeVersion": 1,
+      "position": [
+        2688,
+        64
+      ],
+      "id": "f1f9ecc5-4427-4905-935b-2a3a1cf37849"
+    },
+    {
+      "parameters": {
+        "jsCode": "const store = $getWorkflowStaticData('global');\n\nconst results = store.collectedSummaries || [];\n\n// Optional: clear memory for next run\nstore.collectedSummaries = [];\n\nreturn [\n  {\n    json: {\n      all_summaries: results\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        368
+      ],
+      "id": "6ca833e9-f21a-489f-8469-0ecf78aa7ad0",
+      "name": "Extract Saved data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ddcbc967-72d3-4cc4-9982-d95d481727cc",
+              "name": "Data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2240,
+        384
+      ],
+      "id": "c2c842b6-3cdf-4591-9021-1a362b14b143",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "all_summaries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        368
+      ],
+      "id": "19d23c06-a0bc-4bad-a1dd-d39d42e007f3",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        368
+      ],
+      "id": "dcc698e0-23ad-4328-a80f-8e6478db86be",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ensure we are working with the input items\nreturn $input.all().map(item => {\n  // Capture the output from your AI Agent\n  let text = item.json.output || \"\";\n\n  // 1. Convert literal '\\n' strings into actual line breaks\n  let formatted = text.replace(/\\\\n/g, '\\n');\n\n  // 2. Remove the ugly dashed separators (-------)\n  formatted = formatted.replace(/-{3,}/g, '');\n\n  // 3. Fix paragraph spacing (ensuring a clean gap)\n  formatted = formatted.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n  return {\n    json: {\n      professional_summary: formatted\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        16
+      ],
+      "id": "a87471ec-71e0-4cd9-988d-c5f51c298190",
+      "name": "Formatting"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=you are a helpful assitant who helps to format scattered or unformatted data\n{{ $json.Data }}",
+        "options": {
+          "systemMessage": "you need to format the data in a ready made way to present to the user.\n\nInstructions:\nremove repetitive headlines, remove unnecessary gaps etc.\noutput:\njust give me the presentable data nothing more."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2464,
+        352
+      ],
+      "id": "9088ab47-c6c5-4519-874e-7dceb2aaabed",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        560
+      ],
+      "id": "fc416c87-0798-426d-af24-6fe54b8f2c15",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "zUI77WGbebONKXmE",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        352
+      ],
+      "id": "52bd9f37-2e84-47c2-8246-b5e9fce7c944",
+      "name": "Markdown1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge All RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Sort by Date (Newest First)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort by Date (Newest First)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Key Fields": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The verge": {
+      "main": [
+        [
+          {
+            "node": "Merge All RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "Merge All RSS Items",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Extract Key Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Extract Saved data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memory": {
+      "main": [
+        [
+          {
+            "node": "Next 3 Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "TechCrunch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "The verge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next 3 Items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Saved data": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Markdown1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        []
+      ]
+    },
+    "Markdown1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "55f85a0f-2fd9-47fa-a569-b1a37beabb91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6bfc721d0c2658be4e0acd7bcdd9f3211dd8941f193fa97f0907d4e7ae274ca0"
+  },
+  "id": "m2rHwTSahTBMcCnd",
+  "tags": []
+}

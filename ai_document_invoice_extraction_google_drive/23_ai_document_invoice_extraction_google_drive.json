@@ -1,0 +1,651 @@
+{
+  "name": "AI Document & Invoice Extraction Workflow (Google Drive) — FIXED",
+  "nodes": [
+    {
+      "parameters": {
+        "content": " This node checks: \nFirst, that a file actually exists in the data\nSecond, that the file type is supported — PDF, PNG, JPG, TIFF, or WEBP\nThird, that the file is under the 20MB size limit\n",
+        "height": 368,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6240,
+        1088
+      ],
+      "typeVersion": 1,
+      "id": "085bdbc6-b2bf-49f7-b71c-1c275f1ddcb5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "\nOpenAI's API cannot receive raw binary files. It expects image and document data as a base64 string embedded inside a JSON request body",
+        "height": 352,
+        "width": 176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5200,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "5fde8e0f-452f-48a8-b026-893768a3f07b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "\nOpenAI's API cannot receive raw binary files. It expects image and document data as a base64 string embedded inside a JSON request body",
+        "height": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5808,
+        896
+      ],
+      "typeVersion": 1,
+      "id": "6d532700-1028-4de5-9d88-844f814ca684",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1us3JTjEEQwPI2iHzf_f0kUXFeYqACdyY",
+          "mode": "list",
+          "cachedResultName": "Invoices",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1us3JTjEEQwPI2iHzf_f0kUXFeYqACdyY"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "f3d99186-f384-43a9-865c-e40565aa0833",
+      "name": "📂 Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -6784,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "myFioEe46xMPbU8s",
+          "name": "Google Drive OAuth2 API"
+        }
+      },
+      "notes": "Watches the Invoices folder for newly created files. Fires once per new file."
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "id": "80bdd5aa-0a63-43bc-84b5-333636fa8c2b",
+      "name": "⬇️ Google Drive: Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -6784,
+        240
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "myFioEe46xMPbU8s",
+          "name": "Google Drive OAuth2 API"
+        }
+      },
+      "notes": "Downloads the file as binary. Google Docs are auto-converted to PDF."
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\n\n// The trigger is already watching a specific folder.\n// We hardcode the type based on which workflow this is.\n// If you duplicate this workflow for Receipts, change this to 'receipt'.\n// If you duplicate for Purchase Orders, change this to 'purchase_order'.\n\nconst HARDCODED_DOC_TYPE = 'invoice'; // ← change this per workflow copy\n\nreturn [{\n  json: {\n    ...item.json,\n    document_type: HARDCODED_DOC_TYPE,\n    document_type_override: HARDCODED_DOC_TYPE,\n    folder_name: 'Invoices'\n  },\n  binary: item.binary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6560,
+        240
+      ],
+      "id": "0b9f62a4-c23b-47ea-96ed-ff63b687c940",
+      "name": "📁 Detect Doc Type From Folder",
+      "notes": "FIXED: Uses folder ID (not folder name) to detect document type. Google Drive Trigger returns folder IDs, never folder names. Folder ID map is hardcoded here. Filename prefix is a secondary fallback."
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst binaryData = item.binary;\n\nif (!binaryData || Object.keys(binaryData).length === 0) {\n  throw new Error('No binary data found after download.');\n}\n\nconst fileKey = Object.keys(binaryData)[0];\nconst file = binaryData[fileKey];\n\nconst allowedMimeTypes = [\n  'application/pdf',\n  'image/png',\n  'image/jpeg',\n  'image/tiff',\n  'image/webp'\n];\n\nif (!allowedMimeTypes.includes(file.mimeType)) {\n  throw new Error(`Unsupported file type: ${file.mimeType}`);\n}\n\nconst maxSizeBytes = 20 * 1024 * 1024;\nif (file.fileSize && file.fileSize > maxSizeBytes) {\n  throw new Error(`File too large: ${(file.fileSize / 1024 / 1024).toFixed(1)}MB`);\n}\n\nconst submissionId = `DOC-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;\n\n// ✅ KEY FIX: Read document_type_override directly from item.json\n// because the previous node (Detect Doc Type From Folder) already set it\nconst docTypeOverride = item.json.document_type_override || null;\n\nreturn [{\n  json: {\n    submission_id: submissionId,\n    file_key: fileKey,\n    mime_type: file.mimeType,\n    file_name: item.json.originalFilename || item.json.name || 'unknown_file',\n    file_size_bytes: file.fileSize || null,\n    drive_file_id: item.json.id || null,\n    drive_web_view_link: item.json.webViewLink || null,\n    document_type_override: docTypeOverride,  // ✅ carried forward correctly\n    folder_name: item.json.folder_name || null,\n    source_label: 'google_drive',\n    received_at: new Date().toISOString()\n  },\n  binary: binaryData\n}];"
+      },
+      "id": "e184631c-e658-4452-af09-b0e9b404c661",
+      "name": "🔍 Validate & Prepare Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6336,
+        240
+      ],
+      "notes": "Validates file type and size. Carries forward document_type_override from the folder detection node."
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst meta = item.json;\nconst binaryData = item.binary;\n\n// ✅ FIX: Don't rely on file_key. Just grab whatever binary key exists.\nconst fileKey = meta.file_key || Object.keys(binaryData)[0];\nconst file = binaryData[fileKey];\n\nif (!file) {\n  throw new Error(`Binary file not found. Available keys: ${Object.keys(binaryData).join(', ')}`);\n}\n\nconst base64Content = file.data;\nconst mimeType = file.mimeType || meta.mime_type;\n\nconst mimeToType = {\n  'application/pdf': 'application/pdf',\n  'image/png': 'image/png',\n  'image/jpeg': 'image/jpeg',\n  'image/tiff': 'image/tiff',\n  'image/webp': 'image/webp'\n};\n\nconst openaiMediaType = mimeToType[mimeType] || 'image/jpeg';\nconst isPdf = mimeType === 'application/pdf';\n\nreturn [{\n  json: {\n    ...meta,\n    base64_content: base64Content,\n    openai_media_type: openaiMediaType,\n    is_pdf: isPdf\n  }\n}];"
+      },
+      "id": "3d46699a-5f6b-48c2-b602-d704c1172080",
+      "name": "🔄 Convert to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6112,
+        240
+      ],
+      "notes": "Converts the downloaded binary file to a base64 string required by the OpenAI Vision API."
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// ✅ FIX: Explicit null/undefined check with fallback\nconst override = item.document_type_override;\nconst validTypes = ['invoice', 'receipt', 'purchase_order'];\n\nif (override && validTypes.includes(override)) {\n  // Document type is already known — skip GPT classification entirely\n  return [{\n    json: {\n      ...item,\n      detected_document_type: override,\n      classification_skipped: true,\n      classification_confidence: 'folder_detected'\n    }\n  }];\n}\n\n// Document type is unknown — build classification prompt for GPT-4o\nconst classificationPrompt = `You are a document classification expert. Analyze this document image and determine its type.\n\nRespond ONLY with a valid JSON object in this exact format:\n{\n  \"document_type\": \"invoice\" | \"receipt\" | \"purchase_order\",\n  \"confidence\": \"high\" | \"medium\" | \"low\",\n  \"reasoning\": \"Brief explanation of key indicators used\"\n}\n\nClassification Rules:\n- \"invoice\": Formal billing document from vendor/supplier to buyer. Has invoice number, payment terms, due date, billing/shipping address, line items with unit prices, subtotal, tax, total amount due.\n- \"receipt\": Proof of completed payment/transaction. From retail/restaurant/service. Has transaction date/time, items purchased, payment method used, total paid.\n- \"purchase_order\": Buyer-issued document authorizing a purchase from supplier. Has PO number, ship-to address, requested delivery date, approved line items, buyer authorization.\n\nIf uncertain, return the closest match with confidence: \"low\".`;\n\nreturn [{\n  json: {\n    ...item,\n    classification_prompt: classificationPrompt,\n    classification_skipped: false\n  }\n}];"
+      },
+      "id": "d626b3a1-5af3-4fe7-b615-f847be5206aa",
+      "name": "🧠 Build Classification Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5888,
+        240
+      ],
+      "notes": "Builds GPT-4o classification prompt. Skips if document type was detected from folder ID."
+    },
+    {
+      "parameters": {
+        "resource": "chat"
+      },
+      "id": "987361cc-0a82-4642-951e-d5f2ec22f66d",
+      "name": "🤖 GPT-4o: Classify Document",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        -6560,
+        560
+      ],
+      "notes": "TODO: configure this node — set model to gpt-4o, add a messages array with the classification prompt and the base64 image as image_url input, set temperature 0.1 / max_tokens 300 / JSON response format, and attach your OpenAI credentials."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// STEP: Parse Classification Response\n// ─────────────────────────────────────────────\nconst item = $input.first().json;\nlet classificationResult;\n\ntry {\n  const rawResponse = item.message?.content || item.choices?.[0]?.message?.content || '{}';\n  classificationResult = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;\n} catch (e) {\n  classificationResult = {\n    document_type: 'invoice',\n    confidence: 'low',\n    reasoning: 'Fallback: could not parse classification response'\n  };\n}\n\nconst validTypes = ['invoice', 'receipt', 'purchase_order'];\nif (!validTypes.includes(classificationResult.document_type)) {\n  classificationResult.document_type = 'invoice';\n  classificationResult.confidence = 'low';\n}\n\nreturn [{\n  json: {\n    ...item,\n    detected_document_type: classificationResult.document_type,\n    classification_confidence: classificationResult.confidence,\n    classification_reasoning: classificationResult.reasoning\n  }\n}];"
+      },
+      "id": "25e6d2fa-83d2-42b8-bd4a-9392b6df67ce",
+      "name": "📋 Parse Classification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6400,
+        560
+      ],
+      "notes": "Parses GPT-4o classification JSON. Falls back to 'invoice' with low confidence on parse errors."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// STEP: Build Document-Specific Extraction Prompt\n// ─────────────────────────────────────────────\nconst item = $input.first().json;\nconst docType = item.detected_document_type;\n\nconst commonInstructions = `\nRules:\n- Extract ONLY data explicitly present in the document. Do not infer or guess.\n- If a field is not present, use null.\n- All monetary values must be numeric (no currency symbols). 2 decimal places.\n- Dates must be ISO 8601 format: YYYY-MM-DD.\n- Line items must be an array even if there is only one item.\n- Return ONLY valid JSON. No markdown, no explanation, no preamble.\n`;\n\nlet extractionPrompt;\n\nif (docType === 'invoice') {\n  extractionPrompt = `You are an expert invoice data extraction AI. Extract all structured data from this invoice.\n\nReturn a JSON object with EXACTLY this schema:\n{\n  \"document_type\": \"invoice\",\n  \"invoice_number\": string | null,\n  \"invoice_date\": \"YYYY-MM-DD\" | null,\n  \"due_date\": \"YYYY-MM-DD\" | null,\n  \"payment_terms\": string | null,\n  \"currency\": string | null,\n  \"vendor\": {\n    \"name\": string | null,\n    \"address\": string | null,\n    \"email\": string | null,\n    \"phone\": string | null,\n    \"tax_id\": string | null,\n    \"bank_account\": string | null\n  },\n  \"bill_to\": {\n    \"name\": string | null,\n    \"address\": string | null,\n    \"email\": string | null,\n    \"contact\": string | null\n  },\n  \"ship_to\": {\n    \"name\": string | null,\n    \"address\": string | null\n  },\n  \"line_items\": [\n    {\n      \"line_number\": number | null,\n      \"description\": string,\n      \"quantity\": number | null,\n      \"unit\": string | null,\n      \"unit_price\": number | null,\n      \"discount_percent\": number | null,\n      \"discount_amount\": number | null,\n      \"tax_rate_percent\": number | null,\n      \"line_total\": number | null\n    }\n  ],\n  \"subtotal\": number | null,\n  \"discount_total\": number | null,\n  \"tax_total\": number | null,\n  \"shipping_cost\": number | null,\n  \"total_amount_due\": number | null,\n  \"amount_paid\": number | null,\n  \"balance_due\": number | null,\n  \"notes\": string | null,\n  \"po_reference\": string | null,\n  \"project_code\": string | null\n}\n\n${commonInstructions}`;\n\n} else if (docType === 'receipt') {\n  extractionPrompt = `You are an expert receipt data extraction AI. Extract all structured data from this receipt.\n\nReturn a JSON object with EXACTLY this schema:\n{\n  \"document_type\": \"receipt\",\n  \"receipt_number\": string | null,\n  \"transaction_date\": \"YYYY-MM-DD\" | null,\n  \"transaction_time\": string | null,\n  \"merchant\": {\n    \"name\": string | null,\n    \"address\": string | null,\n    \"phone\": string | null,\n    \"website\": string | null,\n    \"tax_id\": string | null,\n    \"terminal_id\": string | null,\n    \"cashier\": string | null\n  },\n  \"currency\": string | null,\n  \"line_items\": [\n    {\n      \"description\": string,\n      \"sku\": string | null,\n      \"quantity\": number | null,\n      \"unit_price\": number | null,\n      \"line_total\": number | null\n    }\n  ],\n  \"subtotal\": number | null,\n  \"tax_total\": number | null,\n  \"tip\": number | null,\n  \"discount_total\": number | null,\n  \"total_paid\": number | null,\n  \"payment_method\": string | null,\n  \"card_last_four\": string | null,\n  \"change_given\": number | null,\n  \"loyalty_points_earned\": number | null,\n  \"notes\": string | null\n}\n\n${commonInstructions}`;\n\n} else if (docType === 'purchase_order') {\n  extractionPrompt = `You are an expert purchase order data extraction AI. Extract all structured data from this purchase order.\n\nReturn a JSON object with EXACTLY this schema:\n{\n  \"document_type\": \"purchase_order\",\n  \"po_number\": string | null,\n  \"po_date\": \"YYYY-MM-DD\" | null,\n  \"delivery_date_requested\": \"YYYY-MM-DD\" | null,\n  \"status\": string | null,\n  \"currency\": string | null,\n  \"buyer\": {\n    \"company\": string | null,\n    \"department\": string | null,\n    \"contact_name\": string | null,\n    \"email\": string | null,\n    \"phone\": string | null,\n    \"address\": string | null\n  },\n  \"supplier\": {\n    \"name\": string | null,\n    \"contact_name\": string | null,\n    \"email\": string | null,\n    \"phone\": string | null,\n    \"address\": string | null\n  },\n  \"ship_to\": {\n    \"location\": string | null,\n    \"address\": string | null,\n    \"attention\": string | null\n  },\n  \"line_items\": [\n    {\n      \"line_number\": number | null,\n      \"item_code\": string | null,\n      \"description\": string,\n      \"quantity_ordered\": number | null,\n      \"unit\": string | null,\n      \"unit_price\": number | null,\n      \"tax_rate_percent\": number | null,\n      \"line_total\": number | null\n    }\n  ],\n  \"subtotal\": number | null,\n  \"tax_total\": number | null,\n  \"shipping_cost\": number | null,\n  \"total_amount\": number | null,\n  \"payment_terms\": string | null,\n  \"shipping_method\": string | null,\n  \"notes\": string | null,\n  \"approved_by\": string | null,\n  \"approval_date\": \"YYYY-MM-DD\" | null\n}\n\n${commonInstructions}`;\n\n} else {\n  throw new Error(`Unknown document type: ${docType}. Cannot build extraction prompt.`);\n}\n\nreturn [{\n  json: {\n    ...item,\n    extraction_prompt: extractionPrompt\n  }\n}];"
+      },
+      "id": "38470eb9-8b1d-4a90-9172-4659a85994ea",
+      "name": "📝 Build Extraction Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6032,
+        544
+      ],
+      "notes": "Selects and builds the correct JSON schema extraction prompt based on detected document type."
+    },
+    {
+      "parameters": {
+        "resource": "chat"
+      },
+      "id": "717b1e03-dc4c-4c8e-9313-afa98432601e",
+      "name": "🤖 GPT-4o: Extract Document Data",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        -5856,
+        544
+      ],
+      "notes": "TODO: configure this node — set model to gpt-4o, add a messages array with the extraction prompt and the base64 image as image_url input, set temperature 0 / max_tokens 4096 / JSON response format, and attach your OpenAI credentials."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// STEP: Parse & Validate Extracted Data\n// ─────────────────────────────────────────────\nconst item = $input.first().json;\nlet extractedData;\n\ntry {\n  const rawContent = item.message?.content || item.choices?.[0]?.message?.content || '{}';\n  extractedData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;\n} catch (e) {\n  throw new Error(`Failed to parse GPT-4o extraction response: ${e.message}`);\n}\n\nconst qualityFlags = [];\nconst docType = item.detected_document_type;\n\nif (docType === 'invoice') {\n  if (!extractedData.invoice_number) qualityFlags.push('missing_invoice_number');\n  if (!extractedData.total_amount_due) qualityFlags.push('missing_total_amount');\n  if (!extractedData.vendor?.name) qualityFlags.push('missing_vendor_name');\n  if (!extractedData.invoice_date) qualityFlags.push('missing_invoice_date');\n} else if (docType === 'receipt') {\n  if (!extractedData.total_paid) qualityFlags.push('missing_total_paid');\n  if (!extractedData.merchant?.name) qualityFlags.push('missing_merchant_name');\n  if (!extractedData.transaction_date) qualityFlags.push('missing_transaction_date');\n} else if (docType === 'purchase_order') {\n  if (!extractedData.po_number) qualityFlags.push('missing_po_number');\n  if (!extractedData.total_amount) qualityFlags.push('missing_total_amount');\n  if (!extractedData.supplier?.name) qualityFlags.push('missing_supplier_name');\n}\n\nconst lineItemCount = extractedData.line_items ? extractedData.line_items.length : 0;\nconst lineItemsSummary = extractedData.line_items\n  ? extractedData.line_items.map(li => li.description || '').join('; ')\n  : '';\n\nconst sheetsRecord = {\n  submission_id: item.submission_id,\n  processed_at: new Date().toISOString(),\n  source_label: item.source_label,\n  file_name: item.file_name,\n  drive_file_id: item.drive_file_id,\n  drive_web_view_link: item.drive_web_view_link,\n  document_type: docType,\n  classification_confidence: item.classification_confidence,\n  quality_flags: qualityFlags.join(', ') || 'none',\n  extraction_quality: qualityFlags.length === 0 ? 'COMPLETE' : qualityFlags.length <= 2 ? 'PARTIAL' : 'POOR',\n  line_item_count: lineItemCount,\n  invoice_number: extractedData.invoice_number || null,\n  invoice_date: extractedData.invoice_date || null,\n  due_date: extractedData.due_date || null,\n  payment_terms: extractedData.payment_terms || null,\n  currency: extractedData.currency || null,\n  vendor_name: extractedData.vendor?.name || extractedData.merchant?.name || extractedData.supplier?.name || null,\n  vendor_address: extractedData.vendor?.address || extractedData.merchant?.address || extractedData.supplier?.address || null,\n  vendor_email: extractedData.vendor?.email || extractedData.merchant?.email || extractedData.supplier?.email || null,\n  vendor_phone: extractedData.vendor?.phone || extractedData.merchant?.phone || extractedData.supplier?.phone || null,\n  vendor_tax_id: extractedData.vendor?.tax_id || extractedData.merchant?.tax_id || null,\n  bill_to_name: extractedData.bill_to?.name || extractedData.buyer?.company || null,\n  bill_to_address: extractedData.bill_to?.address || extractedData.buyer?.address || null,\n  po_number: extractedData.po_number || extractedData.po_reference || null,\n  po_date: extractedData.po_date || null,\n  delivery_date_requested: extractedData.delivery_date_requested || null,\n  buyer_company: extractedData.buyer?.company || null,\n  approved_by: extractedData.approved_by || null,\n  approval_date: extractedData.approval_date || null,\n  shipping_method: extractedData.shipping_method || null,\n  receipt_number: extractedData.receipt_number || null,\n  transaction_date: extractedData.transaction_date || extractedData.invoice_date || extractedData.po_date || null,\n  transaction_time: extractedData.transaction_time || null,\n  payment_method: extractedData.payment_method || null,\n  card_last_four: extractedData.card_last_four || null,\n  cashier: extractedData.merchant?.cashier || null,\n  subtotal: extractedData.subtotal || null,\n  discount_total: extractedData.discount_total || null,\n  tax_total: extractedData.tax_total || null,\n  shipping_cost: extractedData.shipping_cost || null,\n  tip: extractedData.tip || null,\n  total_amount: extractedData.total_amount_due || extractedData.total_paid || extractedData.total_amount || null,\n  amount_paid: extractedData.amount_paid || extractedData.total_paid || null,\n  balance_due: extractedData.balance_due || null,\n  line_items_summary: lineItemsSummary,\n  line_items_json: JSON.stringify(extractedData.line_items || []),\n  notes: extractedData.notes || null,\n  project_code: extractedData.project_code || null,\n  raw_extraction_json: JSON.stringify(extractedData)\n};\n\nreturn [{\n  json: {\n    ...item,\n    extracted_data: extractedData,\n    sheets_record: sheetsRecord,\n    quality_flags: qualityFlags,\n    extraction_quality: sheetsRecord.extraction_quality\n  }\n}];"
+      },
+      "id": "72deabff-26a4-4a7b-addc-dadf7999bb9f",
+      "name": "✅ Parse & Validate Extraction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5696,
+        544
+      ],
+      "notes": "Parses GPT-4o response, runs quality checks, and flattens all data into a Google Sheets-compatible record."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond_quality_poor",
+              "leftValue": "={{ $json.extraction_quality }}",
+              "rightValue": "POOR",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1a5d39a2-cd1d-4b74-9479-e12eed9b75aa",
+      "name": "⚠️ Quality Check Router",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -5520,
+        544
+      ],
+      "notes": "POOR quality → Needs Review sheet. COMPLETE/PARTIAL → main Extractions sheet."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Extractions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": "={{ $json.sheets_record }}",
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED",
+          "useAppend": true
+        }
+      },
+      "id": "6a3e933e-3a99-4407-a6cb-a1fad2c8d3eb",
+      "name": "📊 Google Sheets: Save Extraction",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -5296,
+        256
+      ],
+      "notes": "FIXED: Changed authentication from serviceAccount to oAuth2. Added credential ID. Replace YOUR_GOOGLE_SHEETS_DOCUMENT_ID with your actual Sheet ID."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Needs Review",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": "={{ $json.sheets_record }}",
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED",
+          "useAppend": true
+        }
+      },
+      "id": "5a7c6ec7-7dc1-4461-8ca4-43b19138b805",
+      "name": "🚨 Google Sheets: Flag for Review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -5296,
+        448
+      ],
+      "notes": "FIXED: Changed authentication from serviceAccount to oAuth2. Added credential ID. Writes POOR quality extractions to Needs Review tab."
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "options": {}
+      },
+      "id": "7617d650-2b03-4c85-bdda-1eac180470ab",
+      "name": "🔗 Merge Sheet Outputs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -5072,
+        320
+      ],
+      "notes": "FIXED: Added combinationMode mergeByPosition. Merges both sheet-write outputs into one stream."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// STEP: Execution Log\n// ─────────────────────────────────────────────\nconst item = $input.first().json;\nconst sheetsRecord = item.sheets_record;\n\nconst logEntry = {\n  status: 'SUCCESS',\n  submission_id: item.submission_id,\n  file_name: item.file_name,\n  drive_file_id: item.drive_file_id,\n  drive_web_view_link: item.drive_web_view_link,\n  document_type: item.detected_document_type,\n  classification_confidence: item.classification_confidence,\n  extraction_quality: item.extraction_quality,\n  quality_flags: item.quality_flags || [],\n  sheets_tab_written: item.extraction_quality === 'POOR' ? 'Needs Review' : 'Extractions',\n  summary: {\n    vendor_or_merchant: sheetsRecord.vendor_name,\n    document_number: sheetsRecord.invoice_number || sheetsRecord.po_number || sheetsRecord.receipt_number,\n    document_date: sheetsRecord.invoice_date || sheetsRecord.po_date || sheetsRecord.transaction_date,\n    total_amount: sheetsRecord.total_amount,\n    currency: sheetsRecord.currency,\n    line_item_count: sheetsRecord.line_item_count\n  },\n  processed_at: sheetsRecord.processed_at\n};\n\nconsole.log('✅ Extraction complete:', JSON.stringify(logEntry, null, 2));\n\nreturn [{ json: logEntry }];"
+      },
+      "id": "d1b8bfa3-6a6f-4cd4-9011-d8f349d4616c",
+      "name": "📋 Execution Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4848,
+        320
+      ],
+      "notes": "Final node. Logs a structured summary to n8n execution output."
+    },
+    {
+      "parameters": {
+        "jsCode": "const error = $input.first().json;\nconst errorLog = {\n  status: 'ERROR',\n  submission_id: error.submission_id || `ERR-${Date.now()}`,\n  file_name: error.file_name || 'unknown',\n  drive_file_id: error.drive_file_id || null,\n  error: {\n    message: error.message || 'Unexpected error occurred',\n    type: error.type || 'WORKFLOW_ERROR',\n    node: error.node || 'unknown',\n    timestamp: new Date().toISOString()\n  },\n  hint: 'Verify: file is PDF/image under 20MB, OpenAI key is valid, Google Drive/Sheets credentials are active.'\n};\nconsole.error('❌ Extraction failed:', JSON.stringify(errorLog, null, 2));\nreturn [{ json: errorLog }];"
+      },
+      "id": "e1320b93-70d9-4219-a2b3-227c453c0f64",
+      "name": "❌ Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7152,
+        688
+      ],
+      "notes": "Catches and logs workflow errors."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f5006fe6-3594-4b9a-8594-138eec01a9b7",
+              "leftValue": "={{ $json.classification_skipped }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -5664,
+        240
+      ],
+      "id": "6b7f7c54-ccae-493e-b75c-b8bcaf561dec",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -6208,
+        544
+      ],
+      "id": "bf04d5b5-1df0-4b73-87d4-66820881c859",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "📂 Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "⬇️ Google Drive: Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⬇️ Google Drive: Download File": {
+      "main": [
+        [
+          {
+            "node": "📁 Detect Doc Type From Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📁 Detect Doc Type From Folder": {
+      "main": [
+        [
+          {
+            "node": "🔍 Validate & Prepare Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Validate & Prepare Input": {
+      "main": [
+        [
+          {
+            "node": "🔄 Convert to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 Convert to Base64": {
+      "main": [
+        [
+          {
+            "node": "🧠 Build Classification Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Build Classification Prompt": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 GPT-4o: Classify Document": {
+      "main": [
+        [
+          {
+            "node": "📋 Parse Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Parse Classification": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "📝 Build Extraction Prompt": {
+      "main": [
+        [
+          {
+            "node": "🤖 GPT-4o: Extract Document Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 GPT-4o: Extract Document Data": {
+      "main": [
+        [
+          {
+            "node": "✅ Parse & Validate Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Parse & Validate Extraction": {
+      "main": [
+        [
+          {
+            "node": "⚠️ Quality Check Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚠️ Quality Check Router": {
+      "main": [
+        [
+          {
+            "node": "📊 Google Sheets: Save Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Google Sheets: Flag for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Google Sheets: Save Extraction": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge Sheet Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Google Sheets: Flag for Review": {
+      "main": [
+        [
+          {
+            "node": "🔗 Merge Sheet Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🔗 Merge Sheet Outputs": {
+      "main": [
+        [
+          {
+            "node": "📋 Execution Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🤖 GPT-4o: Classify Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "📝 Build Extraction Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8b36fa25-f633-414c-9b20-0c70424ae055",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9d09e716638ba1d407b2b23b3c201ad7b0fc16d2bece82a69842d61b1bc095d9"
+  },
+  "id": "yGcOOD2ZtwQt4G3S",
+  "tags": []
+}

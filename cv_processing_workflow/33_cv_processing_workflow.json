@@ -1,0 +1,543 @@
+{
+  "name": "Job Application CV Processing Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "a7ce5fa9-d3b2-448d-b717-c6facbd95942",
+        "formTitle": "Job Application",
+        "formDescription": "Please submit your application and resume",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "acb58db4-56c9-4fc6-8137-1d8031475fde",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -176
+      ],
+      "webhookId": "a7ce5fa9-d3b2-448d-b717-c6facbd95942"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "Resume",
+        "name": "={{ $json['Full Name'] }}_CV",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1ATRcn9obXka2jDJB1NR5YktPnjIOev_s",
+          "mode": "list",
+          "cachedResultName": "TEst CV",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ATRcn9obXka2jDJB1NR5YktPnjIOev_s"
+        },
+        "options": {}
+      },
+      "id": "1d8fc5bf-466f-41d5-9296-b1f1ac9119d7",
+      "name": "Upload Resume",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        -176
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "6rOJeFV0a1Iz5B3N",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "60ebc630-f9d1-4f31-beae-81438d5869ca",
+      "name": "Download file",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        112,
+        -176
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "6rOJeFV0a1Iz5B3N",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "ec5ffb9e-b30b-4b3b-87fe-00c999514720",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "7dc3ad56-c4fc-4eb6-8239-b078ef672975",
+      "name": "Extract text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {}
+      },
+      "id": "c25d4b81-2413-43c2-a535-808f24f9b60c",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        48,
+        400
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "u9inNwyMXrInhD8l",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1f7F_N_SQLTCGkFw9gwpZekiVWb6GTr3O",
+          "mode": "list",
+          "cachedResultName": "marketing officer _ DEMO.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1f7F_N_SQLTCGkFw9gwpZekiVWb6GTr3O/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        560,
+        -176
+      ],
+      "id": "e9fb1cd4-3caf-4bb7-80e7-2e66df7c4136",
+      "name": "Demo download",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "6rOJeFV0a1Iz5B3N",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"candidate_strengths\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"candidate_weaknesses\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"risk_factor\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"risk_score\": {\n          \"type\": \"string\",\n          \"enum\": [\"Low\", \"Medium\", \"High\"]\n        },\n        \"worst_case_scenario\": {\n          \"type\": \"string\"\n        }\n      }\n    },\n    \"reward_factor\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"reward_score\": {\n          \"type\": \"string\",\n          \"enum\": [\"Low\", \"Medium\", \"High\"]\n        },\n        \"best_case_scenario\": {\n          \"type\": \"string\"\n        },\n        \"fit_duration\": {\n          \"type\": \"string\",\n          \"enum\": [\"Short-Term\", \"Long-Term\"]\n        }\n      }\n    },\n    \"overall_fit_rating\": {\n      \"type\": \"integer\",\n      \"minimum\": 0,\n      \"maximum\": 10\n    },\n    \"justification_for_rating\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        368
+      ],
+      "id": "499b9349-c4a4-4c27-8e6a-91c75af58b99",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the candidate's CV:\n{{ $('Extract from File').item.json.text }}\n\nHere is the job description Requirements:\n{{ $json.text }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert technical recruiter specializing Business & Marketing roles. You have been given a job description and a candidate resume. Your task is to analyze the resume in relation to the job description and provide a detailed screening report.\n\nFocus specifically on how well the candidate matches the core requirements and ideal profile outlined in the job description. Evaluate both technical skill alignment and\nbusiness-context understanding. Use reasoning grounded in the actual content of the resume and job post — avoid making assumptions.\n\n## Output\n\nYour output should follow this exact format:\n\n**Candidate Strengths:**\nList the top strengths or relevant qualifications the candidate brings to the table. Be\nspecific.\n\n**Candidate Weaknesses:**\nList areas where the candidate is lacking or mismatched based on the job description.\n\n**Risk Factor:**\n\n* Assign a risk score (Low / Medium / High)\n* Explain the worst-case scenario if this candidate is hired.\n\n**Reward Factor:**\n\n* Assign a reward score (Low / Medium / High)\n* Describe the best-case scenario — what value could this candidate unlock?\n* Does the candidate appear to be a short-term or long-term fit?\n\n**Overall Fit Rating (0-10):**\nAssign a number between 0 (terrible match) and 10 (perfect match). Do not give decimals.\n\n**Justification for Rating:**\nExplain clearly why this candidate received that score. Reference specific resume\ncontent and how it aligns or doesn't with the job description.\n\n## Job description:\n{{ $json.text }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        176
+      ],
+      "id": "8e4b7321-5d17-4961-9316-865825906dce",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['Email'] }}",
+        "subject": "=Application Received – Thank you, {{ $('On form submission').item.json['Full Name'] }}!",
+        "message": "=\n<p>Dear  {{ $('On form submission').item.json['Full Name'].split(' ').first() }},</p>\n<p>We have received your application and CV. Our team will review your application and get back to you shortly.</p>\n\n\n<p>We appreciate your interest and will be in touch soon.</p>\n<p>Best regards,<br/>The Hiring Team</p>",
+        "options": {}
+      },
+      "id": "74d6efa4-4414-4697-b8f6-9af33f270cde",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        384,
+        176
+      ],
+      "webhookId": "62da9a18-63d5-4cea-bc78-aa13f174fa8c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hwkGRzmPHuB6NuZy",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1-buLR0MVR3LD8vqDdc9QwjDVx8-oGLdlAPQehnZWdeU",
+          "mode": "list",
+          "cachedResultName": "Applicant tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-buLR0MVR3LD8vqDdc9QwjDVx8-oGLdlAPQehnZWdeU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-buLR0MVR3LD8vqDdc9QwjDVx8-oGLdlAPQehnZWdeU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Applicant name": "={{ $('On form submission').item.json['Full Name'] }}",
+            "last name": "={{ $('On form submission').item.json['Full Name'].split(' ').last() }}",
+            "First name": "={{ $('On form submission').item.json['Full Name'].split(' ').first() }}",
+            "E-mail ": "={{ $('On form submission').item.json.Email }}",
+            "Application date": "={{ new Date($('On form submission').item.json.submittedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }).replace(/ /g, ' ') + ' & ' + new Date($('On form submission').item.json.submittedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}",
+            "CV": "={{ $('On form submission').item.json.Resume[0].filename }}",
+            "Strength": "={{ $('AI Agent1').item.json.output.candidate_strengths }}",
+            "Weaknesses": "={{ $('AI Agent1').item.json.output.candidate_weaknesses }}",
+            "Risk factor": "={{ $('AI Agent1').item.json.output.risk_factor.worst_case_scenario }}",
+            "Reward factor": "={{ $('AI Agent1').item.json.output.reward_factor.best_case_scenario }}",
+            "Risk factor score": "={{ $('AI Agent1').item.json.output.risk_factor.risk_score }}",
+            "Reward factor score": "={{ $('AI Agent1').item.json.output.reward_factor.reward_score }}",
+            "Overall fit": "={{ $('AI Agent1').item.json.output.overall_fit_rating }}",
+            "Justification": "={{ $('AI Agent1').item.json.output.justification_for_rating }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Applicant name",
+              "displayName": "Applicant name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First name",
+              "displayName": "First name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last name",
+              "displayName": "last name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "E-mail ",
+              "displayName": "E-mail ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Application date",
+              "displayName": "Application date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CV",
+              "displayName": "CV",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Strength",
+              "displayName": "Strength",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Weaknesses",
+              "displayName": "Weaknesses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk factor",
+              "displayName": "Risk factor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk factor score",
+              "displayName": "Risk factor score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reward factor",
+              "displayName": "Reward factor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reward factor score",
+              "displayName": "Reward factor score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Overall fit",
+              "displayName": "Overall fit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Justification",
+              "displayName": "Justification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        176
+      ],
+      "id": "3651dcf2-ba49-4913-8d12-e7d5c51c7187",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jyOKBVYAE10WagHy",
+          "name": "Newzz"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Upload Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Resume": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Demo download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demo download": {
+      "main": [
+        [
+          {
+            "node": "Extract text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2b4347b1-42d6-4d44-8992-b6e5bc95e2fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6bfc721d0c2658be4e0acd7bcdd9f3211dd8941f193fa97f0907d4e7ae274ca0"
+  },
+  "id": "FKSeh5VhPymeCBqI",
+  "tags": []
+}

@@ -1,0 +1,847 @@
+{
+  "id": "ragChatbot08",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "RAG-Powered Internal Knowledge Chatbot",
+  "tags": [
+    "client-project",
+    "ai-automation",
+    "knowledge-base"
+  ],
+  "nodes": [
+    {
+      "id": "k0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -600,
+        -460
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 760,
+        "height": 700,
+        "content": "## 📚 RAG-Powered Internal Knowledge Chatbot\n\nCompany docs from Notion and Drive sync into a vector store every night. A Slack mention triggers retrieval, and an LLM answers with a source link attached. New docs index automatically, so answers stay current with zero manual updates.\n\n## Two independent flows in this workflow\n1. **Nightly Index Sync** (Schedule, 2am) → pulls Notion pages + Drive files → chunks + embeds → upserts into Pinecone.\n2. **Slack Q&A** (Slack Trigger, app_mention) → AI Agent retrieves from Pinecone and replies in-thread with a source link.\n\n## Setup (about 25 minutes)\n1. Connect Notion, Google Drive, OpenAI and Pinecone credentials.\n2. Set your Pinecone index name in both *Pinecone: Insert Docs* and *Knowledge Base (RAG Tool)*.\n3. Connect Slack and enable the `app_mention` event on the Slack app, scoped to your #ask-docs channel."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000002",
+      "name": "Nightly Sync (2am)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -200,
+        -160
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000003",
+      "name": "Search Notion Pages",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        40,
+        -260
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "search",
+        "text": "",
+        "returnAll": true,
+        "options": {
+          "sort": {
+            "sortValue": {
+              "direction": "descending",
+              "timestamp": "last_edited_time"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "notionApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Notion account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 2.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000004",
+      "name": "Search Drive Files",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        40,
+        -60
+      ],
+      "parameters": {
+        "resource": "fileFolder",
+        "operation": "search",
+        "searchMethod": "query",
+        "returnAll": true,
+        "filter": {
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Drive account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000005",
+      "name": "Combine Doc Sources",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        280,
+        -160
+      ],
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "numberInputs": 2,
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000006",
+      "name": "Normalize Doc List",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        500,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const notionDocs = $('Search Notion Pages').all().map(i => ({ id: i.json.id, title: i.json.name || 'Untitled', url: i.json.url, source: 'notion' }));\nconst driveDocs = $('Search Drive Files').all().map(i => ({ id: i.json.id, title: i.json.name, url: `https://drive.google.com/file/d/${i.json.id}/view`, source: 'drive' }));\nreturn [...notionDocs, ...driveDocs].map(d => ({ json: d }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000007",
+      "name": "Process Each Doc",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        720,
+        -160
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000008",
+      "name": "Sync Done",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        960,
+        -300
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000009",
+      "name": "Is Notion Doc?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        960,
+        -100
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-is-notion",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "notion"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000000a",
+      "name": "Get Notion Page Blocks",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        1200,
+        -220
+      ],
+      "parameters": {
+        "resource": "block",
+        "operation": "getAll",
+        "blockId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "returnAll": true
+      },
+      "credentials": {
+        "notionApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Notion account"
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000000b",
+      "name": "Flatten Notion Text",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1440,
+        -220
+      ],
+      "parameters": {
+        "jsCode": "const doc = $('Process Each Doc').item.json;\nconst text = $input.all().map(b => b.json.text || '').filter(Boolean).join('\\n');\nreturn [{ json: { id: doc.id, title: doc.title, url: doc.url, source: doc.source, content: text || doc.title } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000000c",
+      "name": "Download Drive File",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1200,
+        40
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Drive account"
+        }
+      },
+      "continueOnFail": true,
+      "typeVersion": 3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000000d",
+      "name": "Extract Drive Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1440,
+        40
+      ],
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000000e",
+      "name": "Build Drive Doc",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1680,
+        40
+      ],
+      "parameters": {
+        "jsCode": "const doc = $('Process Each Doc').item.json;\nreturn [{ json: { id: doc.id, title: doc.title, url: doc.url, source: doc.source, content: $json.data || doc.title } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000000f",
+      "name": "Pinecone: Insert Docs",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        1920,
+        -100
+      ],
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_PINECONE_INDEX"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "pineconeApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Pinecone account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000010",
+      "name": "Insert Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        1900,
+        80
+      ],
+      "parameters": {
+        "model": "text-embedding-3-small"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000011",
+      "name": "Doc Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        2060,
+        80
+      ],
+      "parameters": {
+        "dataType": "json",
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.content }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "title",
+                "value": "={{ $json.title }}"
+              },
+              {
+                "name": "url",
+                "value": "={{ $json.url }}"
+              },
+              {
+                "name": "source",
+                "value": "={{ $json.source }}"
+              }
+            ]
+          }
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000012",
+      "name": "Slack Q&A Trigger",
+      "type": "n8n-nodes-base.slackTrigger",
+      "position": [
+        -200,
+        320
+      ],
+      "parameters": {
+        "trigger": [
+          "app_mention"
+        ],
+        "watchWorkspace": false,
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ask-docs"
+        }
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000013",
+      "name": "Strip Mention",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        40,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const text = ($json.event?.text || '').replace(/<@[^>]+>/g, '').trim();\nreturn [{ json: { question: text, channel: $json.event.channel, threadTs: $json.event.thread_ts || $json.event.ts } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000014",
+      "name": "Answer Question (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        280,
+        320
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.question }}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are the internal knowledge assistant. Use the Knowledge Base tool to find the answer, then reply concisely and include the source URL from the retrieved document metadata at the end as 'Source: <url>'. If nothing relevant is found, say so honestly."
+        }
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000015",
+      "name": "OpenAI Chat Model (Q&A)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        260,
+        500
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000016",
+      "name": "Knowledge Base (RAG Tool)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        440,
+        500
+      ],
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the internal company knowledge base (Notion docs and Drive files) for an answer to the user's question.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_PINECONE_INDEX"
+        },
+        "topK": 4,
+        "includeDocumentMetadata": true
+      },
+      "credentials": {
+        "pineconeApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Pinecone account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000017",
+      "name": "Retrieval Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        440,
+        660
+      ],
+      "parameters": {
+        "model": "text-embedding-3-small"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000018",
+      "name": "Reply in Thread",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        560,
+        320
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Strip Mention').item.json.channel }}"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Strip Mention').item.json.threadTs }}"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 2.3
+    },
+    {
+      "id": "k0000000-0000-0000-0000-000000000019",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -200,
+        680
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "k0000000-0000-0000-0000-00000000001a",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        40,
+        680
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=🚨 RAG Knowledge Chatbot failed: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "rag-chatbot-v1",
+  "connections": {
+    "Nightly Sync (2am)": {
+      "main": [
+        [
+          {
+            "node": "Search Notion Pages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search Drive Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Notion Pages": {
+      "main": [
+        [
+          {
+            "node": "Combine Doc Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Drive Files": {
+      "main": [
+        [
+          {
+            "node": "Combine Doc Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Doc Sources": {
+      "main": [
+        [
+          {
+            "node": "Normalize Doc List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Doc List": {
+      "main": [
+        [
+          {
+            "node": "Process Each Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Doc": {
+      "main": [
+        [
+          {
+            "node": "Sync Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Notion Doc?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Notion Doc?": {
+      "main": [
+        [
+          {
+            "node": "Get Notion Page Blocks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Drive File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Notion Page Blocks": {
+      "main": [
+        [
+          {
+            "node": "Flatten Notion Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten Notion Text": {
+      "main": [
+        [
+          {
+            "node": "Pinecone: Insert Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Drive File": {
+      "main": [
+        [
+          {
+            "node": "Extract Drive Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Drive Text": {
+      "main": [
+        [
+          {
+            "node": "Build Drive Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Drive Doc": {
+      "main": [
+        [
+          {
+            "node": "Pinecone: Insert Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone: Insert Docs": {
+      "main": [
+        [
+          {
+            "node": "Process Each Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone: Insert Docs",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doc Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone: Insert Docs",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Q&A Trigger": {
+      "main": [
+        [
+          {
+            "node": "Strip Mention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip Mention": {
+      "main": [
+        [
+          {
+            "node": "Answer Question (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (Q&A)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer Question (AI Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge Base (RAG Tool)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Answer Question (AI Agent)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieval Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Knowledge Base (RAG Tool)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Question (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Reply in Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

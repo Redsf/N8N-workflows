@@ -1,0 +1,505 @@
+{
+  "id": "invoiceProcessing07",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "Automated Invoice & Document Processing Pipeline",
+  "tags": [
+    "client-project",
+    "ai-automation",
+    "finance-ops"
+  ],
+  "nodes": [
+    {
+      "id": "i0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        -400
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 700,
+        "height": 620,
+        "content": "## 🧾 Automated Invoice & Document Processing Pipeline\n\nGmail triggers on incoming invoice attachments. PDF text is extracted and key fields pulled with an LLM node: vendor, amount, due date, line items. Data is checked against the vendor list in Postgres; clean invoices push into Xero as draft bills automatically while mismatches route to finance for review.\n\n## Setup (about 20 minutes)\n1. Connect Gmail (set a label filter like `label:invoices has:attachment` in *New Invoice Email*).\n2. Connect OpenAI, Postgres and Xero (header auth) credentials.\n3. Ensure the `vendors` and `invoice_log` tables exist in Postgres (see sticky note on *Log Invoice Record*).\n4. Point *Notify Finance (Mismatch)* at your finance Slack channel."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000002",
+      "name": "New Invoice Email",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "position": [
+        -160,
+        0
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "label:invoices has:attachment newer_than:1d",
+          "readStatus": "unread"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 1.4
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000003",
+      "name": "Has PDF Attachment?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        80,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-has-pdf",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              },
+              "leftValue": "={{ $binary.attachment_0 }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000004",
+      "name": "No Attachment",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        320,
+        120
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000005",
+      "name": "Extract PDF Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        320,
+        -80
+      ],
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {
+          "joinPages": true
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000006",
+      "name": "Extract Invoice Fields (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        560,
+        -80
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the invoice fields from this document text:\\n\\n{{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You extract structured invoice data. Return vendor, amount (number, no currency symbol), currency, dueDate (YYYY-MM-DD), invoiceNumber, and lineItems (array of {description, quantity, unitPrice})."
+        }
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000007",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        540,
+        100
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000008",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        700,
+        100
+      ],
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"vendor\": { \"type\": \"string\" },\n    \"amount\": { \"type\": \"number\" },\n    \"currency\": { \"type\": \"string\" },\n    \"dueDate\": { \"type\": \"string\" },\n    \"invoiceNumber\": { \"type\": \"string\" },\n    \"lineItems\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"description\": { \"type\": \"string\" },\n          \"quantity\": { \"type\": \"number\" },\n          \"unitPrice\": { \"type\": \"number\" }\n        }\n      }\n    }\n  },\n  \"required\": [\"vendor\", \"amount\", \"dueDate\"]\n}"
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "i0000000-0000-0000-0000-000000000009",
+      "name": "Check Vendor List",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        800,
+        -80
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM vendors WHERE lower(name) = lower($1)",
+        "options": {
+          "queryReplacement": "={{ $json.output.vendor }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 2.6
+    },
+    {
+      "id": "i0000000-0000-0000-0000-00000000000a",
+      "name": "Vendor Match Found?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1040,
+        -80
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-vendor-match",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "i0000000-0000-0000-0000-00000000000b",
+      "name": "Create Xero Draft Bill",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1280,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.xero.com/api.xro/2.0/Invoices",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { Type: \"ACCPAY\", Contact: { Name: $('Extract Invoice Fields (AI Agent)').item.json.output.vendor }, DueDate: $('Extract Invoice Fields (AI Agent)').item.json.output.dueDate, Status: \"DRAFT\", LineItems: $('Extract Invoice Fields (AI Agent)').item.json.output.lineItems } }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Xero API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "i0000000-0000-0000-0000-00000000000c",
+      "name": "Notify Finance (Mismatch)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1280,
+        40
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "finance-review"
+        },
+        "text": "=⚠️ Invoice from unrecognised vendor \"{{ $('Extract Invoice Fields (AI Agent)').item.json.output.vendor }}\" needs manual review. Amount: {{ $('Extract Invoice Fields (AI Agent)').item.json.output.amount }} {{ $('Extract Invoice Fields (AI Agent)').item.json.output.currency }}, due {{ $('Extract Invoice Fields (AI Agent)').item.json.output.dueDate }}.",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "i0000000-0000-0000-0000-00000000000d",
+      "name": "Log Invoice Record",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        1520,
+        -80
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO invoice_log (vendor, amount, currency, due_date, invoice_number, matched) VALUES ($1, $2, $3, $4, $5, $6)",
+        "options": {
+          "queryReplacement": "={{ $('Extract Invoice Fields (AI Agent)').item.json.output.vendor }},={{ $('Extract Invoice Fields (AI Agent)').item.json.output.amount }},={{ $('Extract Invoice Fields (AI Agent)').item.json.output.currency }},={{ $('Extract Invoice Fields (AI Agent)').item.json.output.dueDate }},={{ $('Extract Invoice Fields (AI Agent)').item.json.output.invoiceNumber }},={{ $('Vendor Match Found?').item.json !== undefined }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "i0000000-0000-0000-0000-00000000000e",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        400
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "i0000000-0000-0000-0000-00000000000f",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        400
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=🚨 Invoice Processing Pipeline failed: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "invoice-processing-v1",
+  "connections": {
+    "New Invoice Email": {
+      "main": [
+        [
+          {
+            "node": "Has PDF Attachment?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has PDF Attachment?": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Text": {
+      "main": [
+        [
+          {
+            "node": "Extract Invoice Fields (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Invoice Fields (AI Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extract Invoice Fields (AI Agent)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Invoice Fields (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Check Vendor List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Vendor List": {
+      "main": [
+        [
+          {
+            "node": "Vendor Match Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vendor Match Found?": {
+      "main": [
+        [
+          {
+            "node": "Create Xero Draft Bill",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Finance (Mismatch)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Xero Draft Bill": {
+      "main": [
+        [
+          {
+            "node": "Log Invoice Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Finance (Mismatch)": {
+      "main": [
+        [
+          {
+            "node": "Log Invoice Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

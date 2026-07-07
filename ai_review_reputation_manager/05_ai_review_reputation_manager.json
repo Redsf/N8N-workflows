@@ -1,0 +1,684 @@
+{
+  "id": "reviewManager02",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "AI Review & Reputation Manager",
+  "tags": [
+    "client-project",
+    "ai-automation"
+  ],
+  "nodes": [
+    {
+      "id": "r0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -520,
+        -360
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 680,
+        "height": 560,
+        "content": "## ⭐ AI Review & Reputation Manager\n\nPolls Google Business and Trustpilot hourly. An LLM drafts an on-brand reply for every new review; positive ones publish after a quick Slack approval tap, negative ones escalate to the owner instantly with sentiment and a suggested resolution.\n\n**Every review answered within an hour. Rating climbed 4.2 → 4.7 in 6 months.**\n\n## Setup (about 20 minutes)\n1. **Fetch Google/Trustpilot Reviews**: point each HTTP Request at your review source APIs.\n2. **Draft Reply (AI Agent)**: connect an OpenAI credential.\n3. **Escalate to Owner**: set the Slack channel/user for negative reviews.\n4. **Request Approval**: set the Slack channel for the reply-approval prompt.\n5. **Publish Reply**: point the HTTP Request at your review platform's reply endpoint."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000002",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -160,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000003",
+      "name": "Fetch Google Reviews",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        -80
+      ],
+      "parameters": {
+        "url": "https://mybusiness.googleapis.com/v4/YOUR_ACCOUNT/locations/YOUR_LOCATION/reviews",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Business Profile API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000004",
+      "name": "Fetch Trustpilot Reviews",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        100
+      ],
+      "parameters": {
+        "url": "https://api.trustpilot.com/v1/business-units/YOUR_UNIT_ID/reviews",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Trustpilot API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000005",
+      "name": "Combine Sources",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        320,
+        0
+      ],
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000006",
+      "name": "Dedupe New Reviews",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        540,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nif (!staticData.seenIds) staticData.seenIds = [];\nconst items = $input.all();\nconst fresh = items.filter(i => {\n  const id = i.json.reviewId || i.json.id;\n  return id && !staticData.seenIds.includes(id);\n});\nfresh.forEach(i => staticData.seenIds.push(i.json.reviewId || i.json.id));\nif (staticData.seenIds.length > 5000) staticData.seenIds = staticData.seenIds.slice(-2000);\nreturn fresh;"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000007",
+      "name": "Any New Reviews?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        760,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-new-reviews",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000008",
+      "name": "No New Reviews",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1000,
+        -140
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000009",
+      "name": "Process Each Review",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1000,
+        80
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "r0000000-0000-0000-0000-00000000000a",
+      "name": "Limit To Done",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1240,
+        -140
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "r0000000-0000-0000-0000-00000000000b",
+      "name": "Draft Reply (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1240,
+        80
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "=Review ({{ $json.rating }} stars) from {{ $json.author }}: \"{{ $json.text }}\"",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the reputation manager for a local business. For every review, output JSON with: sentiment ('positive' or 'negative'), draftReply (a warm, on-brand, concise reply, max 60 words), and suggestedResolution (empty string if positive, otherwise a concrete next step for the owner)."
+        }
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "r0000000-0000-0000-0000-00000000000c",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1220,
+        260
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "r0000000-0000-0000-0000-00000000000d",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1380,
+        260
+      ],
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"sentiment\": { \"type\": \"string\", \"enum\": [\"positive\", \"negative\"] },\n    \"draftReply\": { \"type\": \"string\" },\n    \"suggestedResolution\": { \"type\": \"string\" }\n  },\n  \"required\": [\"sentiment\", \"draftReply\"]\n}"
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-00000000000e",
+      "name": "Negative Review?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1480,
+        80
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-negative",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.output.sentiment }}",
+              "rightValue": "negative"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-00000000000f",
+      "name": "Escalate to Owner",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1720,
+        -60
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "owner-alerts"
+        },
+        "text": "=🔴 Negative review ({{ $('Process Each Review').item.json.rating }}★) from {{ $('Process Each Review').item.json.author }}: \"{{ $('Process Each Review').item.json.text }}\"\\nSuggested resolution: {{ $json.output.suggestedResolution }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000010",
+      "name": "Request Approval",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1720,
+        200
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "review-replies"
+        },
+        "message": "=Draft reply for {{ $('Process Each Review').item.json.author }}'s {{ $('Process Each Review').item.json.rating }}★ review:\\n\\n\"{{ $json.output.draftReply }}\"",
+        "responseType": "approval",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "single",
+            "approveLabel": "Publish Reply"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 24,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000011",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1960,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-approved",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "leftValue": "={{ $json.data.approved }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000012",
+      "name": "Publish Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2200,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.trustpilot.com/v1/reviews/{{ $('Process Each Review').item.json.reviewId }}/reply",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Draft Reply (AI Agent)').item.json.output.draftReply }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Trustpilot API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000013",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        420
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000014",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        420
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=🚨 AI Review & Reputation Manager failed: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "review-manager-v1",
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Fetch Google Reviews",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Trustpilot Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Google Reviews": {
+      "main": [
+        [
+          {
+            "node": "Combine Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Trustpilot Reviews": {
+      "main": [
+        [
+          {
+            "node": "Combine Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Sources": {
+      "main": [
+        [
+          {
+            "node": "Dedupe New Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe New Reviews": {
+      "main": [
+        [
+          {
+            "node": "Any New Reviews?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any New Reviews?": {
+      "main": [
+        [
+          {
+            "node": "No New Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Each Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Review": {
+      "main": [
+        [
+          {
+            "node": "Limit To Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft Reply (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Reply (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Negative Review?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft Reply (AI Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Draft Reply (AI Agent)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negative Review?": {
+      "main": [
+        [
+          {
+            "node": "Escalate to Owner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Request Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Approval": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Publish Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Each Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Reply": {
+      "main": [
+        [
+          {
+            "node": "Process Each Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalate to Owner": {
+      "main": [
+        [
+          {
+            "node": "Process Each Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

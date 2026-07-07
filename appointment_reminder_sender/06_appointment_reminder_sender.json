@@ -1,0 +1,264 @@
+{
+  "id": "VvXeV734jY3Quxn0",
+  "meta": {
+    "instanceId": "8247b806b0e6f94d28ae959e03ad09e53ffbc2a7aafba4df32b48bec8415d11b",
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Appointment Reminder Sender",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "e094fe8e-3c52-4a99-a608-1f9dc1e1e48c",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        -32
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 560,
+        "height": 760,
+        "content": "## 🩺 Appointment Reminder Sender\n\nEvery morning it reads your appointment sheet, finds tomorrow's bookings, emails each patient a reminder, and posts a summary to your front desk channel.\n\n**Perfect for:** clinics, dental practices and small healthcare offices.\n\n## How it works\n\n1. **Every Morning at 9**: schedule trigger that runs once daily.\n2. **Get Appointments**: reads all rows from your appointments sheet.\n3. **Filter For Tomorrow**: keeps only appointments dated for the next day.\n4. **Send Reminder Email**: emails each patient their reminder.\n5. **Build Summary**: counts how many reminders were sent.\n6. **Front Desk Summary**: posts the count to your team channel.\n\n## Setup (about 10 minutes)\n\n1. **Google Sheets**: connect your account and sheet id in *Get Appointments*. Use columns Patient, Email, Date, Time.\n2. **Gmail**: connect Gmail in *Send Reminder Email* and adjust the wording.\n3. **Slack**: connect Slack and set the channel in *Front Desk Summary*.\n> Make sure your Date column uses a format the *Filter For Tomorrow* code can read, such as YYYY MM DD."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a4fe6610-7097-4513-87a5-2326ccc1fadc",
+      "name": "1️⃣ Daily Fetch",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        496,
+        128
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 600,
+        "height": 480,
+        "content": "## 1️⃣ Daily Fetch\n\n**Every Morning at 9** triggers the run and **Get Appointments** pulls the full appointment list from your sheet."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5255ea63-2bc3-466d-aece-9376829a1f72",
+      "name": "2️⃣ Find Tomorrow",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        128
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 600,
+        "height": 496,
+        "content": "## 2️⃣ Find Tomorrow\n\n**Filter For Tomorrow** narrows the list to next day bookings, while **Build Summary** counts those bookings for the team recap."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "7a11904e-6e04-452b-88b3-ae486e26d59b",
+      "name": "3️⃣ Notify",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        128
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 600,
+        "height": 496,
+        "content": "## 3️⃣ Notify\n\n**Send Reminder Email** messages each patient individually and **Front Desk Summary** posts the total count to your staff channel."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8314a17d-0374-4203-b304-e61840e99778",
+      "name": "Every Morning at 9",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        640,
+        320
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "5154b2de-3fd9-459e-b4b9-a0f49b76a620",
+      "name": "Get Appointments",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        928,
+        320
+      ],
+      "parameters": {
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12lsTQ_B6G_39C0JwXZB_N-9Gk0STtrvZQ9bMAyX7ELo/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "12lsTQ_B6G_39C0JwXZB_N-9Gk0STtrvZQ9bMAyX7ELo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12lsTQ_B6G_39C0JwXZB_N-9Gk0STtrvZQ9bMAyX7ELo/edit?usp=drivesdk",
+          "cachedResultName": "New Form_fashinbrand"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "542sEl8Ubi0hta4Q",
+          "name": "Google Sheets OAuth2 API"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "b3121c53-6ed5-4ac0-a05f-2cbc1f84728b",
+      "name": "Filter For Tomorrow",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1344,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const tomorrow = new Date();\ntomorrow.setDate(tomorrow.getDate() + 1);\nconst target = tomorrow.toISOString().slice(0, 10);\nreturn $input.all().filter(i => String(i.json['Date']).slice(0, 10) === target);"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "844f401f-87ba-4800-ac02-a42552e34197",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1856,
+        272
+      ],
+      "webhookId": "07b01893-2bd4-4f69-aa6c-7ccbe961abba",
+      "parameters": {
+        "sendTo": "={{$json['Email']}}",
+        "message": "Hi {{$json['Patient']}}, this is a reminder of your appointment on {{$json['Date']}} at {{$json['Time']}}. Please reply if you need to reschedule.",
+        "options": {},
+        "subject": "Appointment reminder for {{$json['Date']}}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "cgPoP7uiFwx3VgTz",
+          "name": "Gmail OAuth2 API"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "c353874e-92fd-47a0-a570-88d37b478bec",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1856,
+        448
+      ],
+      "parameters": {
+        "jsCode": "const count = $input.all().length;\nreturn [{ json: { count, date: new Date(Date.now() + 86400000).toISOString().slice(0,10) } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "c6e2f215-15ea-4263-9b63-72ab05ebb018",
+      "name": "Front Desk Summary",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        2128,
+        448
+      ],
+      "webhookId": "1ed3a439-015e-44c5-b66f-b88951956504",
+      "parameters": {
+        "text": "Reminders sent for {{$json.count}} appointments scheduled on {{$json.date}}.",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C0B1SAX5L3W",
+          "cachedResultName": "new_ai-updates"
+        },
+        "otherOptions": {},
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "3XUm67E2jVrrkrwz",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "versionId": "7899694a-2a54-48ea-b62c-8a7792080447",
+  "nodeGroups": [],
+  "connections": {
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Front Desk Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Appointments": {
+      "main": [
+        [
+          {
+            "node": "Filter For Tomorrow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Morning at 9": {
+      "main": [
+        [
+          {
+            "node": "Get Appointments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter For Tomorrow": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

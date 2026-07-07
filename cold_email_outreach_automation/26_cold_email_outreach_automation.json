@@ -1,0 +1,1107 @@
+{
+  "name": "Cold Email Outreach Automation - Industry Standard",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "cb8543fe-b492-4bd4-86d0-e5e8d5f02298",
+      "name": "Get All Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -2416,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "e352c867-e78d-4f62-afe5-5a9d576c493f",
+      "name": "Process One Lead at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2192,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-status",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Pending",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3ce5e38-f4d9-4e02-922d-564c68cfc3ee",
+      "name": "Is Status Pending?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Process One Lead at a Time').item.json['E-mail'] }}",
+        "subject": "={{ $json.email_subject }}",
+        "message": "={{ $json.email_html }}",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "you@example.com"
+        }
+      },
+      "id": "23dcc844-4339-40e5-b7db-4d8a01f72118",
+      "name": "Send Cold Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1152,
+        80
+      ],
+      "webhookId": "c4e70ce5-6f57-4b4c-95c5-ebd0ce6d4710",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D95JhkKejtMqu0rL",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Thread_ID": "={{ $json.threadId }}",
+            "E-mail": "={{ $('Is Status Pending?').item.json['E-mail'] }}",
+            "First_Name": "={{ $('Is Status Pending?').first().json.First_Name }}",
+            "Last_Name": "={{ $('Is Status Pending?').first().json.Last_Name }}",
+            "Company": "={{ $('Is Status Pending?').first().json.Company }}",
+            "Job_Title": "={{ $('Is Status Pending?').first().json.Job_Title }}",
+            "Status": "Email 1 Sent",
+            "Email_Sent_Date": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [
+            "E-mail"
+          ],
+          "schema": [
+            {
+              "id": "First_Name",
+              "displayName": "First_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Name",
+              "displayName": "Last_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "E-mail",
+              "displayName": "E-mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job_Title",
+              "displayName": "Job_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email_Sent_Date",
+              "displayName": "Email_Sent_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thread_ID",
+              "displayName": "Thread_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Followup_Date",
+              "displayName": "Followup_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cadb5442-5bab-4f4c-b8c0-55030b06d4ca",
+      "name": "Update Lead - Email 1 Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -976,
+        80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": "=={{ 'threadId:' + $('Update Lead - Email 1 Sent').item.json.Thread_ID + ' in:inbox -from:me label:inbox' }}",
+        "limit": 1,
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "q": "={{ $('Update Lead - Email 1 Sent').item.json.Thread_ID }}"
+        },
+        "options": {}
+      },
+      "id": "e5e09e49-4820-4052-aa1c-38d7dfc481c5",
+      "name": "Check for Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -2448,
+        432
+      ],
+      "webhookId": "1f22600a-71aa-4757-ae52-e2662f47de79",
+      "alwaysOutputData": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D95JhkKejtMqu0rL",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Reply_Date": "={{ new Date().toISOString().split('T')[0] }}",
+            "Status": "Replied",
+            "E-mail": "={{ $('Is Status Pending?').first().json['E-mail'] }}",
+            "Followup_Date": "={{ new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0] }}",
+            "First_Name": "={{ $('Update Lead - Email 1 Sent').item.json.First_Name }}",
+            "Last_Name": "={{ $('Update Lead - Email 1 Sent').item.json.Last_Name }}",
+            "Company": "={{ $('Update Lead - Email 1 Sent').item.json.Company }}",
+            "Job_Title": "={{ $('Update Lead - Email 1 Sent').item.json.Job_Title }}",
+            "Industry": "={{ $('Get All Leads').item.json.Industry }}",
+            "Email_Sent_Date": "={{ $('Update Lead - Email 1 Sent').item.json.Email_Sent_Date }}"
+          },
+          "matchingColumns": [
+            "E-mail"
+          ],
+          "schema": [
+            {
+              "id": "First_Name",
+              "displayName": "First_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Name",
+              "displayName": "Last_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "E-mail",
+              "displayName": "E-mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job_Title",
+              "displayName": "Job_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email_Sent_Date",
+              "displayName": "Email_Sent_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thread_ID",
+              "displayName": "Thread_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Followup_Date",
+              "displayName": "Followup_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d45daa1f-92b3-4ff0-913f-a28550ff58af",
+      "name": "Update Lead - Replied",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -2000,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PARSE & FORMAT FOLLOW-UP EMAIL - CODE NODE\n// Sender: Your Name | Your Company\n// ============================================\n\n// ============================================\n// STEP 1: GET RAW OUTPUT FROM AI AGENT\n// ============================================\n\nconst rawOutput = $input.first().json.output || \"\";\n\n// ============================================\n// STEP 2: CLEAN THE RAW STRING\n// ============================================\n\nconst cleaned = rawOutput\n  .replace(/\\\\n/g, ' ')\n  .replace(/\\n/g, ' ')\n  .replace(/\\\\\"/g, '\"')\n  .trim();\n\n// ============================================\n// STEP 3: PARSE JSON FROM CLEANED STRING\n// ============================================\n\nconst leadData = $('Is Status Pending?').first().json;\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch(e) {\n  parsed = {\n    subject          : 'Re: Following up — ' + leadData.Company,\n    greeting         : 'Hi ' + leadData.First_Name + ',',\n    opening_line     : cleaned.match(/\"opening_line\"\\s*:\\s*\"([^\"]+)\"/)?.[1]      || '',\n    pain_point       : cleaned.match(/\"pain_point\"\\s*:\\s*\"([^\"]+)\"/)?.[1]        || '',\n    value_proposition: cleaned.match(/\"value_proposition\"\\s*:\\s*\"([^\"]+)\"/)?.[1] || cleaned,\n    call_to_action   : cleaned.match(/\"call_to_action\"\\s*:\\s*\"([^\"]+)\"/)?.[1]    || '',\n    regards          : 'Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City'\n  };\n}\n\n// ============================================\n// STEP 4: HARDCODED SENDER DETAILS\n// ============================================\n\nconst sender = {\n  name   : \"Your Name\",\n  company: \"Your Company\",\n  phone  : \"000-000-0000\",\n  address: \"Your City\"\n};\n\nconst regards = `Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City`;\n\n// ============================================\n// STEP 5: BUILD PLAIN TEXT EMAIL\n// ============================================\n\nconst plainEmail = `\nSubject: ${parsed.subject}\n\n${parsed.greeting}\n\n${parsed.opening_line}\n\n${parsed.pain_point}\n\n${parsed.value_proposition}\n\n${parsed.call_to_action}\n\n${regards}\n`.trim();\n\n// ============================================\n// STEP 6: BUILD HTML EMAIL\n// ============================================\n\nconst htmlEmail = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"\n  margin:0;\n  padding:0;\n  background:#f0f2f5;\n  font-family:Arial,sans-serif;\n\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"\n    style=\"background:#f0f2f5;padding:30px 15px;\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"580\" cellpadding=\"0\" cellspacing=\"0\"\n          style=\"\n            background:#ffffff;\n            border-radius:12px;\n            overflow:hidden;\n            box-shadow:0 4px 20px rgba(0,0,0,0.08);\n          \">\n\n          <!-- TOP BAR -->\n          <tr>\n            <td style=\"\n              background:linear-gradient(90deg,#1a73e8,#0d47a1);\n              height:5px;\n            \"></td>\n          </tr>\n\n          <!-- BRAND HEADER -->\n          <tr>\n            <td style=\"\n              padding:24px 36px 16px;\n              border-bottom:1px solid #f0f0f0;\n            \">\n              <p style=\"\n                margin:0;\n                font-size:20px;\n                font-weight:700;\n                color:#1a73e8;\n              \">Your Company</p>\n              <p style=\"\n                margin:4px 0 0;\n                font-size:12px;\n                color:#aaa;\n              \">AI Automation for Modern Businesses</p>\n            </td>\n          </tr>\n\n          <!-- FOLLOW-UP BADGE -->\n          <tr>\n            <td style=\"padding:16px 36px 0;\">\n              <span style=\"\n                display:inline-block;\n                background:#fff3e0;\n                color:#e65100;\n                font-size:11px;\n                font-weight:700;\n                padding:4px 12px;\n                border-radius:20px;\n                text-transform:uppercase;\n                letter-spacing:1px;\n              \">Follow-up</span>\n            </td>\n          </tr>\n\n          <!-- SUBJECT LINE BOX -->\n          <tr>\n            <td style=\"padding:12px 36px 0;\">\n              <div style=\"\n                background:#e8f0fe;\n                border-left:4px solid #1a73e8;\n                padding:12px 16px;\n                border-radius:0 8px 8px 0;\n              \">\n                <p style=\"\n                  margin:0;\n                  font-size:11px;\n                  color:#888;\n                  text-transform:uppercase;\n                  letter-spacing:1px;\n                  margin-bottom:4px;\n                \">Subject</p>\n                <p style=\"\n                  margin:0;\n                  font-size:15px;\n                  font-weight:700;\n                  color:#1a1a1a;\n                \">${parsed.subject}</p>\n              </div>\n            </td>\n          </tr>\n\n          <!-- EMAIL BODY -->\n          <tr>\n            <td style=\"padding:24px 36px 10px;\">\n\n              <!-- GREETING -->\n              <p style=\"\n                margin:0 0 16px 0;\n                font-size:15px;\n                font-weight:600;\n                color:#1a1a1a;\n              \">${parsed.greeting}</p>\n\n              <!-- OPENING LINE -->\n              <p style=\"\n                margin:0 0 14px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.opening_line}</p>\n\n              <!-- PAIN POINT -->\n              <p style=\"\n                margin:0 0 14px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.pain_point}</p>\n\n              <!-- VALUE PROPOSITION -->\n              <div style=\"\n                border-left:4px solid #1a73e8;\n                background:#f0f7ff;\n                padding:14px 18px;\n                border-radius:0 8px 8px 0;\n                margin:18px 0;\n              \">\n                <p style=\"\n                  margin:0;\n                  font-size:15px;\n                  color:#1a1a1a;\n                  line-height:1.8;\n                \">${parsed.value_proposition}</p>\n              </div>\n\n              <!-- CALL TO ACTION -->\n              <p style=\"\n                margin:0 0 20px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.call_to_action}</p>\n\n            </td>\n          </tr>\n\n          <!-- REGARDS SECTION -->\n          <tr>\n            <td style=\"\n              padding:0 36px 28px;\n              border-top:1px solid #f0f0f0;\n            \">\n              <p style=\"\n                margin:16px 0 14px;\n                font-size:15px;\n                color:#333;\n              \">Warm regards,</p>\n\n              <table cellpadding=\"0\" cellspacing=\"0\">\n                <tr>\n                  <td style=\"\n                    width:4px;\n                    background:linear-gradient(180deg,#1a73e8,#0d47a1);\n                    border-radius:4px;\n                  \"></td>\n                  <td style=\"padding-left:14px;\">\n                    <p style=\"\n                      margin:0 0 3px;\n                      font-size:15px;\n                      font-weight:700;\n                      color:#1a1a1a;\n                    \">${sender.name}</p>\n                    <p style=\"\n                      margin:0 0 3px;\n                      font-size:13px;\n                      color:#1a73e8;\n                      font-weight:600;\n                    \">${sender.company}</p>\n                    <p style=\"\n                      margin:0 0 2px;\n                      font-size:13px;\n                      color:#777;\n                    \">📞 ${sender.phone}</p>\n                    <p style=\"\n                      margin:0;\n                      font-size:13px;\n                      color:#777;\n                    \">📍 ${sender.address}</p>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <!-- FOOTER -->\n          <tr>\n            <td style=\"\n              background:#f8f9fa;\n              padding:14px 36px;\n              border-top:1px solid #eee;\n              text-align:center;\n            \">\n              <p style=\"\n                margin:0;\n                font-size:11px;\n                color:#bbb;\n                line-height:1.6;\n              \">\n                This email was sent by Your Company Automation System.\n                Reply with Unsubscribe to opt out.\n              </p>\n            </td>\n          </tr>\n\n          <!-- BOTTOM BAR -->\n          <tr>\n            <td style=\"\n              background:linear-gradient(90deg,#1a73e8,#0d47a1);\n              height:4px;\n            \"></td>\n          </tr>\n\n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n`.trim();\n\n// ============================================\n// STEP 7: RETURN FINAL OUTPUT\n// ============================================\n\nreturn [{\n  json: {\n    ...leadData,\n    followup_subject : parsed.subject,\n    followup_body    : htmlEmail,\n    followup_plain   : plainEmail,\n    greeting         : parsed.greeting,\n    opening_line     : parsed.opening_line,\n    pain_point       : parsed.pain_point,\n    value_prop       : parsed.value_proposition,\n    cta              : parsed.call_to_action,\n    regards          : regards,\n    generated_at     : new Date().toISOString()\n  }\n}];"
+      },
+      "id": "bbe6a925-c7e3-4bc9-94cc-3080eddcaacf",
+      "name": "Parse Follow-up Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1776,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['E-mail'] }}",
+        "subject": "={{ $json.followup_subject }}",
+        "message": "={{ $json.followup_body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "edd08a7c-1ea7-4373-8159-3fd332b708a4",
+      "name": "Send Follow-up Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1552,
+        544
+      ],
+      "webhookId": "45c3f096-0075-423e-a59e-e0573e370099",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D95JhkKejtMqu0rL",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zcu-3_I_PDgwjmAv-OEoKM2l-FGizrJ-U1IMIs6Lp-I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "E-mail": "={{ $('Parse Follow-up Content').item.json['E-mail'] }}",
+            "First_Name": "={{ $('Parse Follow-up Content').item.json.First_Name }}",
+            "Last_Name": "={{ $('Parse Follow-up Content').item.json.Last_Name }}",
+            "Company": "={{ $('Parse Follow-up Content').item.json.Company }}",
+            "Job_Title": "={{ $('Parse Follow-up Content').item.json.Job_Title }}",
+            "Industry": "={{ $('Parse Follow-up Content').item.json.Industry }}",
+            "Status": "Follow Up Sent",
+            "Email_Sent_Date": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [
+            "E-mail"
+          ],
+          "schema": [
+            {
+              "id": "First_Name",
+              "displayName": "First_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Name",
+              "displayName": "Last_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "E-mail",
+              "displayName": "E-mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job_Title",
+              "displayName": "Job_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email_Sent_Date",
+              "displayName": "Email_Sent_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thread_ID",
+              "displayName": "Thread_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply_Date",
+              "displayName": "Reply_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Followup_Date",
+              "displayName": "Followup_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e25c8aac-8d7e-427c-88fd-68d68959e45e",
+      "name": "Update Lead - Follow-up Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -1328,
+        544
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c41e8dc8-06e3-423d-9867-8b98eac07d0b",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2304,
+        1168
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "text": "=:rotating_light: *Cold Email Automation Error*\n\n*Workflow:* {{ $json.workflow.name }}\n*Failed Node:* {{ $json.execution.error.node.name }}\n*Error Message:* {{ $json.execution.error.message }}\n*Time:* {{ new Date().toLocaleString() }}\n\n<{{ $json.execution.url }}|View Execution Details>",
+        "otherOptions": {}
+      },
+      "id": "909694c8-18d4-4cb3-a903-ca30ade13c5e",
+      "name": "Slack Error Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -2112,
+        1120
+      ],
+      "webhookId": "3c45e5f8-6439-4d45-a56e-14d108f49d32",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "DR8S4brArLOtXGTw",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2624,
+        96
+      ],
+      "id": "eeb56301-28d1-440e-a78d-80c467da65a1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1712,
+        272
+      ],
+      "id": "6ce0a022-52b7-44c7-bb31-9ddde30e7469",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "J8zCphYzxllzomFl",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PARSE & FORMAT EMAIL - CODE NODE\n// Sender: Your Name | Your Company\n// ============================================\n\nconst response = $input.first().json;\nconst content  = response.choices[0].message.content.trim();\nconst leadData = $('Is Status Pending?').first().json;\n\n// ============================================\n// PARSE JSON FROM AI OUTPUT\n// ============================================\n\nlet parsed;\ntry {\n  parsed = JSON.parse(content);\n} catch(e) {\n  parsed = {\n    subject          : 'Quick question for ' + leadData.First_Name,\n    greeting         : 'Hi ' + leadData.First_Name + ',',\n    opening_line     : '',\n    pain_point       : '',\n    value_proposition: content,\n    call_to_action   : '',\n    regards          : 'Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City'\n  };\n}\n\n// ============================================\n// HARDCODED SENDER (ALWAYS FIXED)\n// ============================================\n\nconst regards = `Warm regards,\n\nYour Name\nYour Company\nPhone: 000-000-0000\nAddress: Your City`;\n\n// ============================================\n// BUILD PLAIN TEXT EMAIL\n// ============================================\n\nconst plainEmail = `\nSubject: ${parsed.subject}\n\n${parsed.greeting}\n\n${parsed.opening_line}\n\n${parsed.pain_point}\n\n${parsed.value_proposition}\n\n${parsed.call_to_action}\n\n${regards}\n`.trim();\n\n// ============================================\n// BUILD HTML EMAIL\n// ============================================\n\nconst htmlEmail = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"\n  margin:0;\n  padding:0;\n  background:#f0f2f5;\n  font-family:Arial,sans-serif;\n\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"\n    style=\"background:#f0f2f5;padding:30px 15px;\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"580\" cellpadding=\"0\" cellspacing=\"0\"\n          style=\"\n            background:#ffffff;\n            border-radius:12px;\n            overflow:hidden;\n            box-shadow:0 4px 20px rgba(0,0,0,0.08);\n          \">\n\n          <!-- TOP BAR -->\n          <tr>\n            <td style=\"\n              background:linear-gradient(90deg,#1a73e8,#0d47a1);\n              height:5px;\n            \"></td>\n          </tr>\n\n          <!-- BRAND HEADER -->\n          <tr>\n            <td style=\"\n              padding:24px 36px 16px;\n              border-bottom:1px solid #f0f0f0;\n            \">\n              <p style=\"\n                margin:0;\n                font-size:20px;\n                font-weight:700;\n                color:#1a73e8;\n              \">Your Company</p>\n              <p style=\"\n                margin:4px 0 0;\n                font-size:12px;\n                color:#aaa;\n              \">AI Automation for Modern Businesses</p>\n            </td>\n          </tr>\n\n          <!-- SUBJECT LINE BOX -->\n          <tr>\n            <td style=\"padding:20px 36px 0;\">\n              <div style=\"\n                background:#e8f0fe;\n                border-left:4px solid #1a73e8;\n                padding:12px 16px;\n                border-radius:0 8px 8px 0;\n              \">\n                <p style=\"\n                  margin:0;\n                  font-size:11px;\n                  color:#888;\n                  text-transform:uppercase;\n                  letter-spacing:1px;\n                  margin-bottom:4px;\n                \">Subject</p>\n                <p style=\"\n                  margin:0;\n                  font-size:15px;\n                  font-weight:700;\n                  color:#1a1a1a;\n                \">${parsed.subject}</p>\n              </div>\n            </td>\n          </tr>\n\n          <!-- EMAIL BODY -->\n          <tr>\n            <td style=\"padding:24px 36px 10px;\">\n\n              <!-- GREETING -->\n              <p style=\"\n                margin:0 0 16px 0;\n                font-size:15px;\n                font-weight:600;\n                color:#1a1a1a;\n              \">${parsed.greeting}</p>\n\n              <!-- OPENING LINE -->\n              <p style=\"\n                margin:0 0 14px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.opening_line}</p>\n\n              <!-- PAIN POINT -->\n              <p style=\"\n                margin:0 0 14px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.pain_point}</p>\n\n              <!-- VALUE PROPOSITION -->\n              <div style=\"\n                border-left:4px solid #1a73e8;\n                background:#f0f7ff;\n                padding:14px 18px;\n                border-radius:0 8px 8px 0;\n                margin:18px 0;\n              \">\n                <p style=\"\n                  margin:0;\n                  font-size:15px;\n                  color:#1a1a1a;\n                  line-height:1.8;\n                \">${parsed.value_proposition}</p>\n              </div>\n\n              <!-- CALL TO ACTION -->\n              <p style=\"\n                margin:0 0 20px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.call_to_action}</p>\n\n            </td>\n          </tr>\n\n          <!-- REGARDS SECTION -->\n          <tr>\n            <td style=\"\n              padding:0 36px 28px;\n              border-top:1px solid #f0f0f0;\n              margin-top:10px;\n            \">\n              <p style=\"\n                margin:16px 0 14px;\n                font-size:15px;\n                color:#333;\n              \">Warm regards,</p>\n\n              <table cellpadding=\"0\" cellspacing=\"0\">\n                <tr>\n                  <!-- LEFT COLOR BAR -->\n                  <td style=\"\n                    width:4px;\n                    background:linear-gradient(180deg,#1a73e8,#0d47a1);\n                    border-radius:4px;\n                  \"></td>\n\n                  <!-- SENDER DETAILS -->\n                  <td style=\"padding-left:14px;\">\n                    <p style=\"\n                      margin:0 0 3px;\n                      font-size:15px;\n                      font-weight:700;\n                      color:#1a1a1a;\n                    \">Your Name</p>\n                    <p style=\"\n                      margin:0 0 3px;\n                      font-size:13px;\n                      color:#1a73e8;\n                      font-weight:600;\n                    \">Your Company</p>\n                    <p style=\"\n                      margin:0 0 2px;\n                      font-size:13px;\n                      color:#777;\n                    \">📞 000-000-0000</p>\n                    <p style=\"\n                      margin:0;\n                      font-size:13px;\n                      color:#777;\n                    \">📍 Your City</p>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <!-- FOOTER -->\n          <tr>\n            <td style=\"\n              background:#f8f9fa;\n              padding:14px 36px;\n              border-top:1px solid #eee;\n              text-align:center;\n            \">\n              <p style=\"\n                margin:0;\n                font-size:11px;\n                color:#bbb;\n                line-height:1.6;\n              \">\n                This email was sent by Your Company Automation System.\n                Reply with Unsubscribe to opt out.\n              </p>\n            </td>\n          </tr>\n\n          <!-- BOTTOM BAR -->\n          <tr>\n            <td style=\"\n              background:linear-gradient(90deg,#1a73e8,#0d47a1);\n              height:4px;\n            \"></td>\n          </tr>\n\n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n`.trim();\n\n// ============================================\n// RETURN FINAL OUTPUT\n// ============================================\n\nreturn [{\n  json: {\n    ...leadData,\n    email_subject : parsed.subject,\n    email_plain   : plainEmail,\n    email_html    : htmlEmail,\n    greeting      : parsed.greeting,\n    opening_line  : parsed.opening_line,\n    pain_point    : parsed.pain_point,\n    value_prop    : parsed.value_proposition,\n    cta           : parsed.call_to_action,\n    regards       : regards,\n    generated_at  : new Date().toISOString()\n  }\n}];"
+      },
+      "id": "2319b0bf-859e-4a94-b4ec-05041103a55a",
+      "name": "Parse Email Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        1136
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a cold email for:\nName: {{ $json.First_Name }} {{ $json.Last_Name }}\nCompany: {{ $json.Company }}\nRole: {{ $json.Job_Title }}\nIndustry: {{ $json.Industry }}\nOur offer: AI-powered business process automation using n8n that reduces manual work by up to 87%.\nTone: Professional but conversational.\nFocus on their specific pain point based on their role and industry.\nEnd with a single low-friction CTA like asking for a 15-minute call.\n\nReturn a JSON object with these exact keys:\nsubject, greeting, opening_line, pain_point, value_proposition, call_to_action, regards\n\nThe regards must always be:\n\"Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City\"",
+        "options": {
+          "systemMessage": "You are an expert cold email copywriter. Write short, personalized, conversational cold emails that feel human. No fluff, no generic pitches.\n\nAlways return a valid JSON object with exactly these keys:\n\n{\n  \"subject\": \"compelling subject line here\",\n  \"greeting\": \"Hi [First Name],\",\n  \"opening_line\": \"personalized opening sentence here\",\n  \"pain_point\": \"their specific pain point based on role and industry\",\n  \"value_proposition\": \"what we offer and the result it delivers\",\n  \"call_to_action\": \"single low-friction CTA here\",\n  \"regards\": \"Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City\"\n}\n\nRules:\n- Max 120 words for the email body combined\n- Do NOT include markdown, backticks, or any text outside the JSON\n- Do NOT merge all content into one block\n- Each section must be its own key\n- The regards section must always stay exactly as defined above\n- subject must be compelling and personalized to their company or role\n- Do not start opening_line with I or We\n- Keep the tone professional but conversational and human"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1728,
+        80
+      ],
+      "id": "2321ec69-bd1d-4263-8806-ff36e985469d",
+      "name": "Personalize   E-mail"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PARSE & FORMAT EMAIL - CODE NODE\n// Fixed: Handles raw string output from AI Agent\n// ============================================\n\n// ============================================\n// STEP 1: GET RAW OUTPUT STRING\n// ============================================\n\nconst rawOutput = items[0].json.output || \"\";\n\n// ============================================\n// STEP 2: CLEAN THE RAW STRING\n// ============================================\n\nconst cleaned = rawOutput\n  .replace(/\\\\n/g, ' ')        // Remove \\n escape\n  .replace(/\\n/g, ' ')         // Remove actual newlines\n  .replace(/\\\\\"/g, '\"')        // Fix escaped quotes\n  .trim();\n\n// ============================================\n// STEP 3: PARSE JSON FROM CLEANED STRING\n// ============================================\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch(e) {\n  // If JSON parse fails try to extract manually\n  parsed = {\n    subject          : cleaned.match(/\"subject\"\\s*:\\s*\"([^\"]+)\"/)?.[1]           || '',\n    greeting         : cleaned.match(/\"greeting\"\\s*:\\s*\"([^\"]+)\"/)?.[1]          || '',\n    opening_line     : cleaned.match(/\"opening_line\"\\s*:\\s*\"([^\"]+)\"/)?.[1]      || '',\n    pain_point       : cleaned.match(/\"pain_point\"\\s*:\\s*\"([^\"]+)\"/)?.[1]        || '',\n    value_proposition: cleaned.match(/\"value_proposition\"\\s*:\\s*\"([^\"]+)\"/)?.[1] || '',\n    call_to_action   : cleaned.match(/\"call_to_action\"\\s*:\\s*\"([^\"]+)\"/)?.[1]    || '',\n    regards          : cleaned.match(/\"regards\"\\s*:\\s*\"([^\"]+)\"/)?.[1]           || ''\n  };\n}\n\n// ============================================\n// STEP 4: HARDCODED SENDER DETAILS\n// ============================================\n\nconst sender = {\n  name   : \"Your Name\",\n  company: \"Your Company\",\n  phone  : \"000-000-0000\",\n  address: \"Your City\"\n};\n\n// ============================================\n// STEP 5: BUILD PLAIN TEXT EMAIL\n// ============================================\n\nconst plainEmail = `\nSubject: ${parsed.subject}\n\n${parsed.greeting}\n\n${parsed.opening_line}\n\n${parsed.pain_point}\n\n${parsed.value_proposition}\n\n${parsed.call_to_action}\n\nWarm regards,\n\n${sender.name}\n${sender.company}\nPhone: ${sender.phone}\nAddress: ${sender.address}\n`.trim();\n\n// ============================================\n// STEP 6: BUILD HTML EMAIL\n// ============================================\n\nconst htmlEmail = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"\n  margin:0;\n  padding:0;\n  background:#f0f2f5;\n  font-family:Arial,sans-serif;\n\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"\n    style=\"background:#f0f2f5;padding:30px 15px;\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"580\" cellpadding=\"0\" cellspacing=\"0\"\n          style=\"\n            background:#ffffff;\n            border-radius:12px;\n            overflow:hidden;\n            box-shadow:0 4px 20px rgba(0,0,0,0.08);\n          \">\n\n          <!-- TOP BAR -->\n          <tr>\n            <td style=\"\n              background:linear-gradient(90deg,#1a73e8,#0d47a1);\n              height:5px;\n            \"></td>\n          </tr>\n\n          <!-- BRAND HEADER -->\n          <tr>\n            <td style=\"\n              padding:24px 36px 16px;\n              border-bottom:1px solid #f0f0f0;\n            \">\n              <p style=\"\n                margin:0;\n                font-size:20px;\n                font-weight:700;\n                color:#1a73e8;\n              \">Your Company</p>\n              <p style=\"\n                margin:4px 0 0;\n                font-size:12px;\n                color:#aaa;\n              \">AI Automation for Modern Businesses</p>\n            </td>\n          </tr>\n\n          <!-- SUBJECT LINE BOX -->\n          <tr>\n            <td style=\"padding:20px 36px 0;\">\n              <div style=\"\n                background:#e8f0fe;\n                border-left:4px solid #1a73e8;\n                padding:12px 16px;\n                border-radius:0 8px 8px 0;\n              \">\n                <p style=\"\n                  margin:0 0 4px;\n                  font-size:11px;\n                  color:#888;\n                  text-transform:uppercase;\n                  letter-spacing:1px;\n                \">Subject</p>\n                <p style=\"\n                  margin:0;\n                  font-size:15px;\n                  font-weight:700;\n                  color:#1a1a1a;\n                \">${parsed.subject}</p>\n              </div>\n            </td>\n          </tr>\n\n          <!-- EMAIL BODY -->\n          <tr>\n            <td style=\"padding:24px 36px 10px;\">\n\n              <!-- GREETING -->\n              <p style=\"\n                margin:0 0 16px 0;\n                font-size:15px;\n                font-weight:600;\n                color:#1a1a1a;\n              \">${parsed.greeting}</p>\n\n              <!-- OPENING LINE -->\n              <p style=\"\n                margin:0 0 14px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.opening_line}</p>\n\n              <!-- PAIN POINT -->\n              <p style=\"\n                margin:0 0 14px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.pain_point}</p>\n\n              <!-- VALUE PROPOSITION -->\n              <div style=\"\n                border-left:4px solid #1a73e8;\n                background:#f0f7ff;\n                padding:14px 18px;\n                border-radius:0 8px 8px 0;\n                margin:18px 0;\n              \">\n                <p style=\"\n                  margin:0;\n                  font-size:15px;\n                  color:#1a1a1a;\n                  line-height:1.8;\n                \">${parsed.value_proposition}</p>\n              </div>\n\n              <!-- CALL TO ACTION -->\n              <p style=\"\n                margin:0 0 20px 0;\n                font-size:15px;\n                color:#333;\n                line-height:1.8;\n              \">${parsed.call_to_action}</p>\n\n            </td>\n          </tr>\n\n          <!-- REGARDS SECTION -->\n          <tr>\n            <td style=\"\n              padding:0 36px 28px;\n              border-top:1px solid #f0f0f0;\n            \">\n              <p style=\"\n                margin:16px 0 14px;\n                font-size:15px;\n                color:#333;\n              \">Warm regards,</p>\n\n              <table cellpadding=\"0\" cellspacing=\"0\">\n                <tr>\n                  <!-- LEFT COLOR BAR -->\n                  <td style=\"\n                    width:4px;\n                    background:linear-gradient(180deg,#1a73e8,#0d47a1);\n                    border-radius:4px;\n                  \"></td>\n\n                  <!-- SENDER DETAILS -->\n                  <td style=\"padding-left:14px;\">\n                    <p style=\"\n                      margin:0 0 3px;\n                      font-size:15px;\n                      font-weight:700;\n                      color:#1a1a1a;\n                    \">${sender.name}</p>\n                    <p style=\"\n                      margin:0 0 3px;\n                      font-size:13px;\n                      color:#1a73e8;\n                      font-weight:600;\n                    \">${sender.company}</p>\n                    <p style=\"\n                      margin:0 0 2px;\n                      font-size:13px;\n                      color:#777;\n                    \">📞 ${sender.phone}</p>\n                    <p style=\"\n                      margin:0;\n                      font-size:13px;\n                      color:#777;\n                    \">📍 ${sender.address}</p>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <!-- FOOTER -->\n          <tr>\n            <td style=\"\n              background:#f8f9fa;\n              padding:14px 36px;\n              border-top:1px solid #eee;\n              text-align:center;\n            \">\n              <p style=\"\n                margin:0;\n                font-size:11px;\n                color:#bbb;\n                line-height:1.6;\n              \">\n                This email was sent by Your Company Automation System.\n                Reply with Unsubscribe to opt out.\n              </p>\n            </td>\n          </tr>\n\n          <!-- BOTTOM BAR -->\n          <tr>\n            <td style=\"\n              background:linear-gradient(90deg,#1a73e8,#0d47a1);\n              height:4px;\n            \"></td>\n          </tr>\n\n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n`.trim();\n\n// ============================================\n// STEP 7: RETURN FINAL OUTPUT\n// ============================================\n\nreturn [{\n  json: {\n    email_subject : parsed.subject,\n    email_plain   : plainEmail,\n    email_html    : htmlEmail,\n    greeting      : parsed.greeting,\n    opening_line  : parsed.opening_line,\n    pain_point    : parsed.pain_point,\n    value_prop    : parsed.value_proposition,\n    cta           : parsed.call_to_action,\n    generated_at  : new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        80
+      ],
+      "id": "da2de033-bfe1-47c5-9e04-37829eea6e9f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "06b9fde7-eca3-47f2-9543-5dc626935ad6",
+      "name": "Wait 2Mins",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2640,
+        432
+      ],
+      "webhookId": "wait-followup-check-001"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a follow-up email for a prospect who did not reply to our first outreach.\n\nProspect Details:\nName: {{ $('Is Status Pending?').item.json.First_Name }} {{ $('Is Status Pending?').item.json.Last_Name }}\nCompany: {{ $('Is Status Pending?').item.json.Company }}\nRole: {{ $('Is Status Pending?').item.json.Job_Title }}\nIndustry: {{ $('Is Status Pending?').item.json.Industry }}\n\nOur offer: AI-powered business process automation using n8n that reduces manual work by up to 87% and scales operations without adding headcount.\n\nThis is Follow-up Email #1. Approach from a fresh angle — do not reference the previous email directly. Add a new insight, a relevant business problem, or a short result from a similar client in their industry.\n\nReturn a JSON object with these exact keys:\nsubject, greeting, opening_line, pain_point, value_proposition, call_to_action, regards\n\nThe regards must always be:\n\"Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City\"",
+        "options": {
+          "systemMessage": "You are an expert cold email copywriter specializing in follow-up sequences. Write short, personalized, human follow-up emails for prospects who did not reply to the first outreach.\n\nAlways return a valid JSON object with exactly these keys:\n\n{\n  \"subject\": \"Re: [original subject line]\",\n  \"greeting\": \"Hi [First Name],\",\n  \"opening_line\": \"fresh angle or new insight — do NOT say 'just following up'\",\n  \"pain_point\": \"re-surface their specific pain point from a different angle\",\n  \"value_proposition\": \"one concrete result or case study that proves our value\",\n  \"call_to_action\": \"single soft CTA — ask for 15 minutes, not a sale\",\n  \"regards\": \"Warm regards,\\n\\nYour Name\\nYour Company\\nPhone: 000-000-0000\\nAddress: Your City\"\n}\n\nRules:\n- Max 100 words for the email body combined\n- Subject must always start with \"Re: \" to thread with the original email\n- Do NOT say: \"just following up\", \"I wanted to circle back\", \"touching base\"\n- Do NOT include markdown, backticks, or any text outside the JSON\n- Each section must be its own key — do not merge into one block\n- opening_line must introduce a fresh angle, new insight, or relevant observation\n- Tone must be confident, professional, and human — never desperate or needy\n- The regards section must always stay exactly as defined above\n- Do not start opening_line with \"I\" or \"We\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2064,
+        544
+      ],
+      "id": "c3f08870-0881-4da3-ba6b-4d28eeb5fd3c",
+      "name": "Generate Followup G-mail"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2160,
+        752
+      ],
+      "id": "76bdbb2e-fb51-4e76-ab89-c9f84c3a5a2f",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "J8zCphYzxllzomFl",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "96ea86f8-31a0-4097-9086-754c462e7fad",
+              "leftValue": "={{ $input.all().length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2240,
+        432
+      ],
+      "id": "7829a60b-339f-4d54-96be-65e17b96d7f3",
+      "name": "replied or not replied"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get All Leads": {
+      "main": [
+        [
+          {
+            "node": "Process One Lead at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process One Lead at a Time": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Is Status Pending?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Status Pending?": {
+      "main": [
+        [
+          {
+            "node": "Personalize   E-mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send Cold Email": {
+      "main": [
+        [
+          {
+            "node": "Update Lead - Email 1 Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead - Email 1 Sent": {
+      "main": [
+        [
+          {
+            "node": "Process One Lead at a Time",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait 2Mins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Reply": {
+      "main": [
+        [
+          {
+            "node": "replied or not replied",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Follow-up Content": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-up Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Follow-up Email": {
+      "main": [
+        [
+          {
+            "node": "Update Lead - Follow-up Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Slack Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get All Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Personalize   E-mail",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Email Content": {
+      "main": [
+        []
+      ]
+    },
+    "Personalize   E-mail": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send Cold Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2Mins": {
+      "main": [
+        [
+          {
+            "node": "Check for Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Followup G-mail": {
+      "main": [
+        [
+          {
+            "node": "Parse Follow-up Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Followup G-mail",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead - Replied": {
+      "main": [
+        []
+      ]
+    },
+    "replied or not replied": {
+      "main": [
+        [
+          {
+            "node": "Update Lead - Replied",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Followup G-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fbd6e28d-a0ec-4ed0-8171-55022dcfb259",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e24331cd0d0530356aea48f2432fed4381927486eff7990020aef57157ae0627"
+  },
+  "id": "1WFHOEck4r7Rlfg1",
+  "tags": []
+}

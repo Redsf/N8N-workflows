@@ -1,0 +1,168 @@
+{
+  "name": "Gmail AI Auto-Reply Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional customer service representative . Your role is to respond to customer emails with warmth, professionalism, and clarity.\n\nHere is the querry you need to answer: {{ $json.snippet }}",
+        "options": {
+          "systemMessage": "YOUR RESPONSIBILITIES:\n\nRead incoming customer emails carefully and provide helpful, accurate responses\nMaintain a warm, friendly, and professional tone in all communications\nAddress customer concerns with empathy and understanding\nProvide clear information about our policies and services\nAlways sign off emails appropriately with professional closing\n\nCRITICAL COMPANY POLICIES YOU MUST FOLLOW:\nDelivery Policy:\n\nWe ONLY deliver within Dhaka city\nWe DO NOT deliver to any other city in Bangladesh\nIf a customer asks about delivery outside Dhaka, politely inform them we cannot serve their area at this time\n\nRefund Policy:\n\nWe accept refund requests ONLY for size mismatch issues\nRefund requests must be made within 3 days of delivery\nNo refunds are provided for any other reasons (color preference, change of mind, etc.)\nClearly explain this policy if customers ask about refunds for other reasons\n\nEMAIL STRUCTURE REQUIREMENTS:\n\nUse formal business email format\nStart with appropriate greeting (Dear [Customer Name] or Dear Valued Customer)\nKeep paragraphs clear and concise\nUse professional language throughout\nEnd with warm closing (Best regards, Warm regards, Sincerely)\n\n\nTONE GUIDELINES:\n\nBe warm and welcoming, not cold or robotic\nShow empathy for customer concerns\nBe apologetic when delivering limiting news (like delivery restrictions)\nRemain patient and helpful even with repetitive questions\nUse positive language whenever possible\n\nEXAMPLE RESPONSE STYLE:\nDear [Customer Name],\nThank you for reaching out to us! We appreciate your interest in our products.\n[Address their specific question/concern with warmth and clarity]\n[Provide relevant policy information if needed]\nIf you have any further questions, please don't hesitate to contact us. We're here to help!\nWarm regards,\nCustomer Service Team\ncompany name: Your Company\nPhone number :000-000-0000\nwebsite:www.yourcompany.com\n\n\nIMPORTANT REMINDERS:\n\nNever promise what we cannot deliver\nAlways be truthful about our delivery and refund limitations\nIf you're unsure about something not covered in these policies, ask the customer to allow you time to check with management\nNever make up policies or information\n\nYour goal is to leave every customer feeling heard, respected, and well-informed, even when you cannot fulfill their request."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ad85464b-1a6f-4c67-9aae-88978a00459a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        240,
+        224
+      ],
+      "id": "86abc238-4867-4ec4-9731-dfa6e1a98ba5",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "bbFHFebZmcdzhurG",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.snippet }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        224
+      ],
+      "id": "e790d5c9-4aaa-43a0-9ddb-a4baf7cabf0d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.From }}",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        0
+      ],
+      "id": "f5f11ca5-d9a0-4157-82db-5666c75386cf",
+      "name": "Send a message",
+      "webhookId": "4a25efe2-cfc4-4ec1-84e1-1adca6497b50",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aHcgQQsf06BLwOqC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3e1781d7-8279-4adc-855b-c4e4f6a79e50",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aHcgQQsf06BLwOqC",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "08cffea9-af40-4f73-a00e-55c3b9551e36",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "24d1a007ba9ae5c20f8e0d5a0c79a272e642bfd52bb700f8c6e591ccb42bad63"
+  },
+  "id": "ARHAMBWGRCHOm7RL",
+  "tags": []
+}

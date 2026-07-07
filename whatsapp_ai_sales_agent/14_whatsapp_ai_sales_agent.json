@@ -1,0 +1,551 @@
+{
+  "id": "whatsappAgent06",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "WhatsApp AI Sales Agent",
+  "tags": [
+    "client-project",
+    "ai-automation"
+  ],
+  "nodes": [
+    {
+      "id": "w0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        -420
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 720,
+        "height": 640,
+        "content": "## 💬 WhatsApp AI Sales Agent\n\nEvery inbound WhatsApp message feeds into an AI agent that runs RAG lookups against the product catalog in Pinecone, answers questions, checks calendar availability, and books appointments directly. Low-confidence replies route to a human via Slack instead of guessing.\n\n## Setup (about 25 minutes)\n1. Connect WhatsApp Business Cloud, OpenAI, Pinecone and Google Calendar credentials.\n2. Set your Pinecone index name in *Product Catalog (RAG Tool)*.\n3. Set the target calendar in *Book Appointment (Tool)*.\n4. Point *Route to Human* at your sales team's Slack channel.\n\nThe agent's system message instructs it to end replies with `HANDOFF:true` when it isn't confident — the Code node after it parses that flag to decide whether a human should take over."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000002",
+      "name": "Incoming WhatsApp Message",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "position": [
+        -160,
+        0
+      ],
+      "parameters": {},
+      "credentials": {
+        "whatsAppApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WhatsApp Business Cloud account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000003",
+      "name": "Is Text Message?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        80,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-is-text",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              },
+              "leftValue": "={{ $json.messages?.[0]?.text?.body }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000004",
+      "name": "Ignore Non-Text",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        320,
+        120
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000005",
+      "name": "Sales Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        320,
+        -80
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a friendly WhatsApp sales assistant. Use the Product Catalog tool to answer product questions accurately, use the Calendar tools to check availability and book appointments when the customer wants one. Keep replies under 60 words. If you are not confident in your answer or the request is out of scope (refunds, complaints, complex negotiation), end your reply with the exact tag HANDOFF:true on its own line; otherwise end with HANDOFF:false."
+        }
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000006",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        280,
+        120
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000007",
+      "name": "Session Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        440,
+        120
+      ],
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Incoming WhatsApp Message').item.json.messages[0].from }}",
+        "contextWindowLength": 8
+      },
+      "typeVersion": 1.4
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000008",
+      "name": "Product Catalog (RAG Tool)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        600,
+        120
+      ],
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the product catalog for pricing, availability, specs and descriptions to answer customer product questions.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_PINECONE_INDEX"
+        },
+        "topK": 4,
+        "includeDocumentMetadata": true
+      },
+      "credentials": {
+        "pineconeApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Pinecone account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000009",
+      "name": "Catalog Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        600,
+        260
+      ],
+      "parameters": {
+        "model": "text-embedding-3-small"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "w0000000-0000-0000-0000-00000000000a",
+      "name": "Check Availability (Tool)",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [
+        760,
+        120
+      ],
+      "parameters": {
+        "resource": "calendar",
+        "operation": "availability",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CALENDAR_ID"
+        },
+        "timeMin": "={{ $fromAI(\"timeMin\", \"ISO start of the interval to check\") }}",
+        "timeMax": "={{ $fromAI(\"timeMax\", \"ISO end of the interval to check\") }}",
+        "options": {
+          "outputFormat": "availability"
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Calendar account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "w0000000-0000-0000-0000-00000000000b",
+      "name": "Book Appointment (Tool)",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [
+        920,
+        120
+      ],
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CALENDAR_ID"
+        },
+        "start": "={{ $fromAI(\"start\", \"ISO start datetime of the appointment\") }}",
+        "end": "={{ $fromAI(\"end\", \"ISO end datetime of the appointment\") }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI(\"summary\", \"Short appointment title including customer name\") }}"
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Calendar account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "w0000000-0000-0000-0000-00000000000c",
+      "name": "Parse Handoff Flag",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        580,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const raw = $json.output || '';\nconst needsHuman = /HANDOFF:\\s*true/i.test(raw);\nconst reply = raw.replace(/HANDOFF:\\s*(true|false)/i, '').trim();\nreturn [{ json: { reply, needsHuman } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "w0000000-0000-0000-0000-00000000000d",
+      "name": "Needs Human?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        820,
+        -80
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-handoff",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "leftValue": "={{ $json.needsHuman }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "w0000000-0000-0000-0000-00000000000e",
+      "name": "Route to Human",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1060,
+        -160
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "whatsapp-handoffs"
+        },
+        "text": "=🙋 Handoff needed from {{ $('Incoming WhatsApp Message').item.json.messages[0].from }}: \"{{ $('Incoming WhatsApp Message').item.json.messages[0].text.body }}\"\\nDraft reply: {{ $json.reply }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "w0000000-0000-0000-0000-00000000000f",
+      "name": "Reply on WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1060,
+        20
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "REPLACE_WITH_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $('Incoming WhatsApp Message').item.json.messages[0].from }}",
+        "messageType": "text",
+        "textBody": "={{ $json.reply }}"
+      },
+      "credentials": {
+        "whatsAppApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WhatsApp Business Cloud account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 1.1
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000010",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        380
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "w0000000-0000-0000-0000-000000000011",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        380
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=🚨 WhatsApp AI Sales Agent failed: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "whatsapp-agent-v1",
+  "connections": {
+    "Incoming WhatsApp Message": {
+      "main": [
+        [
+          {
+            "node": "Is Text Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Text Message?": {
+      "main": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ignore Non-Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Session Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product Catalog (RAG Tool)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catalog Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Product Catalog (RAG Tool)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Availability (Tool)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Appointment (Tool)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Handoff Flag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Handoff Flag": {
+      "main": [
+        [
+          {
+            "node": "Needs Human?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Human?": {
+      "main": [
+        [
+          {
+            "node": "Route to Human",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply on WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

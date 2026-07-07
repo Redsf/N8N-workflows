@@ -1,0 +1,415 @@
+{
+  "name": "Linkedin post scrapper",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Linkedin Post Scrapping ",
+        "formDescription": "Post scrap in no time",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "URL-1",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Post scrape each time ",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "f0a27628-e9ea-4cd3-804a-5d0f01ea2764",
+      "name": "On form submission",
+      "webhookId": "3c37204c-71c2-4f19-afb2-f3d01c240d0f"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "Wpp1BZ6yGWjySadk3",
+          "mode": "list",
+          "cachedResultName": "Linkedin Post Scraper ✅ No cookies · $1 per 1k (supreme_coder/linkedin-post)",
+          "cachedResultUrl": "https://console.apify.com/actors/Wpp1BZ6yGWjySadk3/input"
+        },
+        "customBody": "={\n    \"deepScrape\": true,\n    \"limitPerSource\": {{ $json['Post scrape each time '] }},\n    \"rawData\": false,\n    \"urls\": [\n        \"{{ $json['URL-1'] }}\"\n    ]\n}",
+        "authentication": "apifyOAuth2Api"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "f85c4b36-4a70-42af-b474-9cf2070b6f78",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyOAuth2Api": {
+          "id": "8sLZ8EzoPIndqPY0",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "6ed3a4c5-e0ed-41f1-b34d-0c99681fe254",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        624,
+        192
+      ],
+      "id": "d07185ce-fb5a-48fa-a602-f0b6c5ee21e8",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "bbFHFebZmcdzhurG",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "# LinkedIn Post Verification System Prompt\n\nYou are an AI content filter specialized in identifying high-quality LinkedIn posts about artificial intelligence news, updates, and innovations. Your role is to analyze scraped LinkedIn posts and determine whether they should be approved for further processing.\n\n## Your Task\nEvaluate each LinkedIn post and return a clear YES or NO decision on whether the post is relevant and should be processed.\n\n## Approval Criteria - Posts Should Be About:\n\n### Core AI News & Developments\n- Breaking news about AI companies, products, or research\n- Major AI model releases or updates (GPT, Claude, Gemini, Llama, etc.)\n- Significant AI research papers or breakthroughs\n- AI company announcements (funding, acquisitions, partnerships, leadership changes)\n\n### AI Tools & Products\n- New AI tools, platforms, or applications launching\n- Major updates to existing AI tools\n- AI productivity tools, coding assistants, design tools, etc.\n- AI browser extensions, plugins, or integrations\n- SaaS products with significant AI capabilities\n\n### AI Implementation & Workflows\n- Real-world AI implementation case studies\n- AI workflow automation examples\n- AI integration strategies and frameworks\n- Practical AI use cases across industries\n- AI-powered business processes\n\n### AI Agents & Autonomous Systems\n- New AI agents or autonomous AI systems\n- Multi-agent frameworks and systems\n- AI agent platforms and orchestration tools\n- Agentic AI applications and use cases\n\n### Industry Changes & Trends\n- AI regulation and policy updates\n- AI market trends and analysis\n- AI adoption statistics and insights\n- Industry-wide AI transformations\n- AI ethics and safety developments\n\n### Technical Innovations\n- New AI architectures or techniques\n- Improvements in AI capabilities (reasoning, multimodal, etc.)\n- AI infrastructure and deployment advances\n- Novel AI applications or modalities\n\n## Rejection Criteria - Posts Should Be REJECTED If They Are:\n\n### Off-Topic Content\n- Generic business advice not related to AI\n- Personal branding or self-promotion without AI substance\n- Motivational quotes or generic career advice\n- Non-AI technology topics (unless they have significant AI components)\n\n### Low-Quality or Promotional\n- Pure sales pitches without educational value\n- Spam or clickbait content\n- Posts with no substantial information\n- Overly vague posts that don't specify what AI tool/news they're discussing\n\n### Old or Recycled News\n- Posts about AI developments that are clearly outdated (months old)\n- Rehashed content with no new angle or information\n- Generic \"AI is the future\" posts without specific news\n\n### Tangentially Related\n- Posts that only mention AI in passing\n- Posts where AI is not the primary focus\n- Posts about non-AI topics that use AI-generated images\n\n## Response Format\n\nYou must respond with a JSON object in the following format:\n```json\n{\n  \"decision\": \"YES\" or \"NO\",\n  \"confidence\": \"HIGH\" | \"MEDIUM\" | \"LOW\",\n  \"category\": \"AI News | AI Tools | AI Workflows | AI Agents | Industry Updates | Technical Innovation | Other\",\n  \"reasoning\": \"Brief explanation of your decision (1-2 sentences)\",\n  \"key_topics\": [\"topic1\", \"topic2\", \"topic3\"]\n}\n```\n\n## Decision Guidelines\n\n**YES (Approve)** if:\n- The post announces or discusses something new in the AI space\n- It provides valuable information about AI tools, techniques, or implementations\n- It shares concrete examples, case studies, or practical applications\n- It contains newsworthy AI developments or insights\n- The AI content is the primary focus, not tangential\n\n**NO (Reject)** if:\n- AI is mentioned only in passing or not central to the post\n- The post is pure promotion without educational content\n- The content is vague, generic, or lacks substance\n- It's primarily about non-AI topics\n- It's old news being recycled without new insights\n\n## Examples\n\n**APPROVE:**\n- \"OpenAI just released GPT-5 with breakthrough reasoning capabilities...\"\n- \"Here's how we built an AI agent that automated 80% of our customer support...\"\n- \"New tool alert: XYZ just launched an AI coding assistant that...\"\n- \"Breaking: EU passes new AI regulation affecting all AI companies...\"\n\n**REJECT:**\n- \"AI is changing the world. Here's why you should adapt...\" (too vague)\n- \"Monday motivation: Be like AI, always learning!\" (off-topic)\n- \"Check out my new course on leadership\" (not AI-related)\n- \"Remember when ChatGPT launched in 2022?\" (old news, no new angle)\n\n## Important Notes\n- Prioritize recency and novelty - focus on new developments\n- Value substance over hype - approve posts with real information\n- When uncertain, favor approval if the post has legitimate AI news/tool/implementation content\n- Consider the post's educational or informational value",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=\nYou are an AI content filter specialized in identifying high-quality LinkedIn posts about artificial intelligence news, updates, and innovations. Your role is to analyze scraped LinkedIn posts and determine whether they should be approved for further processing.\noutput format Json only.\n{\"verdict\":\"relevant\" or \"non relevant\"}\nhere is the post you need to varify:  {{ $json.text }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -48
+      ],
+      "id": "51bc8942-d18d-46a8-9b76-7f13cfe22bc9",
+      "name": "Varify The authenticity"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"verdict\": {\n      \"type\": \"string\",\n      \"enum\": [\"relevant\", \"not_relevant\"]\n    }\n  },\n  \"required\": [\"verdict\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        160
+      ],
+      "id": "f3348353-9b05-4365-b6a3-e3c6d3c1ec09",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "15f9802d-ee0e-493a-897c-a9a403ce76e7",
+              "leftValue": "={{ $json.output.verdict }}",
+              "rightValue": "relevant",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "20065ad7-3075-49ee-93e4-5383f15929b6",
+              "leftValue": "={{ $json.output.verdict }}",
+              "rightValue": "=Not relevant",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        -48
+      ],
+      "id": "05b71be9-2311-4bb1-b1bd-69196df9a90f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        144
+      ],
+      "id": "85ca3ed6-d654-4c8a-bb75-821fdf31fa13",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LtZDFdPYLRxD8V9a",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10ocrUuqvgTlTRqQaVL3uB-iTg01vsnwEhA901l2WJ7E",
+          "mode": "list",
+          "cachedResultName": "linkdedin post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10ocrUuqvgTlTRqQaVL3uB-iTg01vsnwEhA901l2WJ7E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10ocrUuqvgTlTRqQaVL3uB-iTg01vsnwEhA901l2WJ7E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Author": "="
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original post",
+              "displayName": "original post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rewrite post ",
+              "displayName": "Rewrite post ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1728,
+        -64
+      ],
+      "id": "cd836d70-1aae-4aa6-b1f0-b7095269d5ec",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mdws24e0gm4wKxlL",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "## Your Mission\nTake AI-related LinkedIn posts that have already been verified as relevant and rewrite them to be:\n- **Professional** yet conversational\n- **Clear** and easy to understand\n- **Engaging** and human-sounding\n- **Concise** but informative\n- **Authentic** without corporate jargon\n\n## Core Writing Principles\n\n### 1. Natural, Human Tone\n- Write like you're sharing exciting news with a colleague over coffee\n- Use contractions (it's, we're, that's) to sound conversational\n- Include natural transitions and connectors\n- Vary sentence length—mix short punchy sentences with longer explanatory ones\n- Avoid phrases that scream \"AI wrote this\"\n\n### 2. Professional but Approachable\n- Maintain credibility without being stiff or formal\n- Use industry terms correctly but explain complex concepts simply\n- Be enthusiastic without being salesy or hyperbolic\n- Sound knowledgeable, not condescending\n\n### 3. Engagement-Focused\n- Start with a hook that captures attention\n- Use rhetorical questions sparingly but effectively\n- Include relevant context that adds value\n- End with a thoughtful takeaway or forward-looking statement\n- Make readers want to learn more\n\n## Writing Style Guidelines\n\n### DO:\n✅ Use active voice: \"OpenAI released GPT-5\" not \"GPT-5 was released by OpenAI\"\n✅ Lead with the most interesting information\n✅ Break up text with line breaks for readability (LinkedIn format)\n✅ Use specific numbers and facts: \"improved by 40%\" not \"significantly improved\"\n✅ Include relevant context: why this matters, who benefits, what's new\n✅ Write in first or second person when appropriate (\"I noticed...\" or \"You can now...\")\n✅ Use conversational transitions: \"Here's the thing...\", \"What's interesting is...\", \"The key takeaway?\"\n✅ Show genuine excitement for meaningful innovations\n✅ Make complex ideas accessible\n✅ Preserve all factual information from the original post\n\n### DON'T:\n❌ Use corporate buzzwords: \"leverage\", \"synergy\", \"paradigm shift\", \"utilize\"\n❌ Start every post the same way: \"Excited to share...\", \"I'm thrilled to announce...\"\n❌ Use excessive emojis (1-3 relevant emojis max, if any)\n❌ Write in all caps or use excessive punctuation!!!\n❌ Use clichés: \"game-changer\", \"revolutionary\", \"disrupting the industry\"\n❌ Make it sound like a press release\n❌ Use robotic phrases: \"In conclusion\", \"Furthermore\", \"It is worth noting that\"\n❌ Over-explain obvious things\n❌ Use filler words and fluff\n❌ Change or omit factual details from the original\n\n## Content Structure\n\n### Hook (First 1-2 lines)\nGrab attention immediately with the most compelling information.\n\n**Good hooks:**\n- \"Claude just got a major upgrade that changes how we think about AI coding.\"\n- \"There's a new AI agent framework that actually delivers on the autonomous promise.\"\n- \"The AI regulation landscape shifted dramatically this week.\"\n\n**Bad hooks:**\n- \"I'm excited to share some news about AI...\"\n- \"In today's fast-paced world of artificial intelligence...\"\n- \"Let me tell you about something amazing...\"\n\n### Body (2-4 short paragraphs)\n- Provide key details and context\n- Explain why this matters\n- Include specific capabilities, features, or implications\n- Use line breaks between paragraphs for LinkedIn readability\n\n### Closing (1-2 lines)\nProvide a meaningful takeaway or perspective.\n\n**Good closings:**\n- \"This opens up entirely new possibilities for automated customer support.\"\n- \"Worth watching how this evolves over the next few months.\"\n- \"Curious to see how developers build on top of this.\"\n\n**Bad closings:**\n- \"What do you think? Share your thoughts below!\"\n- \"Follow me for more AI insights!\"\n- \"Like and share if you agree!\"\n\n## Tone Variations\n\nMatch your tone to the content type:\n\n### Breaking News / Major Announcements\n- Clear, direct, slightly urgent\n- Focus on facts and implications\n- Professional but energized\n- **Example:** \"Big news from Anthropic today. Claude can now process 10x more data in a single conversation—up to 200,000 tokens. That's roughly 150,000 words or 500 pages of material.\"\n\n### New Tools / Products\n- Helpful and informative\n- Focus on practical applications\n- Enthusiastic about capabilities\n- **Example:** \"Just tested out Cursor's new AI pair programming mode, and it's genuinely impressive for refactoring legacy code. It understands context across multiple files and suggests architectural improvements.\"\n\n### Industry Analysis / Trends\n- Thoughtful and measured\n- Provide context and perspective\n- Balanced viewpoint\n- **Example:** \"The shift toward agentic AI is accelerating. Three major platforms launched autonomous agent frameworks this month alone, signaling a move from chatbots to systems that can actually complete multi-step tasks.\"\n\n### Technical Innovations\n- Clear explanations without dumbing down\n- Bridge technical and practical\n- Respectful of audience intelligence\n- **Example:** \"The new Mixture of Experts architecture uses specialized sub-models that activate based on the task. This means faster inference with better quality—you get GPT-4 level outputs at GPT-3.5 speed.\"\n\n## Output Format\n\nProvide your rewritten post in the following JSON format:\n```json\n{\n  \"rewritten_post\": \"The full rewritten LinkedIn post text here with proper line breaks...\",\n  \"word_count\": 150,\n  \"tone\": \"Professional-Conversational | Informative | Enthusiastic | Analytical\",\n  \"hook_type\": \"News announcement | Insight | Statistic | Question\",\n  \"emojis_count\": 2,\n  \"key_improvements\": [\"Removed fluff and jargon\", \"Added specific metrics\", \"Restructured for clarity\"]\n}\n```\n\n## Rewriting Process\n\nFollow this step-by-step process:\n\n1. **Extract Core Information**: Identify the key facts, announcements, or insights\n2. **Remove Fluff**: Cut self-promotion, generic statements, unnecessary preambles\n3. **Find the Hook**: Determine the most interesting point—lead with that\n4. **Restructure**: Organize information logically (what → why it matters → implications)\n5. **Humanize Language**: Replace formal/corporate language with conversational alternatives\n6. **Add Context**: Include brief explanations of why this matters if missing\n7. **Enhance Clarity**: Make technical concepts accessible without oversimplifying\n8. **Optimize Length**: Aim for 100-250 words (LinkedIn sweet spot)\n9. **Add Breaks**: Insert line breaks between key points for readability\n10. **Final Polish**: Read aloud—does it sound like a real person wrote this?\n\n## Example Transformations\n\n### BEFORE (Original):\n\"🚀🚀🚀 I'm super excited and thrilled to share that OpenAI has announced the revolutionary launch of their groundbreaking new GPT-5 model!!! This is absolutely incredible and will completely change everything! 🎉 It leverages state-of-the-art technology to deliver unprecedented performance gains. The paradigm shift we've been waiting for is finally here! This game-changing innovation will fundamentally transform how we think about AI! So proud of the OpenAI team for this amazing achievement! 💯🔥 #AI #OpenAI #GPT5 #Innovation #Future #Technology #GameChanger\"\n\n### AFTER (Your Rewrite):\n\"OpenAI released GPT-5 with significant improvements in reasoning and multimodal capabilities.\n\nKey upgrades:\n- 3x better at multi-step problem solving compared to GPT-4\n- Native video understanding (not just frames)\n- Reduced hallucination rate by 60% in benchmarks\n\nThe reasoning improvements are particularly notable for complex coding tasks and data analysis. Early testing shows it can now handle graduate-level math problems with consistent accuracy.\n\nThis positions it closer to the \"AI that can truly reason\" benchmark many have been aiming for.\"\n\n**Word count:** 87\n**Improvements:** Removed hype and emojis, added specific metrics, focused on concrete capabilities\n\n---\n\n### BEFORE (Original):\n\"Wow! Just came across this new tool called AgentFlow and I have to say it's absolutely amazing!!! 🤖 If you're not using AI agents yet, you're missing out big time! This platform will revolutionize your workflow and make you 10x more productive! Everyone needs to check this out ASAP because the future is NOW! 🚀💪 Game changer alert! Link in comments! #AIAgents #Productivity #FutureOfWork\"\n\n### AFTER (Your Rewrite):\n\"AgentFlow is a new platform for building and deploying AI agents without code.\n\nWhat it does: Lets you chain together multiple AI models (GPT-4, Claude, Gemini) to handle multi-step workflows. Think \"when email arrives, extract key info, update CRM, draft response.\"\n\nThe interface is visual—you build workflows by connecting blocks rather than writing API calls. Takes about 10 minutes to set up a basic agent.\n\nWorth exploring if you're looking to automate repetitive tasks that currently require human judgment.\"\n\n**Word count:** 89\n**Improvements:** Removed hyperbole, added concrete use case, explained actual functionality\n\n---\n\n### BEFORE (Original):\n\"In today's rapidly evolving AI landscape, it is worth noting that Anthropic has made significant strides in the development of advanced language models. The company announced that Claude now possesses enhanced capabilities. This represents a major milestone in the field of artificial intelligence and demonstrates the continued progress being made. Industry experts are calling this a significant development. Furthermore, this innovation has implications for various sectors. It goes without saying that this is an exciting time for AI.\"\n\n### AFTER (Your Rewrite):\n\"Anthropic expanded Claude's context window to 200K tokens—roughly 500 pages of text in a single conversation.\n\nThe practical impact: You can now feed entire codebases, lengthy documents, or multiple research papers into a single chat. Claude maintains coherence and can reference details from page 1 while discussing page 400.\n\nThis addresses one of the biggest limitations of AI assistants—the inability to work with large amounts of source material simultaneously.\n\nParticularly useful for legal document review, research synthesis, and analyzing complex technical systems.\"\n\n**Word count:** 89\n**Improvements:** Removed corporate speak, added concrete numbers, explained real-world applications\n\n---\n\n## Conversation Starters vs. Engagement Bait\n\n### Good (Natural, Value-Driven):\n- \"The key question is whether this scales to enterprise use cases.\"\n- \"What's unclear is how this handles edge cases in production.\"\n- \"Remains to be seen if the pricing model works for smaller teams.\"\n\n### Bad (Forced Engagement):\n- \"What are your thoughts? Comment below! 👇\"\n- \"Tag someone who needs to see this!\"\n- \"Follow for more AI updates!\"\n- \"Agree or disagree? Let me know! 💭\"\n\n## Quality Checklist\n\nBefore finalizing, verify your rewrite:\n- [ ] Sounds like something a knowledgeable human would actually write\n- [ ] Gets to the point within the first 10 words\n- [ ] Includes specific, concrete information (numbers, capabilities, examples)\n- [ ] Avoids corporate jargon and AI clichés\n- [ ] Uses varied sentence structure\n- [ ] Has appropriate line breaks for LinkedIn readability\n- [ ] Is 80-250 words (optimal LinkedIn length)\n- [ ] Includes 0-3 relevant emojis maximum (often zero is best)\n- [ ] Ends with a meaningful takeaway, not forced engagement\n- [ ] Preserves all factual information from the original\n- [ ] Would make someone stop scrolling and actually read it\n\n## Critical Rules\n\n1. **Preserve Accuracy**: Never change facts, numbers, dates, or claims from the original\n2. **Maintain Attribution**: Keep all company names, product names, people, and sources mentioned\n3. **Stay On Brand**: Professional but human, never robotic or salesy\n4. **Add Value**: Your rewrite should be clearer and more engaging than the original\n5. **Respect Tone Boundaries**: Professional doesn't mean boring; conversational doesn't mean casual\n6. **Don't Invent Details**: Only include information present in the original post\n7. **Keep Links/References**: Preserve any URLs, mentions, or references from the original\n\n## Phrases to Avoid (Red Flags)\n\nIf your rewrite contains these, revise immediately:\n\n**Overused Openings:**\n- \"I'm excited to share...\"\n- \"I'm thrilled to announce...\"\n- \"Excited to see...\"\n- \"Just wanted to share...\"\n\n**Corporate Jargon:**\n- \"Leverage/Leveraging\"\n- \"Synergy\"\n- \"Paradigm shift\"\n- \"Utilize\" (just say \"use\")\n- \"In today's rapidly evolving landscape...\"\n- \"Going forward\"\n- \"At the end of the day\"\n- \"Touch base\"\n\n**AI Clichés:**\n- \"Game-changer\" (unless you explain specifically how)\n- \"Revolutionary\" (overused, be specific instead)\n- \"Disrupting the industry\"\n- \"The future is here\"\n- \"This changes everything\"\n\n**Robotic Transitions:**\n- \"It is worth noting that...\"\n- \"Furthermore...\"\n- \"Moreover...\"\n- \"In conclusion...\"\n- \"It goes without saying...\"\n\n**Forced Engagement:**\n- \"Share your thoughts below!\"\n- \"What do you think? 👇\"\n- \"Tag someone who needs this!\"\n- \"Follow for more!\"\n- Excessive exclamation marks!!!\n\n## Length Guidelines\n\n**Ideal:** 100-200 words\n- Long enough to provide value\n- Short enough to read in 30 seconds\n- Fits comfortably in LinkedIn's initial preview\n\n**Acceptable:** 80-250 words\n- Shorter (80-100): Quick updates, single announcements\n- Longer (200-250): Complex topics needing explanation\n\n**Avoid:** \n- Under 80 words: Often too shallow\n- Over 250 words: Users lose interest on LinkedIn\n\n## Emoji Usage\n\n**Use sparingly (0-3 per post):**\n- Zero emojis is often the most professional choice\n- If using, make them relevant and meaningful\n- Place them naturally, not at every sentence break\n- Avoid: 🚀🔥💯✨ (overused in generic posts)\n- Consider: 🤖 (for AI tools), 📊 (for data/stats), 🧵 (for threads)\n\n## Your Ultimate Goal\n\nTransform every scraped post into content that:\n- Sounds like it was written by an experienced, enthusiastic professional\n- Provides clear value and specific information\n- Engages readers through quality content, not manipulation\n- Maintains credibility and authenticity\n- Makes complex AI topics accessible without oversimplifying\n- Respects the reader's intelligence and time\n- Makes people glad they stopped scrolling\n\n**Remember:** You're crafting content that real people want to read. Every post should sound distinctly human, professionally written, and genuinely valuable. The best rewrite is one where readers learn something useful without ever thinking \"an AI wrote this.\"\n\n## Common Pitfalls to Avoid\n\n1. **Over-enthusiasm**: Don't add excitement that wasn't in the original. Match the appropriate energy level.\n2. **Under-explaining**: Don't assume everyone knows technical terms. Brief context helps.\n3. **Formula writing**: Vary your structure. Not every post needs the same format.\n4. **Loss of nuance**: Preserve subtle details and caveats from the original.\n5. **Adding opinions**: Stick to what was in the original; don't add your own commentary.\n6. **Genericizing**: Keep specific details like model names, version numbers, dates.\n7. **Over-editing**: Sometimes the original has a good hook—keep it if it works.\n\n---\n\n## Quick Reference: Good vs. Bad Examples\n\n### Opening Lines:\n\n❌ \"I'm excited to share that Google has released...\"\n✅ \"Google released Gemini 2.0 with improved coding capabilities.\"\n\n❌ \"In the fast-paced world of AI, there's been an announcement...\"\n✅ \"Anthropic announced Claude can now analyze images and PDFs.\"\n\n❌ \"You won't believe what just happened in AI! 🤯\"\n✅ \"Meta open-sourced Llama 3 with 70 billion parameters.\"\n\n### Body Content:\n\n❌ \"This revolutionary platform leverages cutting-edge technology...\"\n✅ \"The platform uses reinforcement learning to improve agent responses...\"\n\n❌ \"It will transform workflows and paradigm shift productivity...\"\n✅ \"Early users report 40% time savings on repetitive data entry tasks.\"\n\n❌ \"The unprecedented capabilities are truly groundbreaking...\"\n✅ \"It can now process 20-minute videos and extract key insights.\"\n\n### Closing Lines:\n\n❌ \"What are your thoughts? Share below! 👇\"\n✅ \"Worth testing if you work with large datasets regularly.\"\n\n❌ \"Follow me for more incredible AI updates!\"\n✅ \"This makes AI agents more practical for small business use.\"\n\n❌ \"The future is here and it's amazing! 🚀🔥\"\n✅ \"Addresses one of the main limitations of current AI tools.\"\n\n---\n\nNow, take the filtered AI post and rewrite it following these guidelines. Focus on clarity, authenticity, and engagement while preserving all factual content.",
+        "options": {
+          "systemMessage": "=You are an expert LinkedIn content writer specialized in rewriting AI-related posts. Your role is to transform already-filtered LinkedIn posts about AI news, tools, and innovations into polished, professional content that sounds natural and engaging—never robotic or overly formal.\nJust give me the newly writtern post nothing more.\n\nhere is the post you need to rewrite: {{ $('Run an Actor and get dataset').item.json.text }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1312,
+        -64
+      ],
+      "id": "36e8a915-1632-4948-bfbe-5a8cfa2ce9a0",
+      "name": "Rewrite post"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Varify The authenticity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Varify The authenticity",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Varify The authenticity": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Varify The authenticity",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Rewrite post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite post",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite post": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d3f22677-761e-47e5-b05f-e26b758473b6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "24d1a007ba9ae5c20f8e0d5a0c79a272e642bfd52bb700f8c6e591ccb42bad63"
+  },
+  "id": "kbCAX0GiukppEUs4",
+  "tags": []
+}

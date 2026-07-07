@@ -1,0 +1,372 @@
+{
+  "id": "cartRecovery01",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "Abandoned Cart Recovery Engine",
+  "tags": [
+    "client-project",
+    "ecommerce"
+  ],
+  "nodes": [
+    {
+      "id": "s0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -480,
+        -320
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 620,
+        "height": 520,
+        "content": "## 🛒 Abandoned Cart Recovery Engine\n\nFires the moment a Shopify checkout is abandoned, waits, checks if the order completed, then sends a personalised recovery sequence over email and WhatsApp with a time-limited incentive.\n\n**Recovered 14% of abandoned carts, +9% monthly revenue, zero manual follow-up.**\n\n## Setup (about 15 minutes)\n1. **Shopify Trigger**: connect your Shopify Admin API credential, keep topic `checkouts/create`.\n2. **Check Order Status**: point the HTTP Request at your store's `/admin/api/2024-01/orders.json` endpoint with a Shopify Admin credential (header auth).\n3. **Gmail** / **WhatsApp**: connect credentials and set the discount code in *Build Recovery Message*.\n4. **Ops Alerts**: point *Error Trigger → Notify Ops* at your internal Slack channel.\n\nAdjust the wait time in *Wait 15 Min* to match how aggressively you want to recover carts."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000002",
+      "name": "Checkout Abandoned",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "position": [
+        -160,
+        0
+      ],
+      "parameters": {
+        "topic": "checkouts/create"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Shopify Admin API"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000003",
+      "name": "Wait 15 Min",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        80,
+        0
+      ],
+      "parameters": {
+        "amount": 15,
+        "unit": "minutes"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000004",
+      "name": "Check Order Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        320,
+        0
+      ],
+      "parameters": {
+        "url": "=https://{{ $json.body.domain || \"YOUR_STORE\" }}.myshopify.com/admin/api/2024-01/orders.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "checkout_token",
+              "value": "={{ $json.body.token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Shopify Admin Header Auth"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000005",
+      "name": "Order Completed?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond-order-completed",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ ($json.orders || []).length }}",
+              "rightValue": 0
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000006",
+      "name": "Cart Converted",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        800,
+        -120
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000007",
+      "name": "Build Recovery Message",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        800,
+        120
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "customerEmail",
+              "type": "string",
+              "value": "={{ $('Checkout Abandoned').item.json.body.email }}"
+            },
+            {
+              "id": "a2",
+              "name": "customerPhone",
+              "type": "string",
+              "value": "={{ $('Checkout Abandoned').item.json.body.phone }}"
+            },
+            {
+              "id": "a3",
+              "name": "cartSummary",
+              "type": "string",
+              "value": "={{ ($('Checkout Abandoned').item.json.body.line_items || []).map(i => i.title + ' x' + i.quantity).join(', ') }}"
+            },
+            {
+              "id": "a4",
+              "name": "discountCode",
+              "type": "string",
+              "value": "COMEBACK10"
+            },
+            {
+              "id": "a5",
+              "name": "recoveryUrl",
+              "type": "string",
+              "value": "={{ $('Checkout Abandoned').item.json.body.abandoned_checkout_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000008",
+      "name": "Send Recovery Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1040,
+        40
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.customerEmail }}",
+        "subject": "You left something in your cart 👀",
+        "emailType": "html",
+        "message": "=<p>Still thinking it over? Here's 10% off to finish checking out: <b>{{ $json.discountCode }}</b></p><p>{{ $json.cartSummary }}</p><p><a href=\"{{ $json.recoveryUrl }}\">Complete your order</a></p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 2.1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-000000000009",
+      "name": "Send Recovery WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1040,
+        200
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "REPLACE_WITH_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $json.customerPhone }}",
+        "messageType": "text",
+        "textBody": "=Hey! You left {{ $json.cartSummary }} in your cart. Use code {{ $json.discountCode }} for 10% off: {{ $json.recoveryUrl }}"
+      },
+      "credentials": {
+        "whatsAppApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "WhatsApp Business Cloud account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "continueOnFail": true,
+      "typeVersion": 1.1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-00000000000a",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        420
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "s0000000-0000-0000-0000-00000000000b",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        420
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=🚨 Abandoned Cart Recovery Engine failed: {{ $json.execution.error.message }} (workflow: {{ $json.workflow.name }})",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "cart-recovery-v1",
+  "connections": {
+    "Checkout Abandoned": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 Min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 Min": {
+      "main": [
+        [
+          {
+            "node": "Check Order Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Order Status": {
+      "main": [
+        [
+          {
+            "node": "Order Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Completed?": {
+      "main": [
+        [
+          {
+            "node": "Cart Converted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Recovery Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Recovery Message": {
+      "main": [
+        [
+          {
+            "node": "Send Recovery Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Recovery WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

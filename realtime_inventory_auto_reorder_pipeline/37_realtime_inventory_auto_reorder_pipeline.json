@@ -1,0 +1,1060 @@
+{
+  "name": "Real-Time Inventory & Auto-Reorder Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1984,
+        368
+      ],
+      "id": "9072b3e1-9cc3-4c67-85c5-2de17b5d344a",
+      "name": "OpenAI — PO Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "J8zCphYzxllzomFl",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "01f3c03f-4bbe-4535-9c05-39e8c1e17f04",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        336,
+        496
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "text": "=🚨 *Inventory Pipeline Error*\n\n*Workflow:* {{ $json.workflow.name }}\n*Failed Node:* {{ $json.execution.error.node.name }}\n*Error:* {{ $json.execution.error.message }}\n*Time:* {{ new Date().toLocaleString() }}\n\n<{{ $json.execution.url }}|View Execution>",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        496
+      ],
+      "id": "6d3ddee4-d13d-4180-aff9-9acdac4eda5f",
+      "name": "🚨 Slack Error Alert",
+      "webhookId": "7429339d-0d75-4feb-a855-4a31e9d92f21",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "DR8S4brArLOtXGTw",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AR87WSC4A",
+          "mode": "list",
+          "cachedResultName": "reorder_1"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        144
+      ],
+      "id": "c9a6ab82-7e85-4b6c-bba1-60f6eb3b0258",
+      "name": "Slack — Send Purchase Order",
+      "webhookId": "cde02339-53cf-4ee7-9916-8b6832d3b2f3",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "DR8S4brArLOtXGTw",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a professional purchase order Slack message for a low-stock product.\n\nProduct Details:\nProduct ID: {{ $('Calculate Stock Level & Urgency').item.json.Product_ID }}\nProduct Name: {{ $('Calculate Stock Level & Urgency').item.json.Product_Name }}\nCategory: {{ $('Calculate Stock Level & Urgency').item.json.Category }}\nCurrent Stock: {{ $('Calculate Stock Level & Urgency').item.json.Current_Stock }} units\nMax Stock: {{ $('Calculate Stock Level & Urgency').item.json.Max_Stock }} units\nStock Level: {{ $('Calculate Stock Level & Urgency').item.json.Stock_Pct }}%\nUrgency: {{ $('Calculate Stock Level & Urgency').item.json.Urgency_Level }}\nReorder Quantity: {{ $('Calculate Stock Level & Urgency').item.json.Reorder_Qty }} units\nUnit Price: ${{ $('Calculate Stock Level & Urgency').item.json.Unit_Price }}\nEstimated Cost: ${{ $('Calculate Stock Level & Urgency').item.json.Estimated_Cost }}\nSupplier: {{ $('Calculate Stock Level & Urgency').item.json.Supplier_Name }}\nSupplier Contact: {{ $('Calculate Stock Level & Urgency').item.json.Supplier_Contact }}\n\nWrite a short Slack purchase order message using mrkdwn format.\nReturn only the Slack message — no JSON, no backticks, no extra text.",
+        "options": {
+          "systemMessage": "You are an inventory management assistant. Write concise, professional Slack purchase order notifications for the operations team. Use Slack mrkdwn format (*bold*). Include all key product and order details. Add one sharp action line at the end. Max 15 lines. Return only the message — no JSON, no backticks."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1904,
+        144
+      ],
+      "id": "bd0606a1-061c-4f00-9e4a-74c2e04a3e42",
+      "name": "Generate PO Message"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit?gid=1985004514#gid=1985004514",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Last_Reorder_Date": "={{ new Date().toISOString().split('T')[0] }}",
+            "Reorder_Count": "={{ (parseInt($json.Reorder_Count) || 0) + 1 }}",
+            "Notes": "={{ 'Reorder triggered at ' + $('Calculate Stock Level & Urgency').first().json.Stock_Pct + '% stock on ' + new Date().toISOString().split('T')[0] }}",
+            "Product_ID": "={{ $('Calculate Stock Level & Urgency').first().json.Product_ID }}"
+          },
+          "matchingColumns": [
+            "Product_ID"
+          ],
+          "schema": [
+            {
+              "id": "Product_ID",
+              "displayName": "Product_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product_Name",
+              "displayName": "Product_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category ",
+              "displayName": "Category ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current_Stock",
+              "displayName": "Current_Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Max_Stock",
+              "displayName": "Max_Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Threshold_Pct ",
+              "displayName": "Reorder_Threshold_Pct ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier_Name",
+              "displayName": "Supplier_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier_Contact",
+              "displayName": "Supplier_Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Qty",
+              "displayName": "Reorder_Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unit_Price",
+              "displayName": "Unit_Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Last_Checked",
+              "displayName": " Last_Checked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Reorder_Date",
+              "displayName": "Last_Reorder_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Count",
+              "displayName": "Reorder_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        2480,
+        144
+      ],
+      "id": "fa1d2538-24fd-4fd1-9528-6992c0895d94",
+      "name": "Update Inventory — Reorder Triggered",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1985004514,
+          "mode": "list",
+          "cachedResultName": "Reorder_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit#gid=1985004514"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ new Date().toISOString() }}",
+            " Product_ID": "={{ $('Calculate Stock Level & Urgency').first().json.Product_ID }}",
+            "Product_Name": "={{ $('Calculate Stock Level & Urgency').first().json.Product_Name }}",
+            "Current_Stock": "={{ $('Calculate Stock Level & Urgency').first().json.Current_Stock }}",
+            "Max_Stock": "={{ $('Calculate Stock Level & Urgency').first().json.Max_Stock }}",
+            "Stock_Pct": "={{ $('Calculate Stock Level & Urgency').first().json.Stock_Pct }}",
+            "Reorder_Qty": "={{ $('Calculate Stock Level & Urgency').first().json.Reorder_Qty }}",
+            "Supplier_Name": "={{ $('Calculate Stock Level & Urgency').first().json.Supplier_Name }}",
+            "Supplier_Contact": "={{ $('Calculate Stock Level & Urgency').first().json.Supplier_Contact }}",
+            "Unit_Price": "={{ $('Calculate Stock Level & Urgency').first().json.Unit_Price }}",
+            " Estimated_Cost": "={{ $('Calculate Stock Level & Urgency').first().json.Estimated_Cost }}",
+            "Status": "Reorder Sent",
+            " Notes": "={{ $('Calculate Stock Level & Urgency').first().json.Urgency_Level + ' — Stock at ' + $('Calculate Stock Level & Urgency').first().json.Stock_Pct + '%' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Product_ID",
+              "displayName": " Product_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product_Name",
+              "displayName": "Product_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current_Stock",
+              "displayName": "Current_Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Max_Stock",
+              "displayName": "Max_Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Stock_Pct",
+              "displayName": "Stock_Pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Qty",
+              "displayName": "Reorder_Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier_Name",
+              "displayName": "Supplier_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier_Contact",
+              "displayName": "Supplier_Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unit_Price",
+              "displayName": "Unit_Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Estimated_Cost",
+              "displayName": " Estimated_Cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Notes",
+              "displayName": " Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        2704,
+        272
+      ],
+      "id": "a1c68c93-02a0-485c-bec2-8afdd03b6df9",
+      "name": "Log to Reorder Log Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AS2PE4Q6L",
+          "mode": "list",
+          "cachedResultName": "inventory_summary"
+        },
+        "text": "=📊 *Inventory Check Complete*\n\n*Time:* {{ new Date().toLocaleString() }}\n*Products Checked:* All Active\n*Action:* Reorder notifications sent for low-stock items\n\n✅ Reorder log updated in Google Sheets.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        -48
+      ],
+      "id": "382111b6-8e1c-461b-be5d-e65ea8da5062",
+      "name": "Slack — Summary Report",
+      "webhookId": "8de7af7e-387a-4421-827b-964d9dd1a124",
+      "notesInFlow": false,
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "DR8S4brArLOtXGTw",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        336,
+        272
+      ],
+      "id": "57577279-5ad5-4025-bc1a-5c179a56a295",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */4 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        720
+      ],
+      "id": "747e48f2-2d20-45f9-bc28-c0350d9410ea",
+      "name": "Check Every 4 Hours",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        784,
+        272
+      ],
+      "id": "37a72f91-6707-429b-9b82-b610f6175173",
+      "name": "Process One Product at a Time"
+    },
+    {
+      "parameters": {
+        "jsCode": "const product = $input.first().json;\n\nconst currentStock = parseFloat(product.Current_Stock) || 0;\nconst maxStock = parseFloat(product.Max_Stock) || 100;\nconst thresholdPct = parseFloat(product.Reorder_Threshold_Pct) || 20;\n\n// Calculate stock percentage\nconst stockPct = maxStock > 0 ? (currentStock / maxStock) * 100 : 0;\nconst stockPctRounded = Math.round(stockPct * 100) / 100;\n\n// Determine if reorder needed\nconst needsReorder = stockPct <= thresholdPct;\n\n// Determine urgency level\nlet urgencyLevel;\nlet urgencyEmoji;\nif (stockPct <= 5) {\n  urgencyLevel = 'CRITICAL';\n  urgencyEmoji = '🔴';\n} else if (stockPct <= 10) {\n  urgencyLevel = 'HIGH';\n  urgencyEmoji = '🟠';\n} else if (stockPct <= thresholdPct) {\n  urgencyLevel = 'LOW';\n  urgencyEmoji = '🟡';\n} else {\n  urgencyLevel = 'OK';\n  urgencyEmoji = '🟢';\n}\n\n// Calculate reorder quantity\nconst reorderQty = parseFloat(product.Reorder_Qty) || Math.round(maxStock * 0.5);\n\n// Calculate estimated cost\nconst unitPrice = parseFloat(product.Unit_Price) || 0;\nconst estimatedCost = (reorderQty * unitPrice).toFixed(2);\n\nreturn [{\n  json: {\n    ...product,\n    Stock_Pct       : stockPctRounded,\n    Needs_Reorder   : needsReorder,\n    Urgency_Level   : urgencyLevel,\n    Urgency_Emoji   : urgencyEmoji,\n    Reorder_Qty     : reorderQty,\n    Estimated_Cost  : estimatedCost,\n    Checked_At      : new Date().toISOString().split('T')[0]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        144
+      ],
+      "id": "6360b36e-6e77-4924-9b79-1af7c1a6b7b3",
+      "name": "Calculate Stock Level & Urgency"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            " Last_Checked": "={{ $json.Checked_At }}",
+            "Product_ID": "={{ $json.Product_ID }}",
+            "Product_Name": "={{ $json.Product_Name }}",
+            "Category ": "={{ $json['Category '] }}",
+            "Current_Stock": "={{ $json.Current_Stock }}",
+            "Max_Stock": "={{ $json.Max_Stock }}",
+            "Reorder_Threshold_Pct ": "={{ $json['Reorder_Threshold_Pct '] }}",
+            "Supplier_Name": "={{ $json.Supplier_Name }}",
+            "Supplier_Contact": "={{ $json.Supplier_Contact }}",
+            "Reorder_Qty": "={{ $json.Reorder_Qty }}",
+            "Unit_Price": "={{ $json.Unit_Price }}",
+            "Status": "={{ $json.Status }}",
+            "Last_Reorder_Date": "=",
+            "Reorder_Count": "=",
+            "Notes": "="
+          },
+          "matchingColumns": [
+            "Product_ID"
+          ],
+          "schema": [
+            {
+              "id": "Product_ID",
+              "displayName": "Product_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product_Name",
+              "displayName": "Product_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category ",
+              "displayName": "Category ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current_Stock",
+              "displayName": "Current_Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Max_Stock",
+              "displayName": "Max_Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Threshold_Pct ",
+              "displayName": "Reorder_Threshold_Pct ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier_Name",
+              "displayName": "Supplier_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Supplier_Contact",
+              "displayName": "Supplier_Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Qty",
+              "displayName": "Reorder_Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unit_Price",
+              "displayName": "Unit_Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Last_Checked",
+              "displayName": " Last_Checked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Reorder_Date",
+              "displayName": "Last_Reorder_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reorder_Count",
+              "displayName": "Reorder_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        144
+      ],
+      "id": "f5e3022f-1132-464f-9365-c32dbb6e8cc7",
+      "name": "Update Last Checked Date",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "reorder-check",
+              "leftValue": "={{ $('Calculate Stock Level & Urgency').item.json.Needs_Reorder }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        144
+      ],
+      "id": "be6b966f-37fe-4067-b449-70cfe658d0ee",
+      "name": "Needs Reorder?"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XXNtTm8_To0chMbZGiyNQ3A0lIWMLHQBruLch1_MpSQ/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        272
+      ],
+      "id": "958ce481-ee36-4979-9b31-05fcebcdcb45",
+      "name": "Get Active Products",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTdseBniYkWJNvWv",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "already-ordered",
+              "leftValue": "={{ $json.Last_Reorder_Date }}",
+              "rightValue": "={{ new Date().toISOString().split('T')[0] }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        144
+      ],
+      "id": "5ae31102-ca9a-4f1e-90eb-45c374aeb7b7",
+      "name": "Already Reordered Today?"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI — PO Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate PO Message",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "🚨 Slack Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack — Send Purchase Order": {
+      "main": [
+        [
+          {
+            "node": "Update Inventory — Reorder Triggered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PO Message": {
+      "main": [
+        [
+          {
+            "node": "Slack — Send Purchase Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Inventory — Reorder Triggered": {
+      "main": [
+        [
+          {
+            "node": "Log to Reorder Log Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Reorder Log Sheet": {
+      "main": [
+        [
+          {
+            "node": "Process One Product at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Active Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Every 4 Hours": {
+      "main": [
+        []
+      ]
+    },
+    "Process One Product at a Time": {
+      "main": [
+        [
+          {
+            "node": "Slack — Summary Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate Stock Level & Urgency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Stock Level & Urgency": {
+      "main": [
+        [
+          {
+            "node": "Update Last Checked Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Last Checked Date": {
+      "main": [
+        [
+          {
+            "node": "Needs Reorder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Reorder?": {
+      "main": [
+        [
+          {
+            "node": "Already Reordered Today?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process One Product at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Products": {
+      "main": [
+        [
+          {
+            "node": "Process One Product at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack — Summary Report": {
+      "main": [
+        []
+      ]
+    },
+    "Already Reordered Today?": {
+      "main": [
+        [
+          {
+            "node": "Generate PO Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8eaf1b2c-e1b4-4b9b-acda-6492c9559006",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e24331cd0d0530356aea48f2432fed4381927486eff7990020aef57157ae0627"
+  },
+  "id": "RvRNvmBAL2WlYKzS",
+  "tags": []
+}

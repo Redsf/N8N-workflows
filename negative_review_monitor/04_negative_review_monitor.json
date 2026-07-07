@@ -1,0 +1,238 @@
+{
+  "id": "78Fr7pT6EFuRkxLi",
+  "meta": {
+    "instanceId": "8247b806b0e6f94d28ae959e03ad09e53ffbc2a7aafba4df32b48bec8415d11b",
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Negative Review Monitor",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "435ff51d-6fa7-4949-b01e-4a4f2150fa3c",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -368,
+        -192
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 560,
+        "height": 616,
+        "content": "## ⭐ Negative Review Monitor\n\nChecks your review feed every 6 hours, isolates low rated reviews, and instantly alerts your manager in Slack so issues get handled fast.\n\n**Perfect for:** restaurants, cafes and hospitality venues.\n\n## How it works\n\n1. **Every 6 Hours**: schedule trigger that polls on a fixed interval.\n2. **Fetch Latest Reviews**: calls your review source and returns recent reviews.\n3. **Filter Negative Reviews**: keeps only reviews rated 3 stars or lower.\n4. **Any Negative Reviews**: continues only if at least one was found.\n5. **Alert Manager**: posts each negative review to your manager channel.\n\n## Setup (about 10 minutes)\n\n1. **HTTP Request**: set your review endpoint URL in *Fetch Latest Reviews* and add auth if needed.\n2. **Slack**: connect Slack and set the channel in *Alert Manager*.\n> Adjust the rating cutoff in *Filter Negative Reviews* if you want to flag only 1 and 2 star reviews."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "eba15a52-1e3c-4a2b-a9b6-1db16012e453",
+      "name": "1️⃣ Poll Reviews",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -32
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 520,
+        "height": 432,
+        "content": "## 1️⃣ Poll Reviews\n\n**Every 6 Hours** runs on a schedule and **Fetch Latest Reviews** pulls the most recent reviews from your chosen source."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c153907b-4eee-4dae-a3b3-a744353591da",
+      "name": "2️⃣ Detect Issues",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        -32
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 600,
+        "height": 432,
+        "content": "## 2️⃣ Detect Issues\n\n**Filter Negative Reviews** keeps only low rated entries, then **Any Negative Reviews** stops the run when there is nothing to report."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "0fdb9a55-a9a4-4bf3-984b-f5282504a430",
+      "name": "3️⃣ Alert",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        -48
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 320,
+        "height": 448,
+        "content": "## 3️⃣ Alert\n\n**Alert Manager** posts every flagged review to your team channel so someone can respond quickly."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "4abc2cae-3c70-4a82-a615-580dc8a2408e",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        320,
+        160
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "b92ae0e6-84b0-4661-a24b-6dce36cde2a3",
+      "name": "Fetch Latest Reviews",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        608,
+        160
+      ],
+      "parameters": {
+        "url": "https://YOUR_REVIEW_API/reviews",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "f6686248-b8ba-4475-9b39-ed53ba9d043d",
+      "name": "Filter Negative Reviews",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        880,
+        160
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().filter(i => Number(i.json.rating) <= 3).map(i => ({ json: i.json }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "1fe35e5a-e336-4e60-a04b-9049b3b2b98e",
+      "name": "Any Negative Reviews",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1168,
+        160
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "72526a1a-5313-4d91-bb1c-300db340793b",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "1ceffc08-dfac-483c-b07a-3dd57642c9e3",
+      "name": "Alert Manager",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1440,
+        160
+      ],
+      "webhookId": "5305abc2-7bbe-4ccc-90a1-acc697c9bda8",
+      "parameters": {
+        "text": "New negative review ({{$json.rating}} stars) from {{$json.author}}: {{$json.text}}",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C0B4D54BBFB",
+          "cachedResultName": "review-alerts"
+        },
+        "otherOptions": {},
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "3XUm67E2jVrrkrwz",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "versionId": "b9eee401-a981-4f8d-bc6b-9589f8c76f9d",
+  "nodeGroups": [],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [
+          {
+            "node": "Fetch Latest Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Negative Reviews": {
+      "main": [
+        [
+          {
+            "node": "Alert Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Latest Reviews": {
+      "main": [
+        [
+          {
+            "node": "Filter Negative Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Negative Reviews": {
+      "main": [
+        [
+          {
+            "node": "Any Negative Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

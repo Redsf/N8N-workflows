@@ -1,0 +1,333 @@
+{
+  "id": "W8bMUVssOUJZp8By",
+  "meta": {
+    "instanceId": "8247b806b0e6f94d28ae959e03ad09e53ffbc2a7aafba4df32b48bec8415d11b",
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Real Estate Lead Capture and Auto Reply",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "78a17d5c-3b5a-4f88-bc83-f8ece9c51bf4",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        -128
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 560,
+        "height": 664,
+        "content": "## 🏡 Real Estate Lead Capture and Auto Reply\n\nCaptures property inquiries from your website, saves them to a CRM sheet, instantly emails the prospect, and alerts your agents in Slack.\n\n**Perfect for:** real estate agents and brokerage teams.\n\n## How it works\n\n1. **New Property Inquiry**: webhook that receives the website inquiry form.\n2. **Structure Lead**: organizes name, email, phone, property and message.\n3. **Add Lead to CRM Sheet**: stores the lead as a row in your CRM sheet.\n4. **Send Auto Reply to Lead**: emails the prospect a friendly acknowledgement.\n5. **Notify Agent Team**: alerts your agents so they can follow up fast.\n6. **Confirm Inquiry**: returns a success response to the website.\n\n## Setup (about 10 minutes)\n\n1. **Webhook**: connect your site form to the *New Property Inquiry* URL.\n2. **Google Sheets**: connect your account and sheet id in *Add Lead to CRM Sheet*.\n3. **Gmail**: connect Gmail in *Send Auto Reply to Lead* and edit the message text.\n4. **Slack**: connect Slack and set the channel in *Notify Agent Team*."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "3cd68434-01c6-4d68-a6f8-909826d509f4",
+      "name": "1️⃣ Inquiry Intake",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        208,
+        -80
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 600,
+        "height": 560,
+        "content": "## 1️⃣ Inquiry Intake\n\nThe **New Property Inquiry** webhook receives form submissions and **Structure Lead** maps them into clean, named fields ready for the CRM and emails."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1b431e8c-bfb8-4377-9d09-e38e2f963783",
+      "name": "2️⃣ Save to CRM",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        832,
+        -80
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 320,
+        "height": 576,
+        "content": "## 2️⃣ Save to CRM\n\n**Add Lead to CRM Sheet** appends each lead with a timestamp so nothing falls through the cracks."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "136993b3-14d7-49b3-9ad4-0f60609ae6ae",
+      "name": "3️⃣ Respond and Alert",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1168,
+        -80
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 600,
+        "height": 592,
+        "content": "## 3️⃣ Respond and Alert\n\n**Send Auto Reply to Lead** emails the prospect immediately, **Notify Agent Team** pings agents in Slack, and **Confirm Inquiry** returns a success response to the website."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d5825d71-04cd-4875-8169-ff52558356bd",
+      "name": "New Property Inquiry",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        352,
+        224
+      ],
+      "webhookId": "3e34be77-94ec-4ab1-ac3a-6be3d0507e39",
+      "parameters": {
+        "path": "property-inquiry",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "e044084b-719f-433c-a4bd-c3efc8001635",
+      "name": "Structure Lead",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        640,
+        224
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "070e0a69-d6ab-437a-a56a-9076a542e130",
+              "name": "name",
+              "type": "string",
+              "value": "={{$json.body.name}}"
+            },
+            {
+              "id": "6b37cab5-e3eb-4f2b-b4a2-81147daee13b",
+              "name": "email",
+              "type": "string",
+              "value": "={{$json.body.email}}"
+            },
+            {
+              "id": "2e92c8c9-a2c4-4de5-8c2a-fc57b0a152f6",
+              "name": "phone",
+              "type": "string",
+              "value": "={{$json.body.phone}}"
+            },
+            {
+              "id": "9eb7c91b-241b-4110-a4b7-69eb16b5c357",
+              "name": "property",
+              "type": "string",
+              "value": "={{$json.body.property_id}}"
+            },
+            {
+              "id": "bb31404a-840a-446d-9e4e-30d3c58e549d",
+              "name": "message",
+              "type": "string",
+              "value": "={{$json.body.message}}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "1a695c8e-8860-45b7-a452-a4e16e6e213a",
+      "name": "Add Lead to CRM Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        912,
+        224
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Property ID": "={{ $json.property }}"
+          },
+          "schema": [
+            {
+              "id": "Property ID",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Property ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Property ID"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EV68pHdgAY4B5vTAk2djVSGEfXWhaXpSSy2GNjdCjYU/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1EV68pHdgAY4B5vTAk2djVSGEfXWhaXpSSy2GNjdCjYU",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EV68pHdgAY4B5vTAk2djVSGEfXWhaXpSSy2GNjdCjYU/edit?usp=drivesdk",
+          "cachedResultName": "Leads"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "542sEl8Ubi0hta4Q",
+          "name": "Google Sheets OAuth2 API"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "3a520d09-2fb4-4a1f-a426-538ffd9b212e",
+      "name": "Send Auto Reply to Lead",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1200,
+        112
+      ],
+      "webhookId": "28fc2fd2-bd4f-4abf-8b1f-e2c715435868",
+      "parameters": {
+        "sendTo": "={{ $('Structure Lead').item.json.email }}",
+        "message": "Hi {{$node[\"Structure Lead\"].json.name}}, thank you for reaching out. An agent will contact you shortly about property {{$node[\"Structure Lead\"].json.property}}.",
+        "options": {},
+        "subject": "Thanks for your interest in property {{$node[\"Structure Lead\"].json.property}}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "cgPoP7uiFwx3VgTz",
+          "name": "Gmail OAuth2 API"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "9f367243-c6c9-4c37-9d4e-1455d50b22be",
+      "name": "Notify Agent Team",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1200,
+        352
+      ],
+      "webhookId": "2d372fa3-f0c5-45ae-842a-c2243b94130c",
+      "parameters": {
+        "text": "New property lead: {{$node[\"Structure Lead\"].json.name}} ({{$node[\"Structure Lead\"].json.email}}) asking about {{$node[\"Structure Lead\"].json.property}}.",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C0B4D54BBFB",
+          "cachedResultName": "real-estate-leads"
+        },
+        "otherOptions": {},
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "3XUm67E2jVrrkrwz",
+          "name": "Slack OAuth2 API"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "56613497-23db-4152-b0a5-0332f0026fa3",
+      "name": "Confirm Inquiry",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1472,
+        224
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"received\" } }}"
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "versionId": "1021906d-f096-4c26-ad8a-3f3187a65925",
+  "nodeGroups": [],
+  "connections": {
+    "Structure Lead": {
+      "main": [
+        [
+          {
+            "node": "Add Lead to CRM Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Agent Team": {
+      "main": [
+        [
+          {
+            "node": "Confirm Inquiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Property Inquiry": {
+      "main": [
+        [
+          {
+            "node": "Structure Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Lead to CRM Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Auto Reply to Lead",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Agent Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Auto Reply to Lead": {
+      "main": [
+        [
+          {
+            "node": "Confirm Inquiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

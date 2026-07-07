@@ -1,0 +1,477 @@
+{
+  "id": "adReporting05",
+  "meta": {
+    "instanceId": "REPLACE_WITH_INSTANCE_ID",
+    "templateCredsSetupCompleted": false
+  },
+  "name": "Automated Client Ad Reporting",
+  "tags": [
+    "client-project",
+    "ai-automation",
+    "agency-ops"
+  ],
+  "nodes": [
+    {
+      "id": "d0000000-0000-0000-0000-000000000001",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        -380
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 700,
+        "height": 580,
+        "content": "## 📊 Automated Client Ad Reporting\n\nEvery Monday, pulls spend and results from the Meta and Google Ads APIs, blends GA4 conversions, and writes a branded performance report with an LLM summary of what moved and why. Lands in the client's inbox and Slack.\n\n**12 hours a month back per client, no report shipped late since.**\n\n## Setup (about 20 minutes)\n1. Connect Meta Ads, Google Ads and GA4 credentials on the three HTTP Request nodes (or swap in native nodes if you prefer).\n2. Connect an OpenAI credential for the summary.\n3. Set the client email in *Email Report to Client* and the agency Slack channel in *Post to Agency Channel*."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000002",
+      "name": "Every Monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -160,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000003",
+      "name": "Fetch Meta Ads Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        -140
+      ],
+      "parameters": {
+        "url": "https://graph.facebook.com/v20.0/act_YOUR_AD_ACCOUNT/insights",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "spend,impressions,clicks,actions"
+            },
+            {
+              "name": "date_preset",
+              "value": "last_7d"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Meta Ads API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000004",
+      "name": "Fetch Google Ads Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://googleads.googleapis.com/v17/customers/YOUR_CUSTOMER_ID/googleAds:searchStream",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: \"SELECT campaign.name, metrics.cost_micros, metrics.clicks, metrics.conversions FROM campaign WHERE segments.date DURING LAST_7_DAYS\" } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Ads API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000005",
+      "name": "Fetch GA4 Conversions",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://analyticsdata.googleapis.com/v1beta/properties/YOUR_GA4_PROPERTY_ID:runReport",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { dateRanges: [{ startDate: \"7daysAgo\", endDate: \"today\" }], dimensions: [{ name: \"sessionDefaultChannelGroup\" }], metrics: [{ name: \"conversions\" }, { name: \"totalRevenue\" }] } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "GA4 API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000006",
+      "name": "Blend Data Sources",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        320,
+        0
+      ],
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000007",
+      "name": "Compute Blended Metrics",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const [meta, google, ga4] = [$('Fetch Meta Ads Insights').all(), $('Fetch Google Ads Report').all(), $('Fetch GA4 Conversions').all()];\nconst metaSpend = (meta[0]?.json?.data || []).reduce((s, r) => s + Number(r.spend || 0), 0);\nconst googleSpend = (google[0]?.json?.results || []).reduce((s, r) => s + Number(r.metrics?.costMicros || 0) / 1e6, 0);\nconst totalSpend = metaSpend + googleSpend;\nconst conversions = (ga4[0]?.json?.rows || []).reduce((s, r) => s + Number(r.metricValues?.[0]?.value || 0), 0);\nconst revenue = (ga4[0]?.json?.rows || []).reduce((s, r) => s + Number(r.metricValues?.[1]?.value || 0), 0);\nconst roas = totalSpend > 0 ? (revenue / totalSpend) : 0;\nreturn [{ json: { metaSpend, googleSpend, totalSpend, conversions, revenue, roas: Number(roas.toFixed(2)) } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000008",
+      "name": "Summarize What Moved (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        800,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "=Weekly ad performance data: {{ JSON.stringify($json) }}. Write a 3-4 sentence plain-language summary of what moved and why, suitable for a client email.",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a paid media analyst writing a concise weekly client summary. Highlight the standout metric, one risk, and one recommendation. No jargon."
+        }
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "d0000000-0000-0000-0000-000000000009",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        800,
+        180
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "d0000000-0000-0000-0000-00000000000a",
+      "name": "Build Report",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1040,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "rep1",
+              "name": "reportHtml",
+              "type": "string",
+              "value": "=<h2>Weekly Ad Performance Report</h2><p><b>Total Spend:</b> ${{ $('Compute Blended Metrics').item.json.totalSpend.toFixed(2) }}</p><p><b>Conversions:</b> {{ $('Compute Blended Metrics').item.json.conversions }}</p><p><b>ROAS:</b> {{ $('Compute Blended Metrics').item.json.roas }}x</p><p>{{ $json.output }}</p>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "d0000000-0000-0000-0000-00000000000b",
+      "name": "Email Report to Client",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1280,
+        -100
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "client@REPLACE_WITH_CLIENT_DOMAIN.com",
+        "subject": "=Your Weekly Ad Performance Report — {{ $now.toFormat('dd LLL yyyy') }}",
+        "emailType": "html",
+        "message": "={{ $json.reportHtml }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "typeVersion": 2.1
+    },
+    {
+      "id": "d0000000-0000-0000-0000-00000000000c",
+      "name": "Post to Agency Channel",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1280,
+        100
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "client-reports"
+        },
+        "text": "=📊 Weekly report sent — Spend ${{ $('Compute Blended Metrics').item.json.totalSpend.toFixed(2) }}, ROAS {{ $('Compute Blended Metrics').item.json.roas }}x",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "d0000000-0000-0000-0000-00000000000d",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        400
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "d0000000-0000-0000-0000-00000000000e",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        400
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "REPLACE_WITH_CHANNEL_ID",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=🚨 Automated Client Ad Reporting failed: {{ $json.execution.error.message }}",
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    }
+  ],
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "versionId": "ad-reporting-v1",
+  "connections": {
+    "Every Monday 8am": {
+      "main": [
+        [
+          {
+            "node": "Fetch Meta Ads Insights",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Google Ads Report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch GA4 Conversions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Meta Ads Insights": {
+      "main": [
+        [
+          {
+            "node": "Blend Data Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Google Ads Report": {
+      "main": [
+        [
+          {
+            "node": "Blend Data Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch GA4 Conversions": {
+      "main": [
+        [
+          {
+            "node": "Blend Data Sources",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Blend Data Sources": {
+      "main": [
+        [
+          {
+            "node": "Compute Blended Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Blended Metrics": {
+      "main": [
+        [
+          {
+            "node": "Summarize What Moved (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize What Moved (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Build Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize What Moved (AI Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Report": {
+      "main": [
+        [
+          {
+            "node": "Email Report to Client",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Post to Agency Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notify Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
