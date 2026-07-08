@@ -1,8 +1,8 @@
 # n8n Workflow Portfolio
 
-A collection of 77 production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, security & IT operations, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
+A collection of 73 production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
 
-These solve real operational problems: recovering abandoned carts, qualifying and routing leads, extracting data from invoices, enriching security alerts against MITRE ATT&CK, answering questions with grounded AI, and keeping teams informed without manual busywork.
+These solve real operational problems: recovering abandoned carts, qualifying and routing leads, extracting data from invoices, answering questions with grounded AI, and keeping teams informed without manual busywork.
 
 > **By [Redowan Ahmed Farhan](https://github.com/Redsf)** — AI Automation Engineer. Several of these workflows are the credential-free reference builds of systems I've shipped to production for clients. The numbers below are results from those live deployments.
 
@@ -18,8 +18,6 @@ These solve real operational problems: recovering abandoned carts, qualifying an
 | [Cold Email Outreach Automation](cold_email_outreach_automation) | B2B SaaS | **−87%** manual work · **10–12 meetings/mo** booked |
 | [AI Applicant Screening (CV pipeline)](cv_processing_workflow) | HR / recruiting | **200+ CVs/opening** · **−80%** screening time |
 | [Automated Client Ad Reporting](automated_client_ad_reporting) | Agency ops | **12 hrs/mo saved per client** · 100% reports on time |
-| [SIEM Alert Enrichment with MITRE ATT&CK](siem_alert_enrichment_mitre_qdrant) | SOC / security team | **−65%** alert triage time · every ticket auto-tagged with ATT&CK technique ID |
-| [Venafi Cloud Slack Cert Bot](venafi_cert_slack_bot) | IT infrastructure | **Zero** unplanned cert-expiry outages in 4 months of use |
 | [AI Candidate Shortlisting (ERPNext)](candidate_shortlisting_erpnext) | HR / recruiting | **300+ applicants/role** triaged · shortlist turnaround **2 days → 20 minutes** |
 | [WooCommerce AI Support Agent](woocommerce_ai_support_agent) | E-commerce store | **68%** of tickets resolved without a human touch |
 | [Instagram Trend Content Generator](instagram_trend_content_generator) | Social / marketing | **3x** posting cadence with the same one-person team |
@@ -58,15 +56,6 @@ Credentials are referenced by name only — no API keys, tokens, or secrets are 
 | 73 | [Branded AI Website Chatbot](branded_website_chatbot) | Embeddable chatbot that books meetings against a live calendar and routes availability requests through itself as a sub-workflow. |
 | 76 | [Chat With PDFs (Cited Sources)](pdf_chat_with_citations) | Pinecone-backed PDF Q&A agent that quotes the exact source passage behind every answer. |
 | 77 | [Stock Earnings Report RAG Analysis](stock_earnings_rag_analysis) | Ingests earnings-call PDFs and answers analyst questions with a Gemini + Pinecone retrieval agent. |
-
-### Security & IT Operations
-
-| # | Workflow | Summary |
-|---|----------|---------|
-| 39 | [SIEM Alert Enrichment with MITRE ATT&CK](siem_alert_enrichment_mitre_qdrant) | Enriches incoming SIEM alerts with MITRE ATT&CK technique context via a Qdrant knowledge base and opens a Zendesk ticket. |
-| 46 | [Venafi Cloud Slack Cert Bot](venafi_cert_slack_bot) | Slack bot that checks certificate status in Venafi Cloud and answers renewal/expiry questions on demand. |
-| 62 | [Proxmox Infrastructure AI Agent](proxmox_infra_ai_agent) | Agent that queries and manages a Proxmox hypervisor cluster (VM status, resource usage) through natural-language chat. |
-| 67 | [AI-Powered Information Monitoring (Slack)](ai_information_monitoring_slack) | Scheduled web/news monitoring pipeline that summarizes findings with an LLM and posts alerts to Slack. |
 
 ### Customer Communication & Support
 
@@ -150,7 +139,7 @@ Credentials are referenced by name only — no API keys, tokens, or secrets are 
 
 ## Stack
 
-Built primarily on **n8n**, with LLM providers (OpenAI, Groq, Google Gemini, Mistral, Anthropic Claude, ElevenLabs), vector stores (Pinecone, Supabase, Qdrant, PGVector), document/OCR tooling (LlamaParse, Cradl AI, Gotenberg), and integrations spanning Shopify, WooCommerce, ERPNext, Gmail, Outlook, Slack, WhatsApp, Telegram, Google Workspace, Notion, Airtable, Monday.com, ClickUp, Cal.com, Twilio, Apify, Venafi Cloud, Proxmox, Zendesk, and BambooHR.
+Built primarily on **n8n**, with LLM providers (OpenAI, Groq, Google Gemini, Mistral, Anthropic Claude, ElevenLabs), vector stores (Pinecone, Supabase, Qdrant, PGVector), document/OCR tooling (LlamaParse, Cradl AI, Gotenberg), and integrations spanning Shopify, WooCommerce, ERPNext, Gmail, Outlook, Slack, WhatsApp, Telegram, Google Workspace, Notion, Airtable, Monday.com, ClickUp, Cal.com, Twilio, Apify, and BambooHR.
 
 ## About the author
 
