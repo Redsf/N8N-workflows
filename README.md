@@ -23,6 +23,11 @@ These solve real operational problems: recovering abandoned carts, qualifying an
 | [Instagram Trend Content Generator](instagram_trend_content_generator) | Social / marketing | **3x** posting cadence with the same one-person team |
 | [Zoom AI Meeting Assistant](zoom_meeting_assistant_clickup) | Client services | **100%** of meetings get follow-up tasks logged same-day |
 
+## Architecture diagrams
+
+Six of the flagship workflows above are broken down node-by-node with Mermaid flowcharts —
+no images needed, renders directly on GitHub: **[ARCHITECTURE.md →](ARCHITECTURE.md)**
+
 ## How to use a workflow
 
 1. Open the folder for the workflow you want.
