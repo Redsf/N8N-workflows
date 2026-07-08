@@ -32,3 +32,43 @@ Built for e-commerce and retail teams who need to catch pricing drift against co
 ## Error handling
 
 There is no dedicated error-handling branch (no Error Trigger or retry/notify-on-failure logic) in this workflow — a failed HTTP call to SearchAPI or a malformed sheet row will fail the run rather than degrade gracefully. Consider adding continue-on-fail to **Search Google Shopping Prices** so one bad product doesn't stop the whole batch.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Clear Memory and Normalize Columns<br/><small>code</small>"]
+    N1["Loop Through Each Product<br/><small>splitInBatches</small>"]
+    N2["Prepare Search Query<br/><small>code</small>"]
+    N3["Search Google Shopping Prices<br/><small>httpRequest</small>"]
+    N4["Analyze Pricing Gap<br/><small>code</small>"]
+    N5["Save Result to Memory<br/><small>code</small>"]
+    N6["Filter Critical or Warning Alerts<br/><small>filter</small>"]
+    N7["Send Slack Pricing Alert<br/><small>slack</small>"]
+    N8["Continue to Next Product<br/><small>noOp</small>"]
+    N9["Build Daily Summary Report<br/><small>code</small>"]
+    N10["Email Daily Report<br/><small>gmail</small>"]
+    N11["Get products from sheets<br/><small>googleSheets</small>"]
+    N12["Send a message<br/><small>slack</small>"]
+    N13["Log to Price History Sheet<br/><small>googleSheets</small>"]
+    N14["Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N0 --> N1
+    N1 -->|0| N9
+    N1 -->|1| N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
+    N7 --> N13
+    N8 --> N1
+    N9 --> N10
+    N9 --> N12
+    N11 --> N0
+    N13 --> N8
+    N14 --> N11
+```
+<!-- ARCHITECTURE:END -->

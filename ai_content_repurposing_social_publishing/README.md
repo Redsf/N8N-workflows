@@ -48,3 +48,39 @@ Point your content-submission form or CMS webhook at the production URL of **Con
 ## Error handling
 
 Buffer API calls retry up to three times before failing, and Drive-adjacent Sheets writes continue even if intermediate steps error where configured. A dedicated **Error Trigger** posts the failing node's error message to a Slack alerts channel so a broken scheduling run or analytics pull is caught the same day.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Content Submitted<br/><small>webhook</small>"]
+    N1["Generate Platform Variants (AI Agent)<br/><small>agent</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N4["Build Scheduling Queue<br/><small>code</small>"]
+    N5["Schedule Each Post<br/><small>splitInBatches</small>"]
+    N6["Scheduling Done<br/><small>noOp</small>"]
+    N7["Schedule to Buffer<br/><small>httpRequest</small>"]
+    N8["Log Scheduled Post<br/><small>googleSheets</small>"]
+    N9["Weekly Performance Pull<br/><small>scheduleTrigger</small>"]
+    N10["Fetch Buffer Analytics<br/><small>httpRequest</small>"]
+    N11["Log Weekly Performance<br/><small>googleSheets</small>"]
+    N12["Error Trigger<br/><small>errorTrigger</small>"]
+    N13["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N2 -.languageModel.-> N1
+    N3 -.outputParser.-> N1
+    N1 --> N4
+    N4 --> N5
+    N5 -->|0| N6
+    N5 -->|1| N7
+    N7 --> N8
+    N8 --> N5
+    N9 --> N10
+    N10 --> N11
+    N12 --> N13
+```
+<!-- ARCHITECTURE:END -->

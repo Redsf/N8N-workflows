@@ -45,3 +45,52 @@ To test manually, execute the workflow from **Crawl HN Home** instead of waiting
 5. **Telegram** — add a Bot API credential to **Ping Me**, and replace the hardcoded `chatId` (`1297549992`) with your own chat ID so the review ping actually reaches you.
 6. **Review window** — **Wait for 5 mins before posting** is your only chance to stop a bad post; increase it if you want more time to react to the Telegram ping, or replace it with a manual-approval step for stricter control.
 7. **Rate limits** — the code node in **Extract Meta** installs `beautifulsoup4` and `simplejson` at runtime via micropip (n8n's Python sandbox), so no separate package installation is needed, but expect slower cold starts on first run.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Crawl HN Home<br/><small>httpRequest</small>"]
+    N1["Extract Meta<br/><small>code</small>"]
+    N2["Filter Unposted Items<br/><small>code</small>"]
+    N3["Visit GH Page<br/><small>httpRequest</small>"]
+    N4["Convert HTML To Markdown<br/><small>markdown</small>"]
+    N5["Filter Errored<br/><small>filter</small>"]
+    N6["No Operation, do nothing<br/><small>noOp</small>"]
+    N7["Update X Status<br/><small>airtable</small>"]
+    N8["LinkedIn<br/><small>linkedIn</small>"]
+    N9["Update L Status<br/><small>airtable</small>"]
+    N10["Search Item<br/><small>airtable</small>"]
+    N11["Create Item<br/><small>airtable</small>"]
+    N12["X<br/><small>twitter</small>"]
+    N13["Validate Generate Content<br/><small>code</small>"]
+    N14["Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N15["Merge<br/><small>merge</small>"]
+    N16["Generate Content<br/><small>openAi</small>"]
+    N17["Ping Me<br/><small>telegram</small>"]
+    N18["Wait for 5 mins before posting<br/><small>wait</small>"]
+    N12 --> N7
+    N15 --> N2
+    N17 --> N18
+    N8 --> N9
+    N11 --> N17
+    N10 --> N15
+    N1 --> N10
+    N1 --> N15
+    N0 --> N1
+    N3 --> N4
+    N5 --> N11
+    N9 --> N6
+    N7 --> N6
+    N16 --> N13
+    N14 --> N0
+    N2 --> N3
+    N4 --> N16
+    N13 --> N5
+    N18 --> N12
+    N18 --> N8
+```
+<!-- ARCHITECTURE:END -->

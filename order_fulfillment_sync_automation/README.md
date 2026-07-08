@@ -37,3 +37,46 @@ This workflow has two independent triggers.
 ## Error handling
 
 **Book Courier** retries up to 3 times and continues on failure so a booking error routes to **Flag Ops (Booking Failed)** instead of stopping the workflow. **Update Order Tracking** and **Get Courier Status** each retry up to 3 times. **Notify Customer (WhatsApp)** continues on failure so a messaging error doesn't block the email notification. A dedicated **Error Trigger** posts the failing node and message to Slack via **Notify Ops (Error)**.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["New Order Placed<br/><small>shopifyTrigger</small>"]
+    N1["Book Courier<br/><small>httpRequest</small>"]
+    N2["Booking Success?<br/><small>if</small>"]
+    N3["Update Order Tracking<br/><small>httpRequest</small>"]
+    N4["Notify Customer (Email)<br/><small>gmail</small>"]
+    N5["Notify Customer (WhatsApp)<br/><small>whatsApp</small>"]
+    N6["Flag Ops (Booking Failed)<br/><small>slack</small>"]
+    N7["Poll Delivery Status<br/><small>scheduleTrigger</small>"]
+    N8["Get In-Transit Orders<br/><small>postgres</small>"]
+    N9["Check Each Shipment<br/><small>splitInBatches</small>"]
+    N10["Polling Done<br/><small>noOp</small>"]
+    N11["Get Courier Status<br/><small>httpRequest</small>"]
+    N12["Stage Changed?<br/><small>if</small>"]
+    N13["Notify Stage Update<br/><small>whatsApp</small>"]
+    N14["Update Shipment Record<br/><small>postgres</small>"]
+    N15["Error Trigger<br/><small>errorTrigger</small>"]
+    N16["Notify Ops (Error)<br/><small>slack</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 -->|true| N3
+    N2 -->|false| N6
+    N3 --> N4
+    N3 --> N5
+    N7 --> N8
+    N8 --> N9
+    N9 -->|0| N10
+    N9 -->|1| N11
+    N11 --> N12
+    N12 -->|true| N13
+    N12 -->|false| N9
+    N13 --> N14
+    N14 --> N9
+    N15 --> N16
+```
+<!-- ARCHITECTURE:END -->

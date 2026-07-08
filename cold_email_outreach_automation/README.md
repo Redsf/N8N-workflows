@@ -37,3 +37,53 @@ A disabled legacy branch (**Parse Email Content**, feeding nothing) and a disabl
 ## Error handling
 
 An **Error Trigger** → **Slack Error Alert** pair exists on the canvas to post workflow failures to Slack, but both nodes are disabled, so no error notifications currently fire. Enable them and configure the Slack OAuth2 credential to get live alerts on failures. There is also a disabled, unused **Parse Email Content** node left over from an earlier version of the email-parsing logic — safe to remove during cleanup.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Get All Leads<br/><small>googleSheets</small>"]
+    N1["Process One Lead at a Time<br/><small>splitInBatches</small>"]
+    N2["Is Status Pending?<br/><small>if</small>"]
+    N3["Send Cold Email<br/><small>gmail</small>"]
+    N4["Update Lead - Email 1 Sent<br/><small>googleSheets</small>"]
+    N5["Check for Reply<br/><small>gmail</small>"]
+    N6["Update Lead - Replied<br/><small>googleSheets</small>"]
+    N7["Parse Follow-up Content<br/><small>code</small>"]
+    N8["Send Follow-up Email<br/><small>gmail</small>"]
+    N9["Update Lead - Follow-up Sent<br/><small>googleSheets</small>"]
+    N10["Error Trigger<br/><small>errorTrigger</small>"]
+    N11["Slack Error Alert<br/><small>slack</small>"]
+    N12["When clicking ‘Execute workflow’<br/><small>manualTrigger</small>"]
+    N13["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N14["Parse Email Content<br/><small>code</small>"]
+    N15["Personalize   E-mail<br/><small>agent</small>"]
+    N16["Code in JavaScript<br/><small>code</small>"]
+    N17["Wait 2Mins<br/><small>wait</small>"]
+    N18["Generate Followup G-mail<br/><small>agent</small>"]
+    N19["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N20["replied or not replied<br/><small>if</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N15
+    N3 --> N4
+    N4 --> N1
+    N4 --> N17
+    N5 --> N20
+    N7 --> N8
+    N8 --> N9
+    N10 --> N11
+    N12 --> N0
+    N13 -.languageModel.-> N15
+    N15 --> N16
+    N16 --> N3
+    N17 --> N5
+    N18 --> N7
+    N19 -.languageModel.-> N18
+    N20 -->|true| N6
+    N20 -->|false| N18
+```
+<!-- ARCHITECTURE:END -->

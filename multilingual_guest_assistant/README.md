@@ -43,3 +43,43 @@ Point your WhatsApp and Viber webhooks at the production URL of the Inbound Mess
 ## Error handling
 
 Send nodes retry up to three times before failing, and a dedicated Error Trigger posts the failing node and message to an alerts channel so issues are caught fast.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Inbound Message Webhook<br/><small>webhook</small>"]
+    N1["Normalize Payload<br/><small>code</small>"]
+    N2["Guest Assistant Agent<br/><small>agent</small>"]
+    N3["GPT 4o mini<br/><small>lmChatOpenAi</small>"]
+    N4["Guest Conversation Memory<br/><small>memoryBufferWindow</small>"]
+    N5["Reply Structure Parser<br/><small>outputParserStructured</small>"]
+    N6["Needs Human?<br/><small>if</small>"]
+    N7["Notify Front Desk<br/><small>slack</small>"]
+    N8["Route By Channel<br/><small>switch</small>"]
+    N9["Send WhatsApp Reply<br/><small>httpRequest</small>"]
+    N10["Send Viber Reply<br/><small>httpRequest</small>"]
+    N11["Log Conversation<br/><small>googleSheets</small>"]
+    N12["Respond to Guest Gateway<br/><small>respondToWebhook</small>"]
+    N13["Error Trigger<br/><small>errorTrigger</small>"]
+    N14["Alert Engineering<br/><small>slack</small>"]
+    N0 --> N1
+    N1 --> N2
+    N3 -.languageModel.-> N2
+    N4 -.memory.-> N2
+    N5 -.outputParser.-> N2
+    N2 --> N6
+    N6 -->|true| N7
+    N6 -->|false| N8
+    N7 --> N8
+    N8 -->|out0| N9
+    N8 -->|out1| N10
+    N9 --> N11
+    N10 --> N11
+    N11 --> N12
+    N13 --> N14
+```
+<!-- ARCHITECTURE:END -->

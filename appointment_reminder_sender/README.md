@@ -22,3 +22,24 @@ Not applicable — this workflow runs on a daily schedule (9am) and reads from a
 1. **Google Sheets** — connect your account on **Get Appointments** and point the document ID at your own appointment sheet (currently set to a specific sheet ID — replace it). The sheet needs `Patient`, `Email`, `Date` and `Time` columns, with `Date` in a format **Filter For Tomorrow** can parse (e.g. `YYYY-MM-DD`).
 2. **Gmail** — connect an account on **Send Reminder Email** and adjust the subject/body wording as needed.
 3. **Slack** — connect an account on **Front Desk Summary** and point it at your own team channel (currently set to `new_ai-updates`).
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Every Morning at 9<br/><small>scheduleTrigger</small>"]
+    N1["Get Appointments<br/><small>googleSheets</small>"]
+    N2["Filter For Tomorrow<br/><small>code</small>"]
+    N3["Send Reminder Email<br/><small>gmail</small>"]
+    N4["Build Summary<br/><small>code</small>"]
+    N5["Front Desk Summary<br/><small>slack</small>"]
+    N4 --> N5
+    N1 --> N2
+    N0 --> N1
+    N2 --> N3
+    N2 --> N4
+```
+<!-- ARCHITECTURE:END -->

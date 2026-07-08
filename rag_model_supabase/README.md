@@ -34,3 +34,33 @@ The chat path is triggered by n8n's Chat Trigger widget, not a raw webhook paylo
 ## Error handling
 
 No dedicated error-handling nodes are present. A failed download, embedding call, or vector store write will fail the execution with no retry or alerting.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Google Drive Trigger<br/><small>googleDriveTrigger</small>"]
+    N1["Download file<br/><small>googleDrive</small>"]
+    N2["Supabase Vector Store<br/><small>vectorStoreSupabase</small>"]
+    N3["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N4["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N5["AI Agent<br/><small>agent</small>"]
+    N6["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N7["Simple Memory<br/><small>memoryBufferWindow</small>"]
+    N8["Embeddings OpenAI1<br/><small>embeddingsOpenAi</small>"]
+    N9["Supabase_Vectors<br/><small>vectorStoreSupabase</small>"]
+    N10["When chat message received<br/><small>chatTrigger</small>"]
+    N0 --> N1
+    N1 --> N2
+    N3 -.embedding.-> N2
+    N4 -.document.-> N2
+    N6 -.languageModel.-> N5
+    N7 -.memory.-> N5
+    N8 -.embedding.-> N9
+    N9 -.tool.-> N5
+    N10 --> N5
+```
+<!-- ARCHITECTURE:END -->

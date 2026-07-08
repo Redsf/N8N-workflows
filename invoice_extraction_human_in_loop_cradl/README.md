@@ -48,3 +48,24 @@ The extracted Cradl AI output that feeds the sheet looks roughly like:
 3. **Google Sheets** — connect credentials to **Add invoice line to Google Sheets** and set the target spreadsheet (`documentId`) and sheet (`sheetName`, currently pointing at `gid=0`). Map the extracted fields to your sheet's columns if your column layout differs from Cradl AI's default output.
 4. **Extraction fields** — the fields Cradl AI extracts are defined in your Cradl AI agent, not in n8n; update the agent definition in Cradl AI's dashboard if you need different fields per invoice line.
 5. Since the trigger polls every minute, be mindful of Gmail API quota if the mailbox is high-volume.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Gmail Trigger<br/><small>gmailTrigger</small>"]
+    N1["Filter PDF attachments<br/><small>code</small>"]
+    N2["Add invoice line to Google Sheets<br/><small>googleSheets</small>"]
+    N3["Mark a message as read<br/><small>gmail</small>"]
+    N4["Extract invoice details with AI<br/><small>@cradl/n8n-nodes-cradlai.cradlAi</small>"]
+    N5["Split out each invoice line<br/><small>splitOut</small>"]
+    N0 --> N1
+    N1 --> N3
+    N1 --> N4
+    N5 --> N2
+    N4 --> N5
+```
+<!-- ARCHITECTURE:END -->

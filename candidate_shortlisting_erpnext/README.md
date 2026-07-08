@@ -41,3 +41,58 @@ This is an ERPNext-native webhook, not a generic HTTP call — it must be config
 6. **Webhook registration** — you must create the actual webhook inside ERPNext pointing at this workflow's **Webhook** node URL (path `syncbricks-com-tutorial-candidate-shortlist`), triggered on Job Applicant insert, and pin a test payload before going live.
 7. **Score threshold** — the accept/reject cutoff (80) is hardcoded in **If score less than 80**; adjust to fit your hiring bar.
 8. **File type coverage** — only PDF resumes are fully processed end-to-end; `.doc` and `.jpg` branches in **File Type** have no nodes attached and will need custom handling if you expect those formats.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Code<br/><small>code</small>"]
+    N1["ApplicantData<br/><small>set</small>"]
+    N2["ERPNext - Reject if Resume not Attached<br/><small>erpNext</small>"]
+    N3["Applied Against Job<br/><small>if</small>"]
+    N4["ERPNext - Hold Applicant<br/><small>erpNext</small>"]
+    N5["Get Job Opening<br/><small>erpNext</small>"]
+    N6["Google Gemini Chat Model<br/><small>lmChatGoogleGemini</small>"]
+    N7["Convert to Fields<br/><small>code</small>"]
+    N8["If score less than 80<br/><small>if</small>"]
+    N9["Reject Applicant<br/><small>httpRequest</small>"]
+    N10["Update Applicant Data<br/><small>httpRequest</small>"]
+    N11["Reume Attachment Link<br/><small>set</small>"]
+    N12["Resume Link Provided<br/><small>if</small>"]
+    N13["Accept Applicant<br/><small>httpRequest</small>"]
+    N14["Webhook<br/><small>webhook</small>"]
+    N15["File Type<br/><small>switch</small>"]
+    N16["Download PDF Resume<br/><small>httpRequest</small>"]
+    N17["PDF to Text<br/><small>extractFromFile</small>"]
+    N18["Txt File to Text (Example)<br/><small>extractFromFile</small>"]
+    N19["Merge1<br/><small>merge</small>"]
+    N20["Recruitment AI Agent<br/><small>agent</small>"]
+    N21["Microsoft Outlook<br/><small>microsoftOutlook</small>"]
+    N22["WhatsApp Business Cloud<br/><small>whatsApp</small>"]
+    N0 --> N1
+    N19 --> N5
+    N14 --> N0
+    N15 --> N16
+    N17 --> N19
+    N1 --> N12
+    N5 --> N20
+    N13 --> N22
+    N9 --> N21
+    N7 --> N10
+    N3 -->|true| N11
+    N3 -->|false| N4
+    N16 --> N17
+    N20 --> N7
+    N12 -->|true| N3
+    N12 -->|false| N2
+    N8 -->|true| N9
+    N8 -->|false| N13
+    N11 --> N15
+    N10 --> N8
+    N6 -.languageModel.-> N20
+    N18 --> N19
+```
+<!-- ARCHITECTURE:END -->

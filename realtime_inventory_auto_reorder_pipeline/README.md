@@ -31,3 +31,44 @@ Built for small operations or e-commerce teams managing inventory in a spreadshe
 ## Error handling
 
 An **Error Trigger** node captures any failure in the workflow and routes it to **🚨 Slack Error Alert**, which posts the failing node name, error message, and a link to the execution to a Slack channel. Both nodes are currently disabled in this export — enable them before relying on this workflow unattended. The **Already Reordered Today?** check also acts as a business-logic safeguard, preventing duplicate purchase orders from firing multiple times against the same product on the same day.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["OpenAI — PO Model<br/><small>lmChatOpenAi</small>"]
+    N1["Error Trigger<br/><small>errorTrigger</small>"]
+    N2["🚨 Slack Error Alert<br/><small>slack</small>"]
+    N3["Slack — Send Purchase Order<br/><small>slack</small>"]
+    N4["Generate PO Message<br/><small>agent</small>"]
+    N5["Update Inventory — Reorder Triggered<br/><small>googleSheets</small>"]
+    N6["Log to Reorder Log Sheet<br/><small>googleSheets</small>"]
+    N7["Slack — Summary Report<br/><small>slack</small>"]
+    N8["Manual Trigger<br/><small>manualTrigger</small>"]
+    N9["Check Every 4 Hours<br/><small>scheduleTrigger</small>"]
+    N10["Process One Product at a Time<br/><small>splitInBatches</small>"]
+    N11["Calculate Stock Level & Urgency<br/><small>code</small>"]
+    N12["Update Last Checked Date<br/><small>googleSheets</small>"]
+    N13["Needs Reorder?<br/><small>if</small>"]
+    N14["Get Active Products<br/><small>googleSheets</small>"]
+    N15["Already Reordered Today?<br/><small>if</small>"]
+    N0 -.languageModel.-> N4
+    N1 --> N2
+    N3 --> N5
+    N4 --> N3
+    N5 --> N6
+    N6 --> N10
+    N8 --> N14
+    N10 -->|0| N7
+    N10 -->|1| N11
+    N11 --> N12
+    N12 --> N13
+    N13 -->|true| N15
+    N13 -->|false| N10
+    N14 --> N10
+    N15 --> N4
+```
+<!-- ARCHITECTURE:END -->

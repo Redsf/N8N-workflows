@@ -35,3 +35,24 @@ Send a POST to the webhook with a body like this:
 3. **Gmail** — connect an account on **Send Auto Reply to Lead** and adjust the message wording.
 4. **Slack** — connect an account on **Notify Agent Team** and point it at your own agent channel.
 
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["New Property Inquiry<br/><small>webhook</small>"]
+    N1["Structure Lead<br/><small>set</small>"]
+    N2["Add Lead to CRM Sheet<br/><small>googleSheets</small>"]
+    N3["Send Auto Reply to Lead<br/><small>gmail</small>"]
+    N4["Notify Agent Team<br/><small>slack</small>"]
+    N5["Confirm Inquiry<br/><small>respondToWebhook</small>"]
+    N1 --> N2
+    N4 --> N5
+    N0 --> N1
+    N2 --> N3
+    N2 --> N4
+    N3 --> N5
+```
+<!-- ARCHITECTURE:END -->

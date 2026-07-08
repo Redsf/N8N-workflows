@@ -53,3 +53,36 @@ Send a POST to the **Booking Cancelled** webhook (`/booking-cancelled`) with a b
 ## Error handling
 
 **Send Confirmation**, **Send Final Check (2h)**, and **Offer Freed Slot** are all set to continue on failure so a WhatsApp delivery issue doesn't stop the reminder chain or waitlist flow. **Send SMS Reminder (24h)** retries up to 2 times and also continues on failure. **Get Next Waitlist Entry** retries up to 3 times. A dedicated **Error Trigger** posts the failing node and message to a Slack ops channel via **Notify Ops**.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Booking Created<br/><small>webhook</small>"]
+    N1["Send Confirmation<br/><small>whatsApp</small>"]
+    N2["Wait Until 24h Before<br/><small>wait</small>"]
+    N3["Send SMS Reminder (24h)<br/><small>twilio</small>"]
+    N4["Wait Until 2h Before<br/><small>wait</small>"]
+    N5["Send Final Check (2h)<br/><small>whatsApp</small>"]
+    N6["Booking Cancelled<br/><small>webhook</small>"]
+    N7["Get Next Waitlist Entry<br/><small>httpRequest</small>"]
+    N8["Waitlist Match Found?<br/><small>if</small>"]
+    N9["Offer Freed Slot<br/><small>whatsApp</small>"]
+    N10["No Waitlist Match<br/><small>noOp</small>"]
+    N11["Error Trigger<br/><small>errorTrigger</small>"]
+    N12["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N6 --> N7
+    N7 --> N8
+    N8 -->|true| N9
+    N8 -->|false| N10
+    N11 --> N12
+```
+<!-- ARCHITECTURE:END -->

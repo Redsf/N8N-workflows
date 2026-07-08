@@ -29,3 +29,53 @@ Built for local businesses and multi-location brands that want every review answ
 ## Error handling
 
 **Fetch Google Reviews**, **Fetch Trustpilot Reviews**, and **Publish Reply** all retry up to 3 times on failure. A dedicated **Error Trigger** posts the failing node and message to an ops Slack channel via **Notify Ops**.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Every Hour<br/><small>scheduleTrigger</small>"]
+    N1["Fetch Google Reviews<br/><small>httpRequest</small>"]
+    N2["Fetch Trustpilot Reviews<br/><small>httpRequest</small>"]
+    N3["Combine Sources<br/><small>merge</small>"]
+    N4["Dedupe New Reviews<br/><small>code</small>"]
+    N5["Any New Reviews?<br/><small>if</small>"]
+    N6["No New Reviews<br/><small>noOp</small>"]
+    N7["Process Each Review<br/><small>splitInBatches</small>"]
+    N8["Limit To Done<br/><small>noOp</small>"]
+    N9["Draft Reply (AI Agent)<br/><small>agent</small>"]
+    N10["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N11["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N12["Negative Review?<br/><small>if</small>"]
+    N13["Escalate to Owner<br/><small>slack</small>"]
+    N14["Request Approval<br/><small>slack</small>"]
+    N15["Approved?<br/><small>if</small>"]
+    N16["Publish Reply<br/><small>httpRequest</small>"]
+    N17["Error Trigger<br/><small>errorTrigger</small>"]
+    N18["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N0 --> N2
+    N1 --> N3
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 -->|true| N6
+    N5 -->|false| N7
+    N7 -->|0| N8
+    N7 -->|1| N9
+    N9 --> N12
+    N10 -.languageModel.-> N9
+    N11 -.outputParser.-> N9
+    N12 -->|true| N13
+    N12 -->|false| N14
+    N14 --> N15
+    N15 -->|true| N16
+    N15 -->|false| N7
+    N16 --> N7
+    N13 --> N7
+    N17 --> N18
+```
+<!-- ARCHITECTURE:END -->

@@ -32,3 +32,37 @@ Built for SEO agencies and in-house marketing teams who need a recurring client-
 ## Error handling
 
 All three data-fetch nodes retry on failure (SEMrush and GA4 up to three times, the competitor scrape up to twice), and the competitor scrape is configured to continue on failure rather than block the whole report. A dedicated **Error Trigger** catches any other failure in the pipeline and **Notify Ops** posts the failing error message to Slack.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Every Monday 7am<br/><small>scheduleTrigger</small>"]
+    N1["Fetch SEMrush Rankings<br/><small>httpRequest</small>"]
+    N2["Fetch GA4 Traffic<br/><small>httpRequest</small>"]
+    N3["Scrape Competitor Pages<br/><small>httpRequest</small>"]
+    N4["Combine Intelligence<br/><small>merge</small>"]
+    N5["Compute Movers & Anomalies<br/><small>code</small>"]
+    N6["Summarize Movers (AI Agent)<br/><small>agent</small>"]
+    N7["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N8["Email Report<br/><small>gmail</small>"]
+    N9["Post to Slack<br/><small>slack</small>"]
+    N10["Error Trigger<br/><small>errorTrigger</small>"]
+    N11["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N0 --> N2
+    N0 --> N3
+    N1 --> N4
+    N2 --> N4
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N8
+    N6 --> N9
+    N7 -.languageModel.-> N6
+    N10 --> N11
+```
+<!-- ARCHITECTURE:END -->

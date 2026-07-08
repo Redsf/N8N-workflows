@@ -29,3 +29,45 @@ Built for HR teams who want new-hire day-one communications handled automaticall
 4. **Slack** — connect Slack OAuth2 in **Slack Intro → General Channel** (channel `all-general-all-department`, ID `C0AK1R8LT3M`) and **HR team** (channel `hr-team`, ID `C0AKM4U1K25`). Update both channel IDs for your workspace.
 5. **Google Sheets** — connect Google Sheets OAuth2 in **Append row in sheet** and point it at your own tracking spreadsheet (currently ID `1HwlZ2hRcsd-tq-T4RmzG73d3rfICwTrJbH4QQywKi_Q`).
 6. **Recipient addresses** — replace the placeholder addresses `hr@example.com`, `manager@example.com` and `it@example.com` with your real HR, manager and IT distribution addresses. For a fully dynamic setup, point **Notification Email → Manager** at `{{ $('Onboarding Form').item.json['Direct Manager Email'] }}` instead of a fixed address.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Onboarding Form<br/><small>formTrigger</small>"]
+    N1["Store Form Data<br/><small>code</small>"]
+    N2["Generate AI Content<br/><small>lmChatGroq</small>"]
+    N3["Welcome Email → New Hire<br/><small>gmail</small>"]
+    N4["Notification Email → HR Team<br/><small>gmail</small>"]
+    N5["Notification Email → Manager<br/><small>gmail</small>"]
+    N6["System Access Request → IT Team<br/><small>gmail</small>"]
+    N7["Slack Intro → General Channel<br/><small>slack</small>"]
+    N8["AI Agent<br/><small>agent</small>"]
+    N9["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N10["Download Policy<br/><small>googleDrive</small>"]
+    N11["Download Handbook<br/><small>googleDrive</small>"]
+    N12["Merge<br/><small>merge</small>"]
+    N13["Aggregate<br/><small>aggregate</small>"]
+    N14["Append row in sheet<br/><small>googleSheets</small>"]
+    N15["HR team<br/><small>slack</small>"]
+    N0 --> N1
+    N2 -.languageModel.-> N8
+    N1 --> N8
+    N9 -.outputParser.-> N8
+    N8 --> N11
+    N10 --> N12
+    N11 --> N10
+    N11 --> N12
+    N12 --> N13
+    N13 --> N3
+    N13 --> N4
+    N13 --> N5
+    N13 --> N6
+    N13 --> N7
+    N13 --> N14
+    N13 --> N15
+```
+<!-- ARCHITECTURE:END -->

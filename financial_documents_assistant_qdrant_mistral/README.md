@@ -30,3 +30,45 @@ Built for finance teams and analysts who want a private, self-hosted document in
 ## Note
 
 This exported workflow only contains the ingestion/sync half of the system. The sticky note inside the canvas also describes a Local File Trigger and a chat Q&A path (Chat Trigger, Question and Answer Chain, Mistral Cloud Chat Model, Vector Store Retriever, a second Qdrant Vector Store, and a second Mistral embeddings node) that answer user questions against the indexed documents — none of those nodes are present in the actual workflow JSON. Anyone reusing this template will need to add the folder-watch trigger and the retrieval/chat side before it functions as a full assistant.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking 'Test workflow'<br/><small>manualTrigger</small>"]
+    N1["Set Variables<br/><small>set</small>"]
+    N2["Read File<br/><small>readWriteFile</small>"]
+    N3["Embeddings Mistral Cloud<br/><small>embeddingsMistralCloud</small>"]
+    N4["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N5["Recursive Character Text Splitter<br/><small>textSplitterRecursiveCharacterTextSplitter</small>"]
+    N6["Prepare Embedding Document<br/><small>set</small>"]
+    N7["Remap for File_Added Flow<br/><small>set</small>"]
+    N8["Search For Existing Point<br/><small>httpRequest</small>"]
+    N9["Has Existing Point?<br/><small>if</small>"]
+    N10["Delete Existing Point<br/><small>httpRequest</small>"]
+    N11["Search For Existing Point1<br/><small>httpRequest</small>"]
+    N12["Has Existing Point?1<br/><small>if</small>"]
+    N13["Delete Existing Point1<br/><small>httpRequest</small>"]
+    N14["Handle File Event<br/><small>switch</small>"]
+    N15["Qdrant Vector Store<br/><small>vectorStoreQdrant</small>"]
+    N2 --> N6
+    N1 --> N14
+    N14 -->|out0| N8
+    N14 -->|out1| N11
+    N14 -->|out2| N2
+    N4 -.document.-> N15
+    N9 --> N13
+    N12 --> N10
+    N10 --> N7
+    N3 -.embedding.-> N15
+    N7 --> N2
+    N8 --> N9
+    N6 --> N15
+    N11 --> N12
+    N0 --> N1
+    N5 -.textSplitter.-> N4
+```
+<!-- ARCHITECTURE:END -->

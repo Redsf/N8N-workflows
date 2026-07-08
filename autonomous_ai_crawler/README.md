@@ -28,3 +28,37 @@ Built for growth, sales-ops, and lead-enrichment teams who need to enrich a list
 ## Note
 
 The workflow ships with pinned test data on *Get companies* (`n8n` / `https://n8n.io`) — this is sample data for development only and should be unpinned before running against real input.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Text<br/><small>toolWorkflow</small>"]
+    N1["URLs<br/><small>toolWorkflow</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["JSON Parser<br/><small>outputParserStructured</small>"]
+    N4["Map company name and website<br/><small>set</small>"]
+    N5["Execute workflow<br/><small>manualTrigger</small>"]
+    N6["Get companies<br/><small>supabase</small>"]
+    N7["Select company name and website<br/><small>set</small>"]
+    N8["Set social media array<br/><small>set</small>"]
+    N9["Merge all data<br/><small>merge</small>"]
+    N10["Insert new row<br/><small>supabase</small>"]
+    N11["Crawl website<br/><small>agent</small>"]
+    N0 -.tool.-> N11
+    N1 -.tool.-> N11
+    N3 -.outputParser.-> N11
+    N11 --> N8
+    N6 --> N7
+    N9 --> N10
+    N5 --> N6
+    N2 -.languageModel.-> N11
+    N8 --> N9
+    N4 --> N9
+    N7 --> N11
+    N7 --> N4
+```
+<!-- ARCHITECTURE:END -->

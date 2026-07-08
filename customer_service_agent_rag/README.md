@@ -26,3 +26,30 @@ Note: the final formatted reply produced by **G-mail writter** is not currently 
 ## Notes
 
 The workflow includes pinned sample data on **Gmail Trigger** (a sample refund-policy question from `support@example.com` to `customer@example.com`) used for testing — these are placeholder addresses, not real credentials or contacts.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Gmail Trigger<br/><small>gmailTrigger</small>"]
+    N1["Edit Fields<br/><small>set</small>"]
+    N2["AI Agent<br/><small>agent</small>"]
+    N3["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N4["Simple Memory<br/><small>memoryBufferWindow</small>"]
+    N5["Supabase Vector Store<br/><small>vectorStoreSupabase</small>"]
+    N6["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N7["G-mail writter<br/><small>agent</small>"]
+    N8["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N0 --> N1
+    N1 --> N2
+    N3 -.languageModel.-> N2
+    N4 -.memory.-> N2
+    N5 -.tool.-> N2
+    N6 -.embedding.-> N5
+    N2 --> N7
+    N8 -.languageModel.-> N7
+```
+<!-- ARCHITECTURE:END -->

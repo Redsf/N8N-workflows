@@ -43,3 +43,63 @@ All credential IDs in this workflow are placeholders (`REPLACE_WITH_CREDENTIAL_I
 ## Error handling
 
 Notion and Drive API calls retry up to twice on failure. A dedicated **Error Trigger** catches any workflow-level failure and **Notify Ops** posts the error message to a Slack channel, so a broken nightly sync or a failed Slack reply doesn't go unnoticed.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Nightly Sync (2am)<br/><small>scheduleTrigger</small>"]
+    N1["Search Notion Pages<br/><small>notion</small>"]
+    N2["Search Drive Files<br/><small>googleDrive</small>"]
+    N3["Combine Doc Sources<br/><small>merge</small>"]
+    N4["Normalize Doc List<br/><small>code</small>"]
+    N5["Process Each Doc<br/><small>splitInBatches</small>"]
+    N6["Sync Done<br/><small>noOp</small>"]
+    N7["Is Notion Doc?<br/><small>if</small>"]
+    N8["Get Notion Page Blocks<br/><small>notion</small>"]
+    N9["Flatten Notion Text<br/><small>code</small>"]
+    N10["Download Drive File<br/><small>googleDrive</small>"]
+    N11["Extract Drive Text<br/><small>extractFromFile</small>"]
+    N12["Build Drive Doc<br/><small>code</small>"]
+    N13["Pinecone: Insert Docs<br/><small>vectorStorePinecone</small>"]
+    N14["Insert Embeddings<br/><small>embeddingsOpenAi</small>"]
+    N15["Doc Loader<br/><small>documentDefaultDataLoader</small>"]
+    N16["Slack Q&A Trigger<br/><small>slackTrigger</small>"]
+    N17["Strip Mention<br/><small>code</small>"]
+    N18["Answer Question (AI Agent)<br/><small>agent</small>"]
+    N19["OpenAI Chat Model (Q&A)<br/><small>lmChatOpenAi</small>"]
+    N20["Knowledge Base (RAG Tool)<br/><small>vectorStorePinecone</small>"]
+    N21["Retrieval Embeddings<br/><small>embeddingsOpenAi</small>"]
+    N22["Reply in Thread<br/><small>slack</small>"]
+    N23["Error Trigger<br/><small>errorTrigger</small>"]
+    N24["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N0 --> N2
+    N1 --> N3
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 -->|0| N6
+    N5 -->|1| N7
+    N7 -->|true| N8
+    N7 -->|false| N10
+    N8 --> N9
+    N9 --> N13
+    N10 --> N11
+    N11 --> N12
+    N12 --> N13
+    N13 --> N5
+    N14 -.embedding.-> N13
+    N15 -.document.-> N13
+    N16 --> N17
+    N17 --> N18
+    N19 -.languageModel.-> N18
+    N20 -.tool.-> N18
+    N21 -.embedding.-> N20
+    N18 --> N22
+    N23 --> N24
+```
+<!-- ARCHITECTURE:END -->

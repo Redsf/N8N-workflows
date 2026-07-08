@@ -50,3 +50,37 @@ The image URL must be publicly reachable by the OpenAI API.
 ## Error handling
 
 The vision call retries on a transient failure and has its own error output that routes to an explicit ERROR verdict, so a failed extraction is still logged rather than lost. A global Error Trigger alerts the team on any unhandled failure.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Document Upload Webhook<br/><small>webhook</small>"]
+    N1["Normalize Input<br/><small>code</small>"]
+    N2["GPT Vision Extract<br/><small>httpRequest</small>"]
+    N3["Parse Extraction<br/><small>code</small>"]
+    N4["Validate Against Booking<br/><small>code</small>"]
+    N5["Auto Approve?<br/><small>if</small>"]
+    N6["Flag For Review<br/><small>slack</small>"]
+    N7["Build Error Verdict<br/><small>code</small>"]
+    N8["Record Result<br/><small>googleSheets</small>"]
+    N9["Respond<br/><small>respondToWebhook</small>"]
+    N10["Error Trigger<br/><small>errorTrigger</small>"]
+    N11["Alert Engineering<br/><small>slack</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 -->|0| N3
+    N2 -->|1| N7
+    N3 --> N4
+    N4 --> N5
+    N5 -->|true| N8
+    N5 -->|false| N6
+    N5 -->|false| N8
+    N7 --> N8
+    N8 --> N9
+    N10 --> N11
+```
+<!-- ARCHITECTURE:END -->

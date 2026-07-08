@@ -40,3 +40,59 @@ The agent will ask for your email, full name, and confirm a time slot before che
 5. **Hardcoded event type ID** — every Cal.com tool node references `eventTypeId: 648297`. Replace this with your own Cal.com event type ID, and confirm its configured duration matches what the agent is instructed to book (30 minutes, per the system prompt).
 6. **System prompt customization** — the agent's system message in **Appointment Scheduling Agent1** hardcodes the business name ("PC Parts Ltd"), location, and service scope; rewrite it for your own business before deploying.
 7. Enable both the Twilio-triggered flow and the **Every 24hrs** schedule trigger for the follow-up sequence to run.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Twilio Trigger<br/><small>twilioTrigger</small>"]
+    N1["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N2["Find Follow-Up Candidates<br/><small>airtable</small>"]
+    N3["Send Follow Up Message<br/><small>twilio</small>"]
+    N4["Update Follow-Up Count and Date<br/><small>airtable</small>"]
+    N5["Create/Update Session<br/><small>airtable</small>"]
+    N6["Get Existing Chat Session<br/><small>airtable</small>"]
+    N7["Every 24hrs<br/><small>scheduleTrigger</small>"]
+    N8["Send Reply<br/><small>twilio</small>"]
+    N9["Send Confirmation<br/><small>twilio</small>"]
+    N10["User Request STOP<br/><small>airtable</small>"]
+    N11["Check For Command Words<br/><small>switch</small>"]
+    N12["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N13["Auto-fixing Output Parser<br/><small>outputParserAutofixing</small>"]
+    N14["OpenAI Chat Model2<br/><small>lmChatOpenAi</small>"]
+    N15["Generate Follow Up Message<br/><small>chainLlm</small>"]
+    N16["OpenAI Chat Model3<br/><small>lmChatOpenAi</small>"]
+    N17["Get Availability<br/><small>toolHttpRequest</small>"]
+    N18["Get Existing Booking<br/><small>toolHttpRequest</small>"]
+    N19["Find Existing Booking<br/><small>toolHttpRequest</small>"]
+    N20["Reschedule Booking<br/><small>toolHttpRequest</small>"]
+    N21["Cancel Booking<br/><small>toolHttpRequest</small>"]
+    N22["Create a Booking<br/><small>toolHttpRequest</small>"]
+    N23["Appointment Scheduling Agent1<br/><small>agent</small>"]
+    N7 --> N2
+    N21 -.tool.-> N23
+    N0 --> N11
+    N22 -.tool.-> N23
+    N17 -.tool.-> N23
+    N10 --> N9
+    N1 -.languageModel.-> N15
+    N14 -.languageModel.-> N13
+    N16 -.languageModel.-> N23
+    N20 -.tool.-> N23
+    N18 -.tool.-> N23
+    N5 --> N8
+    N19 -.tool.-> N23
+    N11 -->|out0| N10
+    N11 -->|out1| N6
+    N12 -.outputParser.-> N13
+    N13 -.outputParser.-> N23
+    N2 --> N15
+    N6 --> N23
+    N15 --> N4
+    N23 --> N5
+    N4 --> N3
+```
+<!-- ARCHITECTURE:END -->

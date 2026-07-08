@@ -42,3 +42,72 @@ The form's description field doubles as the job posting shown to applicants — 
 5. **SMTP** — add SMTP credentials to **Send Email**; the `fromEmail` (`gatura@bulkbox.co.ke`) and email sign-off ("Regards, Francis") in the **Personalize email** prompt are hardcoded — update both to match your own sender identity.
 6. **Shortlist threshold** — the 0.7 cutoff in **shortlisted?** is hardcoded; adjust to match your hiring bar.
 7. **Job description source of truth** — the AI Agent, questionnaire generator, and screening-question generator all rely on Airtable's "Positions" table (via tool calls) for job description context, while the form description in **On form submission** is a separate, manually-maintained copy of the same text — keep both in sync when the posting changes.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["On form submission<br/><small>formTrigger</small>"]
+    N1["Airtable<br/><small>airtable</small>"]
+    N2["Upload CV to google drive<br/><small>googleDrive</small>"]
+    N3["applicant details<br/><small>set</small>"]
+    N4["download CV<br/><small>googleDrive</small>"]
+    N5["Extract from File<br/><small>extractFromFile</small>"]
+    N6["AI Agent<br/><small>agent</small>"]
+    N7["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N8["Airtable1<br/><small>airtableTool</small>"]
+    N9["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N10["shortlisted?<br/><small>if</small>"]
+    N11["Rejected<br/><small>airtable</small>"]
+    N12["Potential Hire<br/><small>airtable</small>"]
+    N13["Airtable2<br/><small>airtableTool</small>"]
+    N14["generate questionnaires<br/><small>openAi</small>"]
+    N15["questionnaires<br/><small>form</small>"]
+    N16["update questionnaires<br/><small>airtable</small>"]
+    N17["job_posting<br/><small>airtableTool</small>"]
+    N18["candidate_insights<br/><small>airtableTool</small>"]
+    N19["Personalize email<br/><small>openAi</small>"]
+    N20["Edit Fields<br/><small>set</small>"]
+    N21["Send Email<br/><small>emailSend</small>"]
+    N22["Book Meeting<br/><small>openAi</small>"]
+    N23["Google Calendar<br/><small>googleCalendarTool</small>"]
+    N24["update phone meeting time<br/><small>airtable</small>"]
+    N25["Screening Questions<br/><small>openAi</small>"]
+    N26["job_posting1<br/><small>airtableTool</small>"]
+    N27["candidate_insights1<br/><small>airtableTool</small>"]
+    N28["screening questions<br/><small>airtable</small>"]
+    N29["Edit Fields1<br/><small>set</small>"]
+    N6 --> N10
+    N1 --> N4
+    N8 -.tool.-> N6
+    N13 -.tool.-> N14
+    N21 --> N22
+    N20 --> N21
+    N4 --> N5
+    N17 -.tool.-> N19
+    N22 --> N24
+    N29 --> N28
+    N26 -.tool.-> N25
+    N10 -->|true| N12
+    N10 -->|false| N11
+    N12 --> N14
+    N15 --> N16
+    N23 -.tool.-> N22
+    N5 --> N6
+    N7 -.languageModel.-> N6
+    N19 --> N20
+    N3 --> N1
+    N0 --> N2
+    N18 -.tool.-> N19
+    N25 --> N29
+    N27 -.tool.-> N25
+    N16 --> N19
+    N14 --> N15
+    N9 -.outputParser.-> N6
+    N2 --> N3
+    N24 --> N25
+```
+<!-- ARCHITECTURE:END -->

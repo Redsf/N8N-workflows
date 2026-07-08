@@ -30,3 +30,40 @@ Built for finance and accounts-payable teams who want invoices captured and ente
 ## Error handling
 
 *Check Vendor List* retries up to 2 times and *Create Xero Draft Bill* retries up to 3 times on failure. A dedicated **Error Trigger** catches any workflow failure and **Notify Ops** posts the failing error message to an ops Slack channel.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["New Invoice Email<br/><small>gmailTrigger</small>"]
+    N1["Has PDF Attachment?<br/><small>if</small>"]
+    N2["No Attachment<br/><small>noOp</small>"]
+    N3["Extract PDF Text<br/><small>extractFromFile</small>"]
+    N4["Extract Invoice Fields (AI Agent)<br/><small>agent</small>"]
+    N5["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N6["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N7["Check Vendor List<br/><small>postgres</small>"]
+    N8["Vendor Match Found?<br/><small>if</small>"]
+    N9["Create Xero Draft Bill<br/><small>httpRequest</small>"]
+    N10["Notify Finance (Mismatch)<br/><small>slack</small>"]
+    N11["Log Invoice Record<br/><small>postgres</small>"]
+    N12["Error Trigger<br/><small>errorTrigger</small>"]
+    N13["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N1 -->|true| N3
+    N1 -->|false| N2
+    N3 --> N4
+    N5 -.languageModel.-> N4
+    N6 -.outputParser.-> N4
+    N4 --> N7
+    N7 --> N8
+    N8 -->|true| N9
+    N8 -->|false| N10
+    N9 --> N11
+    N10 --> N11
+    N12 --> N13
+```
+<!-- ARCHITECTURE:END -->

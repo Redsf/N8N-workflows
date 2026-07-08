@@ -34,3 +34,27 @@ Send a POST to the webhook with a body like this:
 2. **Google Sheets**: connect your account in *Log Order to Sheet* and replace the placeholder spreadsheet id with your own "Orders" sheet, using an `Order ID` column.
 3. **Slack**: connect Slack OAuth2 in *Notify VIP Channel* (channel "vip-orders") and *Notify Orders Channel* (channel "new-orders"), and update both channel ids to your actual workspace channels.
 4. Adjust the 200 threshold in *Is High Value Order* to match your average order value.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["New Order Received<br/><small>webhook</small>"]
+    N1["Format Order Data<br/><small>set</small>"]
+    N2["Log Order to Sheet<br/><small>googleSheets</small>"]
+    N3["Is High Value Order<br/><small>if</small>"]
+    N4["Notify VIP Channel<br/><small>slack</small>"]
+    N5["Notify Orders Channel<br/><small>slack</small>"]
+    N6["Respond to Store<br/><small>respondToWebhook</small>"]
+    N1 --> N2
+    N2 --> N3
+    N0 --> N1
+    N4 --> N6
+    N3 -->|true| N4
+    N3 -->|false| N5
+    N5 --> N6
+```
+<!-- ARCHITECTURE:END -->

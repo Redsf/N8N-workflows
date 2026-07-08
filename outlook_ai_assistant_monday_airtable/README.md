@@ -31,3 +31,56 @@ Built for anyone managing a busy business inbox who wants triage rules to live i
 5. **Populate your rule tables first** — the agent's `category` output must exactly match a `Name` value from your `Categories` table; if the table is empty, classification will fail or produce inconsistent categories.
 6. **Choose your trigger** — the manual trigger is for testing; enable **Check Mail Schedule Trigger** (currently disabled, 15-minute interval) for production polling, and keep **Update Contacts Schedule Trigger** running so the Airtable contact cache stays fresh.
 7. **Loop batch size** — **Microsoft Outlook23** is capped at `limit: 10` per run; raise this if your inbox volume exceeds 10 new emails per polling interval.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N1["Microsoft Outlook23<br/><small>microsoftOutlook</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["Set Category<br/><small>microsoftOutlook</small>"]
+    N4["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N5["If<br/><small>if</small>"]
+    N6["Set Importance<br/><small>microsoftOutlook</small>"]
+    N7["AI: Analyse Email<br/><small>agent</small>"]
+    N8["Check Mail Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N9["Update Contacts Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N10["Monday.com - Get Contacts<br/><small>mondayCom</small>"]
+    N11["Airtable - Contacts<br/><small>airtable</small>"]
+    N12["Convert to Markdown<br/><small>markdown</small>"]
+    N13["Email Messages<br/><small>set</small>"]
+    N14["Rules<br/><small>airtable</small>"]
+    N15["Categories<br/><small>airtable</small>"]
+    N16["Delete Rules<br/><small>airtable</small>"]
+    N17["Contact<br/><small>airtable</small>"]
+    N18["Loop Over Items<br/><small>splitInBatches</small>"]
+    N19["Merge<br/><small>merge</small>"]
+    N5 -->|true| N6
+    N5 -->|false| N18
+    N19 --> N7
+    N14 --> N19
+    N17 --> N19
+    N15 --> N19
+    N16 --> N19
+    N3 --> N5
+    N13 --> N18
+    N6 --> N18
+    N18 --> N17
+    N7 --> N3
+    N2 -.languageModel.-> N7
+    N12 --> N13
+    N1 --> N12
+    N4 -.outputParser.-> N7
+    N10 --> N11
+    N8 --> N1
+    N9 --> N10
+    N0 --> N1
+    N0 --> N14
+    N0 --> N15
+    N0 --> N16
+```
+<!-- ARCHITECTURE:END -->

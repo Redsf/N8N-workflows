@@ -59,3 +59,53 @@ which the agent then forwards to the `personal_shopper` WooCommerce tool.
 4. **Google Drive** — add OAuth2 credentials to **Google Drive1** and **Google Drive2** for pulling the store-info documents to embed.
 5. **Run ingestion first** — trigger **When clicking 'Test workflow'** once so the Qdrant collection has content before the chat agent goes live. Re-run it whenever the source documents change; there's no scheduled re-sync.
 6. **Adjust the store persona** — the system prompts on **Information Extractor** and **AI Agent** are written for a shoe/bag/clothing retailer (and partly in Italian). Rewrite them to match your actual product catalog and language before deploying.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When chat message received<br/><small>chatTrigger</small>"]
+    N1["Window Buffer Memory<br/><small>memoryBufferWindow</small>"]
+    N2["Calculator<br/><small>toolCalculator</small>"]
+    N3["Edit Fields<br/><small>set</small>"]
+    N4["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N5["RAG<br/><small>toolVectorStore</small>"]
+    N6["Qdrant Vector Store<br/><small>vectorStoreQdrant</small>"]
+    N7["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N8["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N9["personal_shopper<br/><small>wooCommerceTool</small>"]
+    N10["Information Extractor<br/><small>informationExtractor</small>"]
+    N11["OpenAI Chat Model2<br/><small>lmChatOpenAi</small>"]
+    N12["Google Drive2<br/><small>googleDrive</small>"]
+    N13["Google Drive1<br/><small>googleDrive</small>"]
+    N14["Embeddings OpenAI3<br/><small>embeddingsOpenAi</small>"]
+    N15["Default Data Loader2<br/><small>documentDefaultDataLoader</small>"]
+    N16["Token Splitter1<br/><small>textSplitterTokenSplitter</small>"]
+    N17["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N18["HTTP Request<br/><small>httpRequest</small>"]
+    N19["Qdrant Vector Store1<br/><small>vectorStoreQdrant</small>"]
+    N20["AI Agent<br/><small>agent</small>"]
+    N5 -.tool.-> N20
+    N2 -.tool.-> N20
+    N3 --> N10
+    N18 --> N12
+    N13 --> N19
+    N12 --> N13
+    N16 -.textSplitter.-> N15
+    N9 -.tool.-> N20
+    N7 -.embedding.-> N6
+    N4 -.languageModel.-> N20
+    N14 -.embedding.-> N19
+    N8 -.languageModel.-> N5
+    N11 -.languageModel.-> N10
+    N6 -.vectorStore.-> N5
+    N15 -.document.-> N19
+    N1 -.memory.-> N20
+    N10 --> N20
+    N0 --> N3
+    N17 --> N18
+```
+<!-- ARCHITECTURE:END -->

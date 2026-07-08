@@ -48,3 +48,107 @@ The final WhatsApp message reads roughly like a friendly text: "Heads up — cal
 6. **WhatsApp Business Cloud** — add `whatsAppApi` to **WhatsApp Business Cloud**, and replace the hardcoded `phoneNumberId` (`477115632141067`) and `recipientPhoneNumber` (`44123456789`) with your own sender ID and recipient.
 7. **Self-referencing sub-workflow** — **Get Correspondance** and **Get LinkedIn Profile & Activity** both call `{{ $workflow.id }}` (this same workflow) via its **Execute Workflow Trigger**. Don't duplicate or re-import this workflow under a new ID without also checking those references still resolve.
 8. Tune the **Schedule Trigger** interval and the `timeMax`/`timeMin` window in **Check For Upcoming Meetings** (currently "next hour") to match how far ahead you want your heads-up notification.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Get Message Contents<br/><small>gmail</small>"]
+    N1["Simplify Emails<br/><small>set</small>"]
+    N2["Check For Upcoming Meetings<br/><small>googleCalendar</small>"]
+    N3["OpenAI Chat Model2<br/><small>lmChatOpenAi</small>"]
+    N4["Extract Attendee Information<br/><small>informationExtractor</small>"]
+    N5["Execute Workflow Trigger<br/><small>executeWorkflowTrigger</small>"]
+    N6["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N7["Get Last Correspondence<br/><small>gmail</small>"]
+    N8["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N9["OpenAI Chat Model3<br/><small>lmChatOpenAi</small>"]
+    N10["WhatsApp Business Cloud<br/><small>whatsApp</small>"]
+    N11["Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N12["Return LinkedIn Success<br/><small>set</small>"]
+    N13["Return LinkedIn Error<br/><small>set</small>"]
+    N14["Return Email Error<br/><small>set</small>"]
+    N15["Return Email Success<br/><small>set</small>"]
+    N16["Set Route Email<br/><small>set</small>"]
+    N17["Set Route Linkedin<br/><small>set</small>"]
+    N18["Router<br/><small>switch</small>"]
+    N19["Return LinkedIn Error1<br/><small>set</small>"]
+    N20["Has Emails?<br/><small>if</small>"]
+    N21["Return Email Error1<br/><small>set</small>"]
+    N22["Sections To List<br/><small>splitOut</small>"]
+    N23["Set LinkedIn Cookie<br/><small>set</small>"]
+    N24["Attendees to List<br/><small>splitOut</small>"]
+    N25["Merge Attendee with Summaries<br/><small>set</small>"]
+    N26["Has Email Address?<br/><small>if</small>"]
+    N27["Has LinkedIn URL?<br/><small>if</small>"]
+    N28["Get Correspondance<br/><small>executeWorkflow</small>"]
+    N29["Merge<br/><small>merge</small>"]
+    N30["Aggregate Attendees<br/><small>aggregate</small>"]
+    N31["Activities To Array<br/><small>aggregate</small>"]
+    N32["Extract Profile Metadata<br/><small>html</small>"]
+    N33["Activities To List<br/><small>splitOut</small>"]
+    N34["APIFY Web Scraper<br/><small>httpRequest</small>"]
+    N35["Get Activity Details<br/><small>html</small>"]
+    N36["Get Sections<br/><small>html</small>"]
+    N37["Get About Section<br/><small>set</small>"]
+    N38["Get Activity Section<br/><small>set</small>"]
+    N39["Extract Activities<br/><small>html</small>"]
+    N40["Merge1<br/><small>merge</small>"]
+    N41["Is Scrape Successful?<br/><small>if</small>"]
+    N42["Extract About<br/><small>html</small>"]
+    N43["Get LinkedIn Profile & Activity<br/><small>executeWorkflow</small>"]
+    N44["Correspondance Recap Agent<br/><small>chainLlm</small>"]
+    N45["Attendee Research Agent<br/><small>chainLlm</small>"]
+    N46["LinkedIn Summarizer Agent<br/><small>chainLlm</small>"]
+    N29 --> N25
+    N40 --> N46
+    N18 -->|out0| N26
+    N18 -->|out1| N27
+    N20 -->|true| N0
+    N20 -->|false| N14
+    N36 --> N37
+    N36 --> N38
+    N42 --> N40
+    N16 --> N28
+    N1 --> N44
+    N11 --> N2
+    N22 --> N36
+    N34 --> N41
+    N24 --> N16
+    N24 --> N17
+    N37 --> N42
+    N27 -->|true| N23
+    N27 -->|false| N19
+    N6 -.languageModel.-> N44
+    N33 --> N35
+    N39 --> N33
+    N28 --> N29
+    N26 -->|true| N7
+    N26 -->|false| N21
+    N8 -.languageModel.-> N46
+    N3 -.languageModel.-> N4
+    N9 -.languageModel.-> N45
+    N17 --> N43
+    N31 --> N40
+    N30 --> N45
+    N23 --> N34
+    N35 --> N31
+    N38 --> N39
+    N0 --> N1
+    N41 -->|true| N32
+    N41 -->|false| N13
+    N45 --> N10
+    N7 --> N20
+    N5 --> N18
+    N32 --> N22
+    N46 --> N12
+    N44 --> N15
+    N2 --> N4
+    N4 --> N24
+    N25 --> N30
+    N43 --> N29
+```
+<!-- ARCHITECTURE:END -->

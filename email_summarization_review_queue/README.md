@@ -32,3 +32,59 @@ Built for support or business inboxes where AI-drafted replies are useful but a 
 6. **Google Drive** — add OAuth2 credentials to **Get folder** and **Download Files**, and point the folder filter at the Drive folder containing your source documents (currently set to a placeholder `test-whatsapp` folder ID — replace with your real folder).
 7. **Gmail (reviewer inbox)** — add OAuth2 credentials to **Gmail**. The reviewer's address is hardcoded (`info@n3w.it`) in the node's `sendTo` field; change it to your actual reviewer/approver address. Gmail is required specifically because it's the only supported provider for n8n's "send and wait for response" pattern.
 8. **Run ingestion first** — trigger **When clicking 'Test workflow'** once (or whenever your source documents change) before relying on the agents' knowledge base answers, since there's no scheduled re-sync of the Qdrant collection.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Email Trigger (IMAP)<br/><small>emailReadImap</small>"]
+    N1["Markdown<br/><small>markdown</small>"]
+    N2["Send Email<br/><small>emailSend</small>"]
+    N3["Qdrant Vector Store<br/><small>vectorStoreQdrant</small>"]
+    N4["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N5["Email Summarization Chain<br/><small>chainSummarization</small>"]
+    N6["Write email<br/><small>agent</small>"]
+    N7["OpenAI<br/><small>lmChatOpenAi</small>"]
+    N8["Gmail<br/><small>gmail</small>"]
+    N9["Text Classifier<br/><small>textClassifier</small>"]
+    N10["Edit Fields<br/><small>set</small>"]
+    N11["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N12["Create collection<br/><small>httpRequest</small>"]
+    N13["Refresh collection<br/><small>httpRequest</small>"]
+    N14["Get folder<br/><small>googleDrive</small>"]
+    N15["Download Files<br/><small>googleDrive</small>"]
+    N16["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N17["Token Splitter<br/><small>textSplitterTokenSplitter</small>"]
+    N18["Qdrant Vector Store1<br/><small>vectorStoreQdrant</small>"]
+    N19["Embeddings OpenAI1<br/><small>embeddingsOpenAi</small>"]
+    N20["DeepSeek Chat Model<br/><small>lmChatDeepSeek</small>"]
+    N21["Email Reviewer<br/><small>agent</small>"]
+    N8 --> N9
+    N7 -.languageModel.-> N6
+    N7 -.languageModel.-> N21
+    N7 -.languageModel.-> N9
+    N1 --> N5
+    N14 --> N15
+    N10 --> N8
+    N6 --> N10
+    N15 --> N18
+    N21 --> N10
+    N17 -.textSplitter.-> N16
+    N9 -->|0| N2
+    N9 -->|1| N21
+    N4 -.embedding.-> N3
+    N19 -.embedding.-> N18
+    N13 --> N14
+    N20 -.languageModel.-> N5
+    N16 -.document.-> N18
+    N3 -.tool.-> N6
+    N3 -.tool.-> N21
+    N0 --> N1
+    N5 --> N6
+    N11 --> N12
+    N11 --> N13
+```
+<!-- ARCHITECTURE:END -->

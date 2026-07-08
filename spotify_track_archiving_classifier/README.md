@@ -36,3 +36,76 @@ Richer, more specific playlist descriptions produce noticeably better classifica
 4. **Playlist descriptions matter** — since classification relies entirely on playlist name/description plus track metadata (no audio analysis reaches the LLM), write specific, example-rich descriptions for each playlist; vague descriptions produce vague classifications.
 5. **Manual verification (optional)** — the disabled **Manual Verification** / **Split Out2** nodes can be re-enabled if you want to review the AI's playlist assignments (with track names attached for readability) before they're written to Spotify.
 6. **Batch limits are hardcoded** — 100 for audio-features and add-to-playlist calls (Spotify API limits) and 200 for the classification chunk size (token-budget tradeoff); adjust the chunk size in **Aggregate by 200 tracks** if you hit context limits with very long playlist description lists.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Retrieve relevant info<br/><small>set</small>"]
+    N1["Batch preparation<br/><small>code</small>"]
+    N2["Get Track details<br/><small>httpRequest</small>"]
+    N3["Split Out<br/><small>splitOut</small>"]
+    N4["Anthropic Chat Model<br/><small>lmChatAnthropic</small>"]
+    N5["Get Playlist<br/><small>spotify</small>"]
+    N6["Get Tracks<br/><small>spotify</small>"]
+    N7["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N8["Playlists informations<br/><small>set</small>"]
+    N9["Filter my playlist<br/><small>filter</small>"]
+    N10["Split Out1<br/><small>splitOut</small>"]
+    N11["Batch preparation1<br/><small>code</small>"]
+    N12["Merge<br/><small>merge</small>"]
+    N13["Simplify Tracks informations<br/><small>set</small>"]
+    N14["Limit<br/><small>limit</small>"]
+    N15["Get logged tracks<br/><small>googleSheets</small>"]
+    N16["Excluding logged tracks<br/><small>merge</small>"]
+    N17["Filter<br/><small>filter</small>"]
+    N18["Split Out2<br/><small>splitOut</small>"]
+    N19["Manual Verification<br/><small>merge</small>"]
+    N20["Spotify<br/><small>spotify</small>"]
+    N21["Aggregate by 200 tracks<br/><small>code</small>"]
+    N22["Monthly Trigger<br/><small>scheduleTrigger</small>"]
+    N23["Get logged playlists<br/><small>googleSheets</small>"]
+    N24["Log new tracks<br/><small>googleSheets</small>"]
+    N25["Log new playlists<br/><small>googleSheets</small>"]
+    N26["Excluding logged playlists<br/><small>merge</small>"]
+    N27["Limit2<br/><small>limit</small>"]
+    N28["Classify new tracks<br/><small>noOp</small>"]
+    N29["Basic LLM Chain - AI Classification<br/><small>chainLlm</small>"]
+    N14 --> N15
+    N12 --> N13
+    N17 --> N11
+    N27 --> N23
+    N3 --> N12
+    N6 --> N0
+    N10 --> N18
+    N10 --> N17
+    N18 --> N19
+    N5 --> N9
+    N22 --> N5
+    N22 --> N6
+    N1 --> N2
+    N2 --> N3
+    N15 --> N16
+    N11 --> N20
+    N9 --> N8
+    N28 --> N21
+    N28 --> N19
+    N4 -.languageModel.-> N29
+    N23 --> N26
+    N8 --> N26
+    N8 --> N27
+    N0 --> N1
+    N0 --> N12
+    N21 --> N29
+    N16 --> N24
+    N16 --> N28
+    N7 -.outputParser.-> N29
+    N26 --> N25
+    N13 --> N14
+    N13 --> N16
+    N29 --> N10
+```
+<!-- ARCHITECTURE:END -->

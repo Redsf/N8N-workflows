@@ -40,3 +40,33 @@ Send a form submission (or POST to the underlying form-trigger webhook) with:
 ## Error handling
 
 No dedicated error-handling nodes are present. A failed Apify run, LLM call, or sheet write will fail the execution with no retry or alerting. Combined with the loop-stall issue above, a single rejected post partway through a batch can also silently truncate processing of the remaining scraped items.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["On form submission<br/><small>formTrigger</small>"]
+    N1["Run an Actor and get dataset<br/><small>@apify/n8n-nodes-apify.apify</small>"]
+    N2["Loop Over Items<br/><small>splitInBatches</small>"]
+    N3["Groq Chat Model<br/><small>lmChatGroq</small>"]
+    N4["Varify The authenticity<br/><small>agent</small>"]
+    N5["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N6["If<br/><small>if</small>"]
+    N7["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N8["Append row in sheet<br/><small>googleSheets</small>"]
+    N9["Rewrite post<br/><small>agent</small>"]
+    N0 --> N1
+    N2 --> N4
+    N1 --> N2
+    N3 -.languageModel.-> N4
+    N4 --> N6
+    N5 -.outputParser.-> N4
+    N6 --> N9
+    N7 -.languageModel.-> N9
+    N9 --> N2
+    N9 --> N8
+```
+<!-- ARCHITECTURE:END -->

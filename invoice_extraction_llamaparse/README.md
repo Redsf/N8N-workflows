@@ -38,3 +38,48 @@ Any email that doesn't match both the sender and the attachment filter is ignore
 5. **Google Sheets** — add OAuth2 credentials to **Append to Reconciliation Sheet**, and point it at your own spreadsheet — the column schema is pre-mapped to the extraction fields (invoice date, invoice number, PO number, supplier/customer details, VAT numbers, line items, subtotals, total), so keep the header row consistent if you swap sheets.
 6. **Adjust the sender filter** — **Receiving Invoices** is hardcoded to only accept mail from `invoices@paypal.com`. Change this to match whichever vendor(s) actually email you invoices, or broaden the query to catch multiple senders.
 7. **Watch the LlamaParse rate limit** — **Wait to stay within service limits** adds a delay between status polls; shrink or extend it depending on your plan's rate limits and typical invoice volume.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["OpenAI Model<br/><small>lmOpenAi</small>"]
+    N1["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N2["Upload to LlamaParse<br/><small>httpRequest</small>"]
+    N3["Receiving Invoices<br/><small>gmailTrigger</small>"]
+    N4["Append to Reconciliation Sheet<br/><small>googleSheets</small>"]
+    N5["Get Processing Status<br/><small>httpRequest</small>"]
+    N6["Wait to stay within service limits<br/><small>wait</small>"]
+    N7["Is Job Ready?<br/><small>switch</small>"]
+    N8["Add 'invoice synced' Label<br/><small>gmail</small>"]
+    N9["Get Parsed Invoice Data<br/><small>httpRequest</small>"]
+    N10["Map Output<br/><small>set</small>"]
+    N11["Apply Data Extraction Rules<br/><small>chainLlm</small>"]
+    N12["Should Process Email?<br/><small>if</small>"]
+    N13["Split Out Labels<br/><small>splitOut</small>"]
+    N14["Get Labels Names<br/><small>gmail</small>"]
+    N15["Combine Label Names<br/><small>aggregate</small>"]
+    N16["Email with Label Names<br/><small>merge</small>"]
+    N10 --> N4
+    N0 -.languageModel.-> N11
+    N7 -->|out0| N9
+    N7 -->|out3| N6
+    N14 --> N15
+    N13 --> N14
+    N3 --> N13
+    N3 --> N16
+    N15 --> N16
+    N2 --> N5
+    N5 --> N7
+    N12 --> N2
+    N16 --> N12
+    N9 --> N11
+    N1 -.outputParser.-> N11
+    N11 --> N10
+    N4 --> N8
+    N6 --> N5
+```
+<!-- ARCHITECTURE:END -->

@@ -40,3 +40,86 @@ The `project` field comes from the path segment (`path.split('/').slice(0,4)[3]`
 5. **Note templates** — the three study-aid types are hardcoded in **Get Doc Types**'s raw JSON. Add, remove, or edit entries there to change what gets generated.
 6. **Model choice** — several Chat Model nodes pin `open-mixtral-8x7b` explicitly while **Mistral Cloud Chat Model2** uses the credential's default; align these for consistent behavior.
 7. **Rate limiting** — the **2secs** Wait node is a fixed delay between template generations; increase it if you hit Mistral API rate limits with larger document sets or more templates.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Local File Trigger<br/><small>localFileTrigger</small>"]
+    N1["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N2["Recursive Character Text Splitter<br/><small>textSplitterRecursiveCharacterTextSplitter</small>"]
+    N3["Embeddings Mistral Cloud<br/><small>embeddingsMistralCloud</small>"]
+    N4["Mistral Cloud Chat Model<br/><small>lmChatMistralCloud</small>"]
+    N5["Mistral Cloud Chat Model1<br/><small>lmChatMistralCloud</small>"]
+    N6["Prep Incoming Doc<br/><small>set</small>"]
+    N7["Settings<br/><small>set</small>"]
+    N8["Merge<br/><small>merge</small>"]
+    N9["Get Doc Types<br/><small>set</small>"]
+    N10["Split Out Doc Types<br/><small>splitOut</small>"]
+    N11["For Each Doc Type...<br/><small>splitInBatches</small>"]
+    N12["Item List Output Parser<br/><small>outputParserItemList</small>"]
+    N13["Vector Store Retriever<br/><small>retrieverVectorStore</small>"]
+    N14["Embeddings Mistral Cloud1<br/><small>embeddingsMistralCloud</small>"]
+    N15["Qdrant Vector Store1<br/><small>vectorStoreQdrant</small>"]
+    N16["Mistral Cloud Chat Model2<br/><small>lmChatMistralCloud</small>"]
+    N17["Split Out<br/><small>splitOut</small>"]
+    N18["Aggregate<br/><small>aggregate</small>"]
+    N19["Mistral Cloud Chat Model3<br/><small>lmChatMistralCloud</small>"]
+    N20["Discover<br/><small>chainRetrievalQa</small>"]
+    N21["2secs<br/><small>wait</small>"]
+    N22["Get Generated Documents<br/><small>set</small>"]
+    N23["Generate<br/><small>chainLlm</small>"]
+    N24["Prep For AI<br/><small>set</small>"]
+    N25["To Binary<br/><small>convertToFile</small>"]
+    N26["Export to Folder<br/><small>readWriteFile</small>"]
+    N27["Get FileType<br/><small>switch</small>"]
+    N28["Import File<br/><small>readWriteFile</small>"]
+    N29["Extract from PDF<br/><small>extractFromFile</small>"]
+    N30["Extract from DOCX<br/><small>extractFromFile</small>"]
+    N31["Extract from TEXT<br/><small>extractFromFile</small>"]
+    N32["Summarization Chain<br/><small>chainSummarization</small>"]
+    N33["Qdrant Vector Store<br/><small>vectorStoreQdrant</small>"]
+    N34["Interview<br/><small>chainLlm</small>"]
+    N21 --> N11
+    N8 --> N24
+    N20 --> N18
+    N23 --> N21
+    N7 --> N28
+    N18 --> N23
+    N34 --> N17
+    N17 --> N20
+    N25 --> N26
+    N28 --> N27
+    N24 --> N9
+    N27 -->|out0| N29
+    N27 -->|out1| N30
+    N27 -->|out2| N31
+    N9 --> N10
+    N29 --> N6
+    N30 --> N6
+    N31 --> N6
+    N6 --> N33
+    N6 --> N32
+    N0 --> N7
+    N1 -.document.-> N33
+    N33 --> N8
+    N10 --> N11
+    N32 --> N8
+    N11 -->|0| N22
+    N11 -->|1| N34
+    N15 -.vectorStore.-> N13
+    N13 -.retriever.-> N20
+    N22 --> N25
+    N12 -.outputParser.-> N34
+    N3 -.embedding.-> N33
+    N4 -.languageModel.-> N34
+    N14 -.embedding.-> N15
+    N5 -.languageModel.-> N32
+    N16 -.languageModel.-> N20
+    N19 -.languageModel.-> N23
+    N2 -.textSplitter.-> N1
+```
+<!-- ARCHITECTURE:END -->

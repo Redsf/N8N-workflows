@@ -25,3 +25,55 @@ Built for content teams and blog owners who want a lightweight, self-hosted alte
 5. **Choose one trigger for production** — the manual trigger is for testing only. Enable either **Schedule Trigger** (simple polling, works well with the **Loop Over Items** batch pattern) or **Webhook** (event-driven from a WordPress hook, pairs with **Set fields - From Webhook input**) and disable the other. If using the webhook, add a Header Auth credential matching what your WordPress-side call sends.
 6. **Post limit safety** — **WordPress - Get All Posts** ships without a hard limit in this template; consider adding filters (category, tag, date) before enabling on a large blog, since every summarized post costs an OpenAI call.
 7. **Prompt customization** — the OpenAI system prompt in the **OpenAI** node is written around an electric-vehicle blog example; update the topic framing and the good/bad output examples to match your own site's subject matter and HTML styling.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N1["Text Classifier<br/><small>textClassifier</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["Loop Over Items<br/><small>splitInBatches</small>"]
+    N4["If<br/><small>if</small>"]
+    N5["Webhook<br/><small>webhook</small>"]
+    N6["Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N7["Wordpress - Update Post<br/><small>httpRequest</small>"]
+    N8["Google Sheets - Get rows<br/><small>googleSheets</small>"]
+    N9["HTML to Markdown<br/><small>markdown</small>"]
+    N10["OpenAI<br/><small>openAi</small>"]
+    N11["Google Sheets - Add Row<br/><small>googleSheets</small>"]
+    N12["Slack - Notify Channel<br/><small>slack</small>"]
+    N13["Set fields - From Webhook input<br/><small>set</small>"]
+    N14["Date & Time - Substract<br/><small>dateTime</small>"]
+    N15["Set fields - Prepare data for Gsheets & Slack<br/><small>set</small>"]
+    N16["WordPress - Get Post2<br/><small>wordpress</small>"]
+    N17["No Operation, do nothing<br/><small>noOp</small>"]
+    N18["WordPress - Get Last Posts<br/><small>wordpress</small>"]
+    N19["WordPress - Get Post1<br/><small>wordpress</small>"]
+    N20["WordPress - Get All Posts<br/><small>wordpress</small>"]
+    N4 -->|true| N3
+    N4 -->|false| N16
+    N10 --> N7
+    N5 --> N13
+    N3 -->|0| N17
+    N3 -->|1| N8
+    N1 -->|0| N10
+    N1 -->|1| N3
+    N9 --> N1
+    N6 --> N14
+    N2 -.languageModel.-> N1
+    N16 --> N9
+    N12 --> N3
+    N14 --> N18
+    N11 --> N12
+    N7 --> N15
+    N8 --> N4
+    N20 --> N3
+    N13 --> N19
+    N0 --> N20
+    N15 --> N11
+```
+<!-- ARCHITECTURE:END -->

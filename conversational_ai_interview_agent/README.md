@@ -47,3 +47,73 @@ GET /webhook/ai-interview-transcripts/<session-uuid>
 5. **Webhook redirect URL** — **Redirect to Completion Screen** hardcodes a placeholder redirect (`https://<host>/webhook/<uuid-if-using-n8n-cloud>/ai-interview-transcripts/{{ session_id }}`). Replace `<host>` and the UUID segment with your actual n8n instance's production webhook URL for the **Webhook** node, or the completion screen link will 404.
 6. **Session TTL** — sessions expire from Redis after 24 hours (`Create Session` sets `ttl: 60 * 60 * 24`). Anyone completing an interview after that window will hit **404 Not Found** when viewing their transcript.
 7. Optional: swap **Groq Chat Model** for any other LangChain chat model node if you'd prefer OpenAI, Anthropic, etc. — the agent's structured-output parsing in **Parse Response** is model-agnostic as long as the model returns the expected JSON.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Stop Interview?<br/><small>if</small>"]
+    N1["Generate Row<br/><small>set</small>"]
+    N2["Generate Row1<br/><small>set</small>"]
+    N3["Clear For Next Interview<br/><small>memoryManager</small>"]
+    N4["Send Reply To Agent<br/><small>set</small>"]
+    N5["Start Interview<br/><small>formTrigger</small>"]
+    N6["Get Answer<br/><small>form</small>"]
+    N7["Set Interview Topic<br/><small>set</small>"]
+    N8["UUID<br/><small>crypto</small>"]
+    N9["Generate Row2<br/><small>set</small>"]
+    N10["Create Session<br/><small>redis</small>"]
+    N11["Update Session<br/><small>redis</small>"]
+    N12["Update Session1<br/><small>redis</small>"]
+    N13["Update Session2<br/><small>redis</small>"]
+    N14["Valid Session?<br/><small>if</small>"]
+    N15["Respond to Webhook<br/><small>respondToWebhook</small>"]
+    N16["Window Buffer Memory2<br/><small>memoryBufferWindow</small>"]
+    N17["Window Buffer Memory<br/><small>memoryBufferWindow</small>"]
+    N18["Redirect to Completion Screen<br/><small>form</small>"]
+    N19["Webhook<br/><small>webhook</small>"]
+    N20["404 Not Found<br/><small>html</small>"]
+    N21["AI Researcher<br/><small>agent</small>"]
+    N22["Parse Response<br/><small>set</small>"]
+    N23["Groq Chat Model<br/><small>lmChatGroq</small>"]
+    N24["Show Transcript<br/><small>html</small>"]
+    N25["Save to Google Sheet<br/><small>googleSheets</small>"]
+    N26["Session to List<br/><small>splitOut</small>"]
+    N27["Messages To JSON<br/><small>set</small>"]
+    N28["Query By Session<br/><small>redis</small>"]
+    N29["Get Session<br/><small>redis</small>"]
+    N8 --> N10
+    N19 --> N28
+    N6 --> N1
+    N29 --> N26
+    N1 --> N12
+    N20 --> N15
+    N21 --> N22
+    N2 --> N13
+    N9 --> N11
+    N10 --> N9
+    N22 --> N0
+    N11 --> N7
+    N14 -->|true| N24
+    N14 -->|false| N20
+    N23 -.languageModel.-> N21
+    N26 --> N27
+    N24 --> N15
+    N5 --> N8
+    N0 -->|true| N2
+    N0 -->|false| N6
+    N12 --> N4
+    N13 --> N3
+    N27 --> N25
+    N28 --> N14
+    N4 --> N21
+    N7 --> N21
+    N17 -.memory.-> N3
+    N16 -.memory.-> N21
+    N3 --> N18
+    N18 --> N29
+```
+<!-- ARCHITECTURE:END -->

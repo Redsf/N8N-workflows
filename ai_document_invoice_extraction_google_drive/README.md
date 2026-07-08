@@ -37,3 +37,51 @@ A separate, disconnected **Error Handler** node exists in the workflow but has n
 ## Error handling
 
 **Validate & Prepare Input** throws explicit errors for missing binary data, unsupported file types, and oversized files rather than failing silently, and low-confidence extractions are automatically routed to a "Needs Review" sheet instead of the main data tab. However, the workflow's **Error Handler** node (which builds a structured error log) is not wired into any node's error output or connected to any trigger — it currently has no incoming connections in `connections`, so it does not run automatically on failure. Wire it to the relevant nodes' error output, or add a workflow-level Error Trigger, before relying on it in production.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["📂 Google Drive Trigger<br/><small>googleDriveTrigger</small>"]
+    N1["⬇️ Google Drive: Download File<br/><small>googleDrive</small>"]
+    N2["📁 Detect Doc Type From Folder<br/><small>code</small>"]
+    N3["🔍 Validate & Prepare Input<br/><small>code</small>"]
+    N4["🔄 Convert to Base64<br/><small>code</small>"]
+    N5["🧠 Build Classification Prompt<br/><small>code</small>"]
+    N6["🤖 GPT-4o: Classify Document<br/><small>openAi</small>"]
+    N7["📋 Parse Classification<br/><small>code</small>"]
+    N8["📝 Build Extraction Prompt<br/><small>code</small>"]
+    N9["🤖 GPT-4o: Extract Document Data<br/><small>openAi</small>"]
+    N10["✅ Parse & Validate Extraction<br/><small>code</small>"]
+    N11["⚠️ Quality Check Router<br/><small>if</small>"]
+    N12["📊 Google Sheets: Save Extraction<br/><small>googleSheets</small>"]
+    N13["🚨 Google Sheets: Flag for Review<br/><small>googleSheets</small>"]
+    N14["🔗 Merge Sheet Outputs<br/><small>merge</small>"]
+    N15["📋 Execution Log<br/><small>code</small>"]
+    N16["❌ Error Handler<br/><small>code</small>"]
+    N17["If<br/><small>if</small>"]
+    N18["Merge<br/><small>merge</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N17
+    N6 --> N7
+    N7 --> N18
+    N8 --> N9
+    N9 --> N10
+    N10 --> N11
+    N11 -->|true| N12
+    N11 -->|false| N13
+    N12 --> N14
+    N13 --> N14
+    N14 --> N15
+    N17 -->|true| N18
+    N17 -->|false| N6
+    N18 --> N8
+```
+<!-- ARCHITECTURE:END -->

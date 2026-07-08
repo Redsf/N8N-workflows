@@ -26,3 +26,31 @@ Built for ecommerce brands running Shopify that want to win back abandoned check
 ## Error handling
 
 **Check Order Status** retries up to 3 times before failing; **Send Recovery Email** retries up to 2 times; **Send Recovery WhatsApp** retries up to 2 times and is set to continue on failure so a WhatsApp delivery issue doesn't block the email leg. A dedicated **Error Trigger** posts the failing node and message to an ops Slack channel via **Notify Ops**.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Checkout Abandoned<br/><small>shopifyTrigger</small>"]
+    N1["Wait 15 Min<br/><small>wait</small>"]
+    N2["Check Order Status<br/><small>httpRequest</small>"]
+    N3["Order Completed?<br/><small>if</small>"]
+    N4["Cart Converted<br/><small>noOp</small>"]
+    N5["Build Recovery Message<br/><small>set</small>"]
+    N6["Send Recovery Email<br/><small>gmail</small>"]
+    N7["Send Recovery WhatsApp<br/><small>whatsApp</small>"]
+    N8["Error Trigger<br/><small>errorTrigger</small>"]
+    N9["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 -->|true| N4
+    N3 -->|false| N5
+    N5 --> N6
+    N5 --> N7
+    N8 --> N9
+```
+<!-- ARCHITECTURE:END -->

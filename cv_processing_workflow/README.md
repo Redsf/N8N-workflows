@@ -36,3 +36,34 @@ The trigger is a form, not a raw webhook, so applicants fill out these fields di
 ## Error handling
 
 No dedicated error-handling nodes are present. A failure in any step (Drive upload, PDF extraction, the AI screening call, or the sheet write) will fail the execution with no retry or alerting.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["On form submission<br/><small>formTrigger</small>"]
+    N1["Upload Resume<br/><small>googleDrive</small>"]
+    N2["Download file<br/><small>googleDrive</small>"]
+    N3["Extract from File<br/><small>extractFromFile</small>"]
+    N4["Extract text<br/><small>extractFromFile</small>"]
+    N5["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N6["Demo download<br/><small>googleDrive</small>"]
+    N7["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N8["AI Agent1<br/><small>agent</small>"]
+    N9["Send Confirmation Email<br/><small>gmail</small>"]
+    N10["Append row in sheet<br/><small>googleSheets</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N6
+    N4 --> N8
+    N5 -.languageModel.-> N8
+    N6 --> N4
+    N7 -.outputParser.-> N8
+    N9 --> N10
+    N8 --> N9
+```
+<!-- ARCHITECTURE:END -->

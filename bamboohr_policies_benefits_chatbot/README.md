@@ -52,3 +52,88 @@ The sub-workflow trigger (**AI-Powered HR Benefits and Company Policies Chatbot*
 5. **Run ingestion first** — trigger **When clicking 'Test workflow'** once before going live so the vector store has content to answer from. Re-run it whenever policy PDFs change, since there's no scheduled re-sync.
 
 Only files in the BambooHR "Company Files" category are ingested — confirm that category name matches your BambooHR account, or adjust the filter in **Filter out files from undesired categories**.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking 'Test workflow'<br/><small>manualTrigger</small>"]
+    N1["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N2["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N3["Recursive Character Text Splitter<br/><small>textSplitterRecursiveCharacterTextSplitter</small>"]
+    N4["Window Buffer Memory<br/><small>memoryBufferWindow</small>"]
+    N5["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N6["Vector Store Tool<br/><small>toolVectorStore</small>"]
+    N7["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N8["Embeddings OpenAI1<br/><small>embeddingsOpenAi</small>"]
+    N9["Employee Lookup Tool<br/><small>toolWorkflow</small>"]
+    N10["OpenAI Chat Model2<br/><small>lmChatOpenAi</small>"]
+    N11["OpenAI Chat Model3<br/><small>lmChatOpenAi</small>"]
+    N12["OpenAI Chat Model4<br/><small>lmChatOpenAi</small>"]
+    N13["Auto-fixing Output Parser<br/><small>outputParserAutofixing</small>"]
+    N14["OpenAI Chat Model5<br/><small>lmChatOpenAi</small>"]
+    N15["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N16["GET all files<br/><small>bambooHr</small>"]
+    N17["Filter out files from undesired categories<br/><small>filter</small>"]
+    N18["Split out individual files<br/><small>splitOut</small>"]
+    N19["Filter out non-pdf files<br/><small>filter</small>"]
+    N20["Download file from BambooHR<br/><small>bambooHr</small>"]
+    N21["Supabase Vector Store<br/><small>vectorStoreSupabase</small>"]
+    N22["Employee initiates a conversation<br/><small>chatTrigger</small>"]
+    N23["Supabase Vector Store Retrieval<br/><small>vectorStoreSupabase</small>"]
+    N24["AI-Powered HR Benefits and Company Policies Chatbot<br/><small>executeWorkflowTrigger</small>"]
+    N25["Text Classifier<br/><small>textClassifier</small>"]
+    N26["GET all employees<br/><small>bambooHr</small>"]
+    N27["Filter out other employees<br/><small>filter</small>"]
+    N28["Stringify employee record for response<br/><small>set</small>"]
+    N29["GET all employees (second path)<br/><small>bambooHr</small>"]
+    N30["Extract departments<br/><small>aggregate</small>"]
+    N31["Ensure uniqueness in department list<br/><small>set</small>"]
+    N32["Extract department<br/><small>informationExtractor</small>"]
+    N33["Retrieve all employees<br/><small>bambooHr</small>"]
+    N34["Filter out other departments<br/><small>filter</small>"]
+    N35["Extract relevant employee fields<br/><small>aggregate</small>"]
+    N36["Identify most senior employee<br/><small>chainLlm</small>"]
+    N37["Format name for response<br/><small>set</small>"]
+    N38["HR AI Agent<br/><small>agent</small>"]
+    N16 --> N17
+    N25 -->|0| N26
+    N25 -->|1| N29
+    N2 -.embedding.-> N21
+    N26 --> N27
+    N5 -.languageModel.-> N38
+    N6 -.tool.-> N38
+    N8 -.embedding.-> N23
+    N32 --> N33
+    N7 -.languageModel.-> N6
+    N10 -.languageModel.-> N25
+    N11 -.languageModel.-> N32
+    N12 -.languageModel.-> N36
+    N14 -.languageModel.-> N13
+    N1 -.document.-> N21
+    N30 --> N31
+    N9 -.tool.-> N38
+    N4 -.memory.-> N38
+    N33 --> N34
+    N19 --> N20
+    N15 -.outputParser.-> N13
+    N13 -.outputParser.-> N36
+    N27 --> N28
+    N18 --> N19
+    N20 --> N21
+    N34 --> N35
+    N36 --> N37
+    N29 --> N30
+    N23 -.vectorStore.-> N6
+    N35 --> N36
+    N22 --> N38
+    N3 -.textSplitter.-> N1
+    N0 --> N16
+    N31 --> N32
+    N17 --> N18
+    N24 --> N25
+```
+<!-- ARCHITECTURE:END -->

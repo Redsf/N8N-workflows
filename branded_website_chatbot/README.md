@@ -35,3 +35,45 @@ The agent will ask for your name, company, email, and preferred times, check the
 4. **Personalize the prompts** — the **AI Agent** system prompt and the **Make Appointment** tool description reference "Wayne" and "nocodecreative.io" by name, and the appointment JSON body has a placeholder subject line (`"Meetings with <name> at <company>"`). Replace these with your own name, company, and email template before deploying.
 5. **Business hours and timezone** — **freeTimeSlots** hardcodes `08:00:00Z`–`17:30:00Z` as business hours and the calendar nodes assume `Europe/London`. Adjust both if your business operates in a different timezone or schedule.
 6. **Chat widget embed** — set the Chat Trigger to public/webhook mode (already configured) and point your website's chat widget at its production webhook URL.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Window Buffer Memory<br/><small>memoryBufferWindow</small>"]
+    N1["Respond to Webhook<br/><small>respondToWebhook</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["Make Appointment<br/><small>toolHttpRequest</small>"]
+    N4["Execute Workflow Trigger<br/><small>executeWorkflowTrigger</small>"]
+    N5["varResponse<br/><small>set</small>"]
+    N6["freeTimeSlots<br/><small>code</small>"]
+    N7["Get Events<br/><small>httpRequest</small>"]
+    N8["Get Availability<br/><small>toolWorkflow</small>"]
+    N9["Send Message<br/><small>toolWorkflow</small>"]
+    N10["Chat Trigger<br/><small>chatTrigger</small>"]
+    N11["Switch<br/><small>switch</small>"]
+    N12["varMessageResponse<br/><small>set</small>"]
+    N13["Send Message1<br/><small>microsoftOutlook</small>"]
+    N14["AI Agent<br/><small>agent</small>"]
+    N15["If<br/><small>if</small>"]
+    N16["Respond With Initial Message<br/><small>respondToWebhook</small>"]
+    N15 -->|true| N14
+    N15 -->|false| N16
+    N11 -->|out0| N7
+    N11 -->|out1| N13
+    N14 --> N1
+    N7 --> N6
+    N10 --> N15
+    N9 -.tool.-> N14
+    N13 --> N12
+    N6 --> N5
+    N8 -.tool.-> N14
+    N3 -.tool.-> N14
+    N2 -.languageModel.-> N14
+    N0 -.memory.-> N14
+    N4 --> N11
+```
+<!-- ARCHITECTURE:END -->

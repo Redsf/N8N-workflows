@@ -50,3 +50,46 @@ This workflow is driven by Meta's WhatsApp Cloud API webhook, not a request you'
 5. **Google Drive** — add OAuth2 credentials to **Get folder** and **Download Files**, and point the folder filter at your own document source (currently set to a folder literally named `test-whatsapp`).
 6. **Run ingestion first** — trigger **When clicking 'Test workflow'** once to populate Qdrant before going live, and re-run **Refresh collection** → **Get folder** → **Download Files** whenever source documents change.
 7. **Rewrite the persona** — the **AI Agent** system prompt is written for an "electronics store"; adjust it to match your actual product line before deploying.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Respond to Webhook<br/><small>respondToWebhook</small>"]
+    N1["AI Agent<br/><small>agent</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N4["Qdrant Vector Store<br/><small>vectorStoreQdrant</small>"]
+    N5["Create collection<br/><small>httpRequest</small>"]
+    N6["Refresh collection<br/><small>httpRequest</small>"]
+    N7["Get folder<br/><small>googleDrive</small>"]
+    N8["Download Files<br/><small>googleDrive</small>"]
+    N9["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N10["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N11["Token Splitter<br/><small>textSplitterTokenSplitter</small>"]
+    N12["Verify<br/><small>webhook</small>"]
+    N13["Respond<br/><small>webhook</small>"]
+    N14["is Message?<br/><small>if</small>"]
+    N15["Only message<br/><small>whatsApp</small>"]
+    N16["Send<br/><small>whatsApp</small>"]
+    N17["Window Buffer Memory<br/><small>memoryBufferWindow</small>"]
+    N12 --> N0
+    N13 --> N14
+    N1 --> N16
+    N7 --> N8
+    N14 -->|true| N1
+    N14 -->|false| N15
+    N8 --> N4
+    N11 -.textSplitter.-> N10
+    N9 -.embedding.-> N4
+    N2 -.languageModel.-> N1
+    N6 --> N7
+    N10 -.document.-> N4
+    N17 -.memory.-> N1
+    N3 --> N5
+    N3 --> N6
+```
+<!-- ARCHITECTURE:END -->

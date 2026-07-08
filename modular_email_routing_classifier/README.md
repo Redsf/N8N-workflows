@@ -39,3 +39,38 @@ The sticky note on the canvas points out that any external form (e.g., Contact F
 4. **Category-to-branch mapping quirk** — in the **Text Classifier** node's output wiring, the first output branch fans out to both **Quote Dep.** and **Prod. Dep.** simultaneously, and the second category output ("Product info") has no connection at all. Before deploying, verify in the n8n canvas that each of the four categories plus the fallback lands on the department you expect, and rewire **Prod. Dep.** to its own dedicated output if you want quote and product-info messages to route separately.
 5. **Hardcoded "CATEGORIA" value** — every Google Sheets node writes the literal string `"info prodotti"` into the CATEGORIA column regardless of which branch fired. Replace this with an expression referencing the actual classifier output (e.g. `{{ $('Text Classifier').item.json.output }}`) if you need accurate category labels in your logs.
 6. **Language note** — labels and messages are in Italian ("Tipo prodotto," "info prodotti," "Foglio1"). Translate node parameters and sheet headers if deploying for a non-Italian-speaking team.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["On form submission<br/><small>formTrigger</small>"]
+    N1["Text Classifier<br/><small>textClassifier</small>"]
+    N2["OpenAI<br/><small>lmChatOpenAi</small>"]
+    N3["Prod. Dep.<br/><small>emailSend</small>"]
+    N4["Quote Dep.<br/><small>emailSend</small>"]
+    N5["Gen. Dep.<br/><small>emailSend</small>"]
+    N6["Order Dep.<br/><small>emailSend</small>"]
+    N7["Other Dep.<br/><small>emailSend</small>"]
+    N8["Quote DB<br/><small>googleSheets</small>"]
+    N9["Prod DB<br/><small>googleSheets</small>"]
+    N10["General DB<br/><small>googleSheets</small>"]
+    N11["Order DB<br/><small>googleSheets</small>"]
+    N12["Other DB<br/><small>googleSheets</small>"]
+    N2 -.languageModel.-> N1
+    N5 --> N10
+    N6 --> N11
+    N7 --> N12
+    N3 --> N9
+    N4 --> N8
+    N1 -->|0| N4
+    N1 -->|0| N3
+    N1 -->|2| N5
+    N1 -->|3| N6
+    N1 -->|4| N7
+    N0 --> N1
+```
+<!-- ARCHITECTURE:END -->

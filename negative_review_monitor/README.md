@@ -17,3 +17,22 @@ Built for restaurants, cafes and hospitality venues that want a fast heads-up on
 1. **HTTP Request** — set your actual review source endpoint in place of the placeholder `https://YOUR_REVIEW_API/reviews` in **Fetch Latest Reviews**, and add authentication if the API requires it.
 2. **Slack** — the OAuth2 credential is already wired on **Alert Manager** (channel "review-alerts"); confirm it points at your workspace and the manager/team channel you actually want alerts in.
 3. Adjust the rating cutoff (currently `<= 3`) in **Filter Negative Reviews** if you only want to flag 1 and 2 star reviews.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Every 6 Hours<br/><small>scheduleTrigger</small>"]
+    N1["Fetch Latest Reviews<br/><small>httpRequest</small>"]
+    N2["Filter Negative Reviews<br/><small>code</small>"]
+    N3["Any Negative Reviews<br/><small>if</small>"]
+    N4["Alert Manager<br/><small>slack</small>"]
+    N0 --> N1
+    N3 --> N4
+    N1 --> N2
+    N2 --> N3
+```
+<!-- ARCHITECTURE:END -->

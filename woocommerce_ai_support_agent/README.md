@@ -44,3 +44,73 @@ Has my last order shipped yet?
 4. **Encryption password** — the `Decrypt email address`, `Encrypt email`, and `Decrypt email` (example) Code nodes all hardcode `'a random password'` for AES key derivation. Replace it with a real shared secret used identically in your website backend, and keep the backend encryption logic in sync with the `decrypt()` function in this workflow.
 5. **Go live** — disable/delete **Mock Data**, enable **Decrypt email address**, and enable the workflow. Until then, `Mock Data` overrides the email with `james@brown.com` regardless of what the chat sends, which is convenient for testing but must be turned off before production traffic hits it.
 6. **Self-referencing tool** — **WooCommerce_Tool** calls `$workflow.id`, i.e. this same workflow, through **Execute Workflow Trigger**. Don't rename or duplicate the workflow without updating that reference.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["No email provided<br/><small>set</small>"]
+    N1["If email provided<br/><small>if</small>"]
+    N2["If user found<br/><small>if</small>"]
+    N3["No customer found<br/><small>set</small>"]
+    N4["If contains DHL data<br/><small>if</small>"]
+    N5["Extract Tracking Data<br/><small>set</small>"]
+    N6["Merge Orders<br/><small>merge</small>"]
+    N7["Merge Order and Tracking Data<br/><small>merge</small>"]
+    N8["Split Out<br/><small>splitOut</small>"]
+    N9["Aggregate<br/><small>aggregate</small>"]
+    N10["Merge Tracking Data<br/><small>merge</small>"]
+    N11["Window Buffer Memory<br/><small>memoryBufferWindow</small>"]
+    N12["Execute Workflow Trigger<br/><small>executeWorkflowTrigger</small>"]
+    N13["WooCommerce - Get User<br/><small>wooCommerce</small>"]
+    N14["If order found<br/><small>if</small>"]
+    N15["WooCommerce Get Orders<br/><small>httpRequest</small>"]
+    N16["No order found<br/><small>set</small>"]
+    N17["Add Error Information<br/><small>set</small>"]
+    N18["DHL<br/><small>dhl</small>"]
+    N19["Send Response<br/><small>set</small>"]
+    N20["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N21["WooCommerce_Tool<br/><small>toolWorkflow</small>"]
+    N22["Chat Trigger<br/><small>chatTrigger</small>"]
+    N23["Respond to Webhook<br/><small>respondToWebhook</small>"]
+    N24["Webhook Example Page<br/><small>webhook</small>"]
+    N25["Decrypt email<br/><small>code</small>"]
+    N26["Encrypt email<br/><small>code</small>"]
+    N27["Example encrypted email<br/><small>set</small>"]
+    N28["Decrypt email address<br/><small>code</small>"]
+    N29["AI Agent<br/><small>agent</small>"]
+    N30["Mock Data<br/><small>set</small>"]
+    N18 -->|0| N10
+    N18 -->|1| N17
+    N9 --> N6
+    N30 --> N29
+    N8 --> N18
+    N22 --> N28
+    N6 --> N7
+    N2 -->|true| N15
+    N2 -->|false| N3
+    N14 -->|true| N5
+    N14 -->|true| N7
+    N14 -->|false| N16
+    N21 -.tool.-> N29
+    N1 -->|true| N13
+    N1 -->|false| N0
+    N20 -.languageModel.-> N29
+    N10 --> N9
+    N4 -->|true| N8
+    N4 -->|false| N6
+    N24 --> N23
+    N11 -.memory.-> N29
+    N17 --> N10
+    N28 --> N30
+    N5 --> N4
+    N13 --> N2
+    N15 --> N14
+    N27 --> N25
+    N12 --> N1
+    N7 --> N19
+```
+<!-- ARCHITECTURE:END -->

@@ -28,3 +28,56 @@ Built for anyone who runs recurring Zoom calls and wants minutes, tasks, and nex
 6. **Sub-workflow reference** — **Create tasks** (the Tool Workflow node) points at a separate workflow by ID (`zSKQLEObdU9RiThI`, cached name `create_task`); after importing, re-select the actual sub-workflow in your instance so the ID resolves correctly, and ensure that sub-workflow's **Execute Workflow Trigger** and **Split Out** (splitting `query.items`) are intact.
 7. **24-hour window filter** — **Filter: Last 24 hours** only processes meetings that started within the last day; if you're testing against an older meeting, either adjust the filter or trigger the workflow soon after the call ends.
 8. **Single-meeting assumption** — the pipeline is built around processing one meeting per run (**Filter: Only 1 item**); if multiple meetings finished in the same 24-hour window, only one will be summarized per execution.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N1["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N2["No Recording/Transcript available<br/><small>stopAndError</small>"]
+    N3["Zoom: Get data of last meeting<br/><small>zoom</small>"]
+    N4["Filter transcript URL<br/><small>set</small>"]
+    N5["Filter: Only 1 item<br/><small>splitInBatches</small>"]
+    N6["Zoom: Get transcript file<br/><small>httpRequest</small>"]
+    N7["Extract text from transcript file<br/><small>extractFromFile</small>"]
+    N8["Format transcript text<br/><small>set</small>"]
+    N9["Zoom: Get participants data<br/><small>httpRequest</small>"]
+    N10["Create meeting summary<br/><small>openAi</small>"]
+    N11["Sort for mail delivery<br/><small>set</small>"]
+    N12["Format to html<br/><small>code</small>"]
+    N13["Send meeting summary<br/><small>emailSend</small>"]
+    N14["Create tasks<br/><small>toolWorkflow</small>"]
+    N15["Create tasks and follow-up call<br/><small>agent</small>"]
+    N16["Create follow-up call<br/><small>microsoftOutlookTool</small>"]
+    N17["Filter: Last 24 hours<br/><small>filter</small>"]
+    N18["Execute Workflow Trigger<br/><small>executeWorkflowTrigger</small>"]
+    N19["Split Out<br/><small>splitOut</small>"]
+    N20["ClickUp<br/><small>clickUp</small>"]
+    N21["Zoom: Get transcripts data<br/><small>httpRequest</small>"]
+    N19 --> N20
+    N14 -.tool.-> N15
+    N12 --> N13
+    N0 -.languageModel.-> N15
+    N5 -->|0| N5
+    N5 -->|1| N6
+    N16 -.tool.-> N15
+    N4 --> N5
+    N17 --> N21
+    N10 --> N11
+    N10 --> N15
+    N8 --> N9
+    N11 --> N12
+    N18 --> N19
+    N6 --> N7
+    N21 -->|0| N4
+    N21 -->|1| N2
+    N9 --> N10
+    N3 --> N17
+    N7 --> N8
+    N1 --> N3
+```
+<!-- ARCHITECTURE:END -->

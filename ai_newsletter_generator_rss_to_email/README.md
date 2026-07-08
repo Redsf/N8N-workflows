@@ -37,3 +37,60 @@ Built for solo creators or small teams running a niche AI/tech newsletter who wa
 ## Notes on workflow design
 
 This workflow duplicates the same summarize-and-format pipeline twice in sequence (once per batch inside the loop via **AI Agent** → **Formatting** → **Markdown**, then again as a final pass via **AI Agent1** → **Markdown1**). This is intentional but adds latency and Groq API calls; teams optimizing for cost may want to collapse the two summarization passes into one.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Merge All RSS Items<br/><small>merge</small>"]
+    N1["Sort by Date (Newest First)<br/><small>sort</small>"]
+    N2["Extract Key Fields<br/><small>set</small>"]
+    N3["The verge<br/><small>rssFeedRead</small>"]
+    N4["TechCrunch<br/><small>rssFeedRead</small>"]
+    N5["AI Agent<br/><small>agent</small>"]
+    N6["Code in JavaScript<br/><small>code</small>"]
+    N7["Loop Over Items<br/><small>splitInBatches</small>"]
+    N8["Markdown<br/><small>markdown</small>"]
+    N9["Send a message1<br/><small>gmail</small>"]
+    N10["Limit<br/><small>limit</small>"]
+    N11["memory<br/><small>code</small>"]
+    N12["Groq Chat Model<br/><small>lmChatGroq</small>"]
+    N13["When clicking ‘Execute workflow’<br/><small>manualTrigger</small>"]
+    N14["Next 3 Items<br/><small>noOp</small>"]
+    N15["Extract Saved data<br/><small>code</small>"]
+    N16["Edit Fields<br/><small>set</small>"]
+    N17["Split Out<br/><small>splitOut</small>"]
+    N18["Aggregate<br/><small>aggregate</small>"]
+    N19["Formatting<br/><small>code</small>"]
+    N20["AI Agent1<br/><small>agent</small>"]
+    N21["Groq Chat Model1<br/><small>lmChatGroq</small>"]
+    N22["Markdown1<br/><small>markdown</small>"]
+    N0 --> N1
+    N1 --> N6
+    N2 --> N10
+    N3 --> N0
+    N4 --> N0
+    N6 --> N2
+    N5 --> N19
+    N7 -->|0| N15
+    N7 -->|1| N5
+    N8 --> N11
+    N10 --> N7
+    N11 --> N14
+    N12 -.languageModel.-> N5
+    N13 --> N4
+    N13 --> N3
+    N14 --> N7
+    N15 --> N17
+    N16 --> N20
+    N17 --> N18
+    N18 --> N16
+    N19 --> N8
+    N21 -.languageModel.-> N20
+    N20 --> N22
+    N22 --> N9
+```
+<!-- ARCHITECTURE:END -->

@@ -39,3 +39,58 @@ The agent will only see chunks that match the `file_id` metadata configured on *
 4. **Hardcoded `file_id` filter** — the **Supabase Vector Store** node (used by the chat agent's retrieval tool) has a metadata filter hardcoded to one specific `file_id` (`300b0128-0955-4058-b0d3-a9aefe728432`) left over from testing. Remove or generalize this filter so the agent searches across all indexed documents rather than just one leftover test file.
 5. **Text file handling** — the Switch node's `txt` branch has no extraction node wired to it in this template (it falls through empty); you'll need to add a text-extraction step (or confirm your text files are small enough to embed as raw binary) if you expect non-PDF uploads.
 6. **Duplicate-detection logic** — the **If** node's dedup check reads from `$('Aggregate').item.json.data`, which requires **Aggregate** to run once per full **Loop Over Items** pass; if you significantly restructure the workflow, keep this reference intact or new-file detection will break.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Get All files<br/><small>httpRequest</small>"]
+    N1["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N2["Recursive Character Text Splitter<br/><small>textSplitterRecursiveCharacterTextSplitter</small>"]
+    N3["Extract Document PDF<br/><small>extractFromFile</small>"]
+    N4["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N5["Create File record2<br/><small>supabase</small>"]
+    N6["If<br/><small>if</small>"]
+    N7["Get All Files<br/><small>supabase</small>"]
+    N8["Download<br/><small>httpRequest</small>"]
+    N9["Loop Over Items<br/><small>splitInBatches</small>"]
+    N10["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N11["Aggregate<br/><small>aggregate</small>"]
+    N12["When chat message received<br/><small>chatTrigger</small>"]
+    N13["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N14["Embeddings OpenAI2<br/><small>embeddingsOpenAi</small>"]
+    N15["OpenAI Chat Model2<br/><small>lmChatOpenAi</small>"]
+    N16["Vector Store Tool1<br/><small>toolVectorStore</small>"]
+    N17["Switch<br/><small>switch</small>"]
+    N18["Insert into Supabase Vectorstore<br/><small>vectorStoreSupabase</small>"]
+    N19["Merge<br/><small>merge</small>"]
+    N20["AI Agent<br/><small>agent</small>"]
+    N21["Supabase Vector Store<br/><small>vectorStoreSupabase</small>"]
+    N6 -->|true| N8
+    N6 -->|false| N9
+    N19 --> N5
+    N17 -->|out0| N19
+    N17 -->|out1| N3
+    N8 --> N17
+    N11 --> N0
+    N7 --> N11
+    N0 --> N9
+    N9 --> N6
+    N4 -.embedding.-> N18
+    N14 -.embedding.-> N21
+    N13 -.languageModel.-> N20
+    N15 -.languageModel.-> N16
+    N16 -.tool.-> N20
+    N5 --> N18
+    N1 -.document.-> N18
+    N3 --> N19
+    N21 -.vectorStore.-> N16
+    N12 --> N20
+    N18 --> N9
+    N2 -.textSplitter.-> N1
+    N10 --> N7
+```
+<!-- ARCHITECTURE:END -->

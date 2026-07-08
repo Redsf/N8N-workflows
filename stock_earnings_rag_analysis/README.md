@@ -39,3 +39,42 @@ To run it against a different company, populate the watchlist sheet with that co
 6. **Google Docs** — add OAuth2 credentials to **Save Report to Google Docs**, and replace the hardcoded `documentURL` with your own target document (or create a new one per company/run).
 7. **Update the prompt per company** — **AI Agent**'s user prompt and system message are hardcoded to analyze "Google's last 3 quarter earnings"; rewrite both to reference whichever company's filings you've loaded into the watchlist and vector store.
 8. **Re-run ingestion when adding filings** — every execution processes whatever is currently listed in the watchlist sheet; there's no incremental/dedupe logic, so remove already-ingested rows before re-running, or accept duplicate embeddings.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Pinecone Vector Store<br/><small>vectorStorePinecone</small>"]
+    N1["Embeddings Google Gemini<br/><small>embeddingsGoogleGemini</small>"]
+    N2["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N3["Recursive Character Text Splitter<br/><small>textSplitterRecursiveCharacterTextSplitter</small>"]
+    N4["Loop Over Items<br/><small>splitInBatches</small>"]
+    N5["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N6["AI Agent<br/><small>agent</small>"]
+    N7["Vector Store Tool<br/><small>toolVectorStore</small>"]
+    N8["Google Gemini Chat Model1<br/><small>lmChatGoogleGemini</small>"]
+    N9["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N10["Pinecone Vector Store (Retrieval)<br/><small>vectorStorePinecone</small>"]
+    N11["Save Report to Google Docs<br/><small>googleDocs</small>"]
+    N12["Embeddings Google Gemini (retrieval)<br/><small>embeddingsGoogleGemini</small>"]
+    N13["List Of Files To Load (Google Sheets)<br/><small>googleSheets</small>"]
+    N14["Download File From Google Drive<br/><small>googleDrive</small>"]
+    N6 --> N11
+    N4 --> N14
+    N9 -.languageModel.-> N6
+    N7 -.tool.-> N6
+    N2 -.document.-> N0
+    N0 --> N4
+    N1 -.embedding.-> N0
+    N8 -.languageModel.-> N7
+    N14 --> N0
+    N10 -.vectorStore.-> N7
+    N3 -.textSplitter.-> N2
+    N5 --> N6
+    N12 -.embedding.-> N10
+    N13 --> N4
+```
+<!-- ARCHITECTURE:END -->

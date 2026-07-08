@@ -47,3 +47,43 @@ This workflow is triggered by the WhatsApp Business Cloud webhook, not a custom 
 ## Error handling
 
 *Reply on WhatsApp* retries up to 2 times on failure. A dedicated **Error Trigger** catches any workflow failure and **Notify Ops** posts the failing error message to an ops Slack channel.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Incoming WhatsApp Message<br/><small>whatsAppTrigger</small>"]
+    N1["Is Text Message?<br/><small>if</small>"]
+    N2["Ignore Non-Text<br/><small>noOp</small>"]
+    N3["Sales Agent<br/><small>agent</small>"]
+    N4["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N5["Session Memory<br/><small>memoryBufferWindow</small>"]
+    N6["Product Catalog (RAG Tool)<br/><small>vectorStorePinecone</small>"]
+    N7["Catalog Embeddings<br/><small>embeddingsOpenAi</small>"]
+    N8["Check Availability (Tool)<br/><small>googleCalendarTool</small>"]
+    N9["Book Appointment (Tool)<br/><small>googleCalendarTool</small>"]
+    N10["Parse Handoff Flag<br/><small>code</small>"]
+    N11["Needs Human?<br/><small>if</small>"]
+    N12["Route to Human<br/><small>slack</small>"]
+    N13["Reply on WhatsApp<br/><small>whatsApp</small>"]
+    N14["Error Trigger<br/><small>errorTrigger</small>"]
+    N15["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N1 -->|true| N3
+    N1 -->|false| N2
+    N4 -.languageModel.-> N3
+    N5 -.memory.-> N3
+    N6 -.tool.-> N3
+    N7 -.embedding.-> N6
+    N8 -.tool.-> N3
+    N9 -.tool.-> N3
+    N3 --> N10
+    N10 --> N11
+    N11 -->|true| N12
+    N11 -->|false| N13
+    N14 --> N15
+```
+<!-- ARCHITECTURE:END -->

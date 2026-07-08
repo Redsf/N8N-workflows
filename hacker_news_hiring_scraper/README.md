@@ -27,3 +27,42 @@ Built for recruiters, job boards, and developers who want a structured, searchab
 3. **OpenAI**: add your API key in *OpenAI Chat Model*.
 4. **Airtable**: connect your account in *Write results to airtable* and point the base/table (currently `HN Who is hiring?` / `Table 1`, ids `appM2JWvA5AstsGdn` / `tblGvcOjqbliwM7AS`) at your own Airtable base.
 5. Disable or remove **Limit for testing (optional)** before running against the full thread.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking 'Test workflow'<br/><small>manualTrigger</small>"]
+    N1["Split Out<br/><small>splitOut</small>"]
+    N2["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N3["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N4["Search for Who is hiring posts<br/><small>httpRequest</small>"]
+    N5["Get relevant data<br/><small>set</small>"]
+    N6["Get latest post<br/><small>filter</small>"]
+    N7["Split out children (jobs)<br/><small>splitOut</small>"]
+    N8["Trun into structured data<br/><small>chainLlm</small>"]
+    N9["Extract text<br/><small>set</small>"]
+    N10["Clean text<br/><small>code</small>"]
+    N11["Limit for testing (optional)<br/><small>limit</small>"]
+    N12["Write results to airtable<br/><small>airtable</small>"]
+    N13["HI API: Get the individual job post<br/><small>httpRequest</small>"]
+    N14["HN API: Get Main Post<br/><small>httpRequest</small>"]
+    N1 --> N5
+    N10 --> N11
+    N9 --> N10
+    N6 --> N14
+    N5 --> N6
+    N2 -.languageModel.-> N8
+    N14 --> N7
+    N3 -.outputParser.-> N8
+    N7 --> N13
+    N8 --> N12
+    N11 --> N8
+    N4 --> N1
+    N0 --> N4
+    N13 --> N9
+```
+<!-- ARCHITECTURE:END -->

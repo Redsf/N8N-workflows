@@ -32,3 +32,39 @@ Built for marketing agencies and in-house paid media teams who need consistent, 
 ## Error handling
 
 The three data-fetch HTTP nodes retry up to 3 times on failure, and the Gmail send retries up to 2 times. A dedicated **Error Trigger** catches any workflow failure and **Notify Ops** posts the failing error message to an ops Slack channel so a missed report gets caught the same day.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Every Monday 8am<br/><small>scheduleTrigger</small>"]
+    N1["Fetch Meta Ads Insights<br/><small>httpRequest</small>"]
+    N2["Fetch Google Ads Report<br/><small>httpRequest</small>"]
+    N3["Fetch GA4 Conversions<br/><small>httpRequest</small>"]
+    N4["Blend Data Sources<br/><small>merge</small>"]
+    N5["Compute Blended Metrics<br/><small>code</small>"]
+    N6["Summarize What Moved (AI Agent)<br/><small>agent</small>"]
+    N7["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N8["Build Report<br/><small>set</small>"]
+    N9["Email Report to Client<br/><small>gmail</small>"]
+    N10["Post to Agency Channel<br/><small>slack</small>"]
+    N11["Error Trigger<br/><small>errorTrigger</small>"]
+    N12["Notify Ops<br/><small>slack</small>"]
+    N0 --> N1
+    N0 --> N2
+    N0 --> N3
+    N1 --> N4
+    N2 --> N4
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N8
+    N7 -.languageModel.-> N6
+    N8 --> N9
+    N8 --> N10
+    N11 --> N12
+```
+<!-- ARCHITECTURE:END -->

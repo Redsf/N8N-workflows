@@ -38,3 +38,67 @@ and a Content Manager / SEO Keywords row needs a `Keyword` field and a `RelatedC
 4. **Keyword filter** — the topic filter `"ai automation"` is hardcoded in **Keyword Filter**; change it to match the content you actually want to pull for a given run.
 5. **Wait nodes are fixed at 30 seconds** — Leonardo generation can occasionally take longer, especially at high resolution; if you see empty results from **Leo - Get imageId** / **Leo - Get imageId1**, increase the **Wait 30 Seconds** / **Wait 30 Seconds1** duration.
 6. **Image count** — sticky notes call out that `num_images` (currently 1) can be increased in both **Leo - Generate Image** and **Leo - Generate Image1** if you want multiple options per scene/thumbnail.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking ‘Test workflow’<br/><small>manualTrigger</small>"]
+    N1["Set Guidelines<br/><small>set</small>"]
+    N2["Get Brand Guidelines<br/><small>airtable</small>"]
+    N3["Get SEO Keywords<br/><small>airtable</small>"]
+    N4["Remove Duplicates<br/><small>removeDuplicates</small>"]
+    N5["Keyword Filter<br/><small>filter</small>"]
+    N6["Get Content<br/><small>airtable</small>"]
+    N7["Split Out Content<br/><small>splitOut</small>"]
+    N8["Split Out Keywords<br/><small>splitOut</small>"]
+    N9["Limit<br/><small>limit</small>"]
+    N10["Script Prep<br/><small>openAi</small>"]
+    N11["Split Out Scenes<br/><small>splitOut</small>"]
+    N12["Split Out TN Prompt<br/><small>splitOut</small>"]
+    N13["Leo - Improve Prompt1<br/><small>httpRequest</small>"]
+    N14["Leo - Get imageId1<br/><small>httpRequest</small>"]
+    N15["Prompt Settings<br/><small>set</small>"]
+    N16["Leo - Generate Image1<br/><small>httpRequest</small>"]
+    N17["Wait 30 Seconds<br/><small>wait</small>"]
+    N18["Leo - Improve Prompt<br/><small>httpRequest</small>"]
+    N19["Leo - Get imageId<br/><small>httpRequest</small>"]
+    N20["Prompt Settings1<br/><small>set</small>"]
+    N21["Leo - Generate Image<br/><small>httpRequest</small>"]
+    N22["Wait 30 Seconds1<br/><small>wait</small>"]
+    N23["Loop Over Items<br/><small>splitInBatches</small>"]
+    N24["Add Asset Info<br/><small>airtable</small>"]
+    N25["Add Asset Info1<br/><small>airtable</small>"]
+    N26["Wikipedia<br/><small>toolWikipedia</small>"]
+    N9 --> N10
+    N26 -.tool.-> N10
+    N6 --> N7
+    N10 --> N12
+    N10 --> N11
+    N5 --> N4
+    N1 --> N3
+    N25 --> N23
+    N23 --> N20
+    N15 --> N13
+    N17 --> N14
+    N3 --> N5
+    N20 --> N18
+    N11 --> N23
+    N22 --> N19
+    N19 --> N25
+    N4 --> N8
+    N7 --> N9
+    N14 --> N24
+    N8 --> N6
+    N12 --> N15
+    N2 --> N1
+    N21 --> N22
+    N18 --> N21
+    N16 --> N17
+    N13 --> N16
+    N0 --> N2
+```
+<!-- ARCHITECTURE:END -->

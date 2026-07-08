@@ -35,3 +35,60 @@ Built for founders, consultants and thought leaders in the AI/tech space who wan
 ## Error handling
 
 The Quality Gate enforces a minimum 7/10 score plus three critical checks (word count, hashtag count, closing question) before a post is allowed to publish; anything that fails is automatically rewritten by **Regenerate & Fix Post** using the specific list of failed checks. A separate **Error Handler** branch catches and logs any failure with the topic and error payload for troubleshooting, though it is not wired to a live alert channel (e.g. Slack/email) — logging is console/execution-log only.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Aggregate & Rank Topics<br/><small>code</small>"]
+    N1["Download Generated Image<br/><small>httpRequest</small>"]
+    N2["Quality Gate Check<br/><small>code</small>"]
+    N3["Quality Gate<br/><small>if</small>"]
+    N4["Regenerate & Fix Post<br/><small>openAi</small>"]
+    N5["Merge Post + Image<br/><small>code</small>"]
+    N6["Upload Image to LinkedIn<br/><small>linkedIn</small>"]
+    N7["Post to LinkedIn<br/><small>linkedIn</small>"]
+    N8["Log Success<br/><small>code</small>"]
+    N9["Error Handler<br/><small>code</small>"]
+    N10["When clicking ‘Execute workflow’<br/><small>manualTrigger</small>"]
+    N11["Reddit<br/><small>@apify/n8n-nodes-apify.apify</small>"]
+    N12["TechCrunch<br/><small>rssFeedRead</small>"]
+    N13["The Verge<br/><small>rssFeedRead</small>"]
+    N14["Wired<br/><small>rssFeedRead</small>"]
+    N15["Google_trends search<br/><small>n8n-nodes-serpapi.serpApi</small>"]
+    N16["Merge<br/><small>merge</small>"]
+    N17["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N18["Generate an image<br/><small>googleGemini</small>"]
+    N19["Google Gemini Chat Model<br/><small>lmChatGoogleGemini</small>"]
+    N20["Image generation<br/><small>agent</small>"]
+    N21["For text content<br/><small>agent</small>"]
+    N0 --> N21
+    N2 --> N3
+    N3 -->|true| N5
+    N3 -->|false| N4
+    N4 --> N5
+    N1 --> N5
+    N5 --> N6
+    N6 --> N7
+    N7 --> N8
+    N10 --> N11
+    N10 --> N12
+    N10 --> N13
+    N10 --> N14
+    N10 --> N15
+    N11 --> N16
+    N12 --> N16
+    N13 --> N16
+    N14 --> N16
+    N15 --> N16
+    N16 --> N0
+    N16 --> N20
+    N17 -.languageModel.-> N21
+    N18 --> N1
+    N19 -.languageModel.-> N20
+    N21 --> N2
+```
+<!-- ARCHITECTURE:END -->

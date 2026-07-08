@@ -33,3 +33,33 @@ A separate **Error Trigger** → **Slack Error Alert** pair is wired in parallel
 ## Error handling
 
 An **Error Trigger** captures any workflow failure and forwards it to **Slack Error Alert** via HTTP POST — but that node's webhook URL is a placeholder (see Setup above), so alerts will not be delivered until it's configured with a real endpoint.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Schedule Trigger<br/><small>scheduleTrigger</small>"]
+    N1["Fetch LinkedIn Comments<br/><small>httpRequest</small>"]
+    N2["Split Comments<br/><small>splitOut</small>"]
+    N3["Extract Comment Data<br/><small>set</small>"]
+    N4["Prepare Reply Data<br/><small>set</small>"]
+    N5["Post Reply to LinkedIn<br/><small>httpRequest</small>"]
+    N6["Log to Google Sheets<br/><small>googleSheets</small>"]
+    N7["Slack Error Alert<br/><small>httpRequest</small>"]
+    N8["Error Trigger<br/><small>errorTrigger</small>"]
+    N9["AI Agent<br/><small>agent</small>"]
+    N10["Groq Chat Model<br/><small>lmChatGroq</small>"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N9
+    N4 --> N5
+    N5 --> N6
+    N8 --> N7
+    N9 --> N4
+    N10 -.languageModel.-> N9
+```
+<!-- ARCHITECTURE:END -->

@@ -21,3 +21,22 @@ Built for a Dhaka-based online retailer that wants consistent, policy-compliant 
 ## Error handling
 
 No dedicated error-handling nodes are present in this workflow. A failed Gmail send or LLM call will fail the execution outright with no retry or alerting.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Gmail Trigger<br/><small>gmailTrigger</small>"]
+    N1["Gmail Send Reply<br/><small>gmail</small>"]
+    N2["Groq Chat Model<br/><small>lmChatGroq</small>"]
+    N3["AI Agent<br/><small>agent</small>"]
+    N4["Simple Memory<br/><small>memoryBufferWindow</small>"]
+    N0 --> N3
+    N2 -.languageModel.-> N3
+    N3 --> N1
+    N4 -.memory.-> N3
+```
+<!-- ARCHITECTURE:END -->

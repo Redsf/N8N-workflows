@@ -48,3 +48,46 @@ The response is either `{"status": "received"}` on success or `{"status": "rejec
 ## Error handling
 
 A dedicated **Workflow Error Trigger** catches any failure at any step and **Alert Team on Workflow Failure** posts the failing error message to Slack, so a broken CRM write or a rejected email send doesn't go unnoticed. Invalid form submissions are also handled gracefully with a specific 400 rejection reason rather than a silent failure.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["New Property Inquiry<br/><small>webhook</small>"]
+    N1["Structure Lead<br/><small>set</small>"]
+    N2["Validate Lead Input<br/><small>if</small>"]
+    N3["Format Rejection Reason<br/><small>set</small>"]
+    N4["Reject Inquiry<br/><small>respondToWebhook</small>"]
+    N5["Normalize Lead Data<br/><small>code</small>"]
+    N6["Classify Lead Interest<br/><small>code</small>"]
+    N7["Upsert Lead in CRM Sheet<br/><small>googleSheets</small>"]
+    N8["Is High Priority Lead<br/><small>if</small>"]
+    N9["Send Priority Auto Reply<br/><small>gmail</small>"]
+    N10["Notify Senior Agent<br/><small>slack</small>"]
+    N11["Send Auto Reply to Lead<br/><small>gmail</small>"]
+    N12["Notify Agent Team<br/><small>slack</small>"]
+    N13["Merge Notification Branches<br/><small>merge</small>"]
+    N14["Confirm Inquiry<br/><small>respondToWebhook</small>"]
+    N15["Workflow Error Trigger<br/><small>errorTrigger</small>"]
+    N16["Alert Team on Workflow Failure<br/><small>slack</small>"]
+    N1 --> N2
+    N12 --> N13
+    N5 --> N6
+    N10 --> N13
+    N2 -->|true| N5
+    N2 -->|false| N3
+    N0 --> N1
+    N8 -->|true| N9
+    N8 -->|false| N11
+    N6 --> N7
+    N15 --> N16
+    N3 --> N4
+    N11 --> N12
+    N9 --> N10
+    N7 --> N8
+    N13 --> N14
+```
+<!-- ARCHITECTURE:END -->

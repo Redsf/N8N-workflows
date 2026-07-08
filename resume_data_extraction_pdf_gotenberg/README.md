@@ -56,3 +56,83 @@ The intermediate structured extraction (validated against the JSON schema in **S
 4. **Gotenberg** — this workflow requires a running Gotenberg instance reachable at `http://gotenberg:3000` (the hostname implies a Docker Compose/same-network setup) for **Generate plain PDF doc** to work. Self-host it (see gotenberg.dev) or swap this HTTP call for another HTML-to-PDF provider (e.g. PDFMonkey, ApiTemplate) if you don't want to run Gotenberg yourself.
 5. **Output schema customization** — the JSON schema in **Structured Output Parser** defines every field the LLM is asked to extract (personal info, employment history, education, projects, volunteering, languages/tools/methodologies, foreign languages); adjust it to match the resume fields you actually care about.
 6. **HTML formatting** — the four "Convert ... to HTML" code nodes control how each section is rendered before the final PDF is generated; customize them if you want a different resume layout/styling than plain concatenated `<br/>`-separated blocks.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N1["Convert education to HTML<br/><small>code</small>"]
+    N2["Auto-fixing Output Parser<br/><small>outputParserAutofixing</small>"]
+    N3["OpenAI Chat Model1<br/><small>lmChatOpenAi</small>"]
+    N4["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N5["Convert employment history to HTML<br/><small>code</small>"]
+    N6["Convert projects to HTML<br/><small>code</small>"]
+    N7["Convert volunteering to HTML<br/><small>code</small>"]
+    N8["Telegram trigger<br/><small>telegramTrigger</small>"]
+    N9["Auth<br/><small>if</small>"]
+    N10["No operation (unauthorized)<br/><small>noOp</small>"]
+    N11["Check if start message<br/><small>if</small>"]
+    N12["No operation (start message)<br/><small>noOp</small>"]
+    N13["Get file<br/><small>telegram</small>"]
+    N14["Extract text from PDF<br/><small>extractFromFile</small>"]
+    N15["Set parsed fileds<br/><small>set</small>"]
+    N16["Personal info<br/><small>set</small>"]
+    N17["Technologies<br/><small>set</small>"]
+    N18["Employment history<br/><small>set</small>"]
+    N19["Education<br/><small>set</small>"]
+    N20["Projects<br/><small>set</small>"]
+    N21["Volunteering<br/><small>set</small>"]
+    N22["Merge education and employment history<br/><small>merge</small>"]
+    N23["Merge projects and volunteering<br/><small>merge</small>"]
+    N24["Merge personal info and technologies<br/><small>merge</small>"]
+    N25["Merge all<br/><small>merge</small>"]
+    N26["Set final data<br/><small>set</small>"]
+    N27["Convert raw to base64<br/><small>code</small>"]
+    N28["Convert to HTML<br/><small>convertToFile</small>"]
+    N29["Generate plain PDF doc<br/><small>httpRequest</small>"]
+    N30["Send PDF to the user<br/><small>telegram</small>"]
+    N31["Parse resume data<br/><small>chainLlm</small>"]
+    N32["Merge other data<br/><small>merge</small>"]
+    N9 -->|true| N11
+    N9 -->|false| N10
+    N13 --> N14
+    N20 --> N23
+    N19 --> N22
+    N25 --> N26
+    N17 --> N24
+    N21 --> N23
+    N16 --> N24
+    N26 --> N27
+    N28 --> N29
+    N32 --> N25
+    N8 --> N9
+    N0 -.languageModel.-> N31
+    N31 --> N15
+    N15 --> N5
+    N15 --> N1
+    N15 --> N6
+    N15 --> N16
+    N15 --> N7
+    N15 --> N17
+    N18 --> N22
+    N3 -.languageModel.-> N2
+    N27 --> N28
+    N14 --> N31
+    N11 -->|true| N13
+    N11 -->|false| N12
+    N29 --> N30
+    N6 --> N20
+    N4 -.outputParser.-> N2
+    N2 -.outputParser.-> N31
+    N1 --> N19
+    N7 --> N21
+    N23 --> N32
+    N5 --> N18
+    N24 --> N25
+    N22 --> N32
+```
+<!-- ARCHITECTURE:END -->

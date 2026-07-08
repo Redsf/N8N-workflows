@@ -41,3 +41,47 @@ Which email provider does the creator of Bitcoin use?
 3. **Google Drive** — add OAuth2 credentials to **Download file**, and replace the hardcoded Google Drive file URL in **Set file URL in Google Drive** (currently the Bitcoin whitepaper demo file) with your own document.
 4. **Run ingestion first** — execute **When clicking "Execute Workflow"** once to populate Pinecone before chatting. Running it again on the same document inserts duplicate chunks, since there's no dedupe/clear step — clear the index manually between re-runs if you're testing with the same file.
 5. **Tune retrieval depth** — **Set max chunks to send to model** hardcodes 4 chunks per query; increase it for documents where answers might span more context, at the cost of a larger prompt.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["When clicking 'Execute Workflow'<br/><small>manualTrigger</small>"]
+    N1["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N2["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N3["Set file URL in Google Drive<br/><small>set</small>"]
+    N4["Add in metadata<br/><small>code</small>"]
+    N5["Download file<br/><small>googleDrive</small>"]
+    N6["Chat Trigger<br/><small>chatTrigger</small>"]
+    N7["Prepare chunks<br/><small>code</small>"]
+    N8["Embeddings OpenAI2<br/><small>embeddingsOpenAi</small>"]
+    N9["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N10["Set max chunks to send to model<br/><small>set</small>"]
+    N11["Structured Output Parser<br/><small>outputParserStructured</small>"]
+    N12["Compose citations<br/><small>set</small>"]
+    N13["Generate response<br/><small>set</small>"]
+    N14["Answer the query based on chunks<br/><small>chainLlm</small>"]
+    N15["Get top chunks matching query<br/><small>vectorStorePinecone</small>"]
+    N16["Add to Pinecone vector store<br/><small>vectorStorePinecone</small>"]
+    N17["Recursive Character Text Splitter<br/><small>textSplitterRecursiveCharacterTextSplitter</small>"]
+    N6 --> N10
+    N5 --> N4
+    N7 --> N14
+    N4 --> N16
+    N12 --> N13
+    N1 -.embedding.-> N16
+    N9 -.languageModel.-> N14
+    N8 -.embedding.-> N15
+    N2 -.document.-> N16
+    N11 -.outputParser.-> N14
+    N3 --> N5
+    N15 --> N7
+    N10 --> N15
+    N14 --> N12
+    N0 --> N3
+    N17 -.textSplitter.-> N2
+```
+<!-- ARCHITECTURE:END -->

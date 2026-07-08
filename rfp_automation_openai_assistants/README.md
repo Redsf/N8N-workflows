@@ -41,3 +41,39 @@ curl --location 'https://<n8n_webhook_url>' \
 5. **Webhook security** — **Wait for Request** is a public POST endpoint with no authentication configured. Add header auth, a shared secret check, or restrict access at the network level before using this in production, as the workflow's own sticky note warns.
 6. **PDF-only extraction** — **Get RFP Data** assumes the uploaded RFP is a text-based PDF; scanned/image-only PDFs will yield poor or empty extraction results from **Extract Questions From RFP**.
 7. **Execution link exposure** — **Add Metadata to Response Doc** writes an execution URL using `http://localhost:5678/...`; update this to your actual n8n instance URL (via `$execution` and instance environment variables) if you want that link to resolve for reviewers.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Get RFP Data<br/><small>extractFromFile</small>"]
+    N1["Item List Output Parser<br/><small>outputParserItemList</small>"]
+    N2["For Each Question...<br/><small>splitInBatches</small>"]
+    N3["Set Variables<br/><small>set</small>"]
+    N4["Create new RFP Response Document<br/><small>googleDocs</small>"]
+    N5["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N6["Send Chat Notification<br/><small>slack</small>"]
+    N7["Send Email Notification<br/><small>gmail</small>"]
+    N8["Add Metadata to Response Doc<br/><small>googleDocs</small>"]
+    N9["Record Question & Answer in Response Doc<br/><small>googleDocs</small>"]
+    N10["Answer Question with Context<br/><small>openAi</small>"]
+    N11["Wait for Request<br/><small>webhook</small>"]
+    N12["Extract Questions From RFP<br/><small>chainLlm</small>"]
+    N0 --> N3
+    N3 --> N4
+    N11 --> N0
+    N5 -.languageModel.-> N12
+    N2 -->|0| N7
+    N2 -->|1| N10
+    N1 -.outputParser.-> N12
+    N7 --> N6
+    N12 --> N2
+    N8 --> N12
+    N10 --> N9
+    N4 --> N8
+    N9 --> N2
+```
+<!-- ARCHITECTURE:END -->

@@ -27,3 +27,35 @@ Built for teams that want a Telegram-based internal assistant grounded in their 
 ## Error handling
 
 No dedicated error-handling nodes are present. A failed download, embedding call, database write, or Telegram send will fail the execution with no retry or alerting.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["Google Drive Trigger<br/><small>googleDriveTrigger</small>"]
+    N1["Download file<br/><small>googleDrive</small>"]
+    N2["AI Agent<br/><small>agent</small>"]
+    N3["OpenAI Chat Model<br/><small>lmChatOpenAi</small>"]
+    N4["Embeddings OpenAI1<br/><small>embeddingsOpenAi</small>"]
+    N5["Supabase_Vectors<br/><small>vectorStoreSupabase</small>"]
+    N6["Postgres Chat Memory<br/><small>memoryPostgresChat</small>"]
+    N7["Supabase Vector Store<br/><small>vectorStoreSupabase</small>"]
+    N8["Embeddings OpenAI<br/><small>embeddingsOpenAi</small>"]
+    N9["Default Data Loader<br/><small>documentDefaultDataLoader</small>"]
+    N10["Telegram Trigger<br/><small>telegramTrigger</small>"]
+    N11["Send a text message<br/><small>telegram</small>"]
+    N0 --> N1
+    N1 --> N7
+    N3 -.languageModel.-> N2
+    N4 -.embedding.-> N5
+    N5 -.tool.-> N2
+    N6 -.memory.-> N2
+    N8 -.embedding.-> N7
+    N9 -.document.-> N7
+    N10 --> N2
+    N2 --> N11
+```
+<!-- ARCHITECTURE:END -->

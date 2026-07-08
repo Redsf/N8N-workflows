@@ -21,3 +21,22 @@ Built for small e-commerce or D2C businesses that get repetitive customer emails
 ## Error handling
 
 No dedicated error-handling nodes are present. The Gmail send step has no retry or failure branch configured, so a failed send will simply fail the execution.
+
+---
+
+<!-- ARCHITECTURE:START -->
+## Architecture
+
+```mermaid
+flowchart TD
+    N0["AI Agent<br/><small>agent</small>"]
+    N1["Groq Chat Model<br/><small>lmChatGroq</small>"]
+    N2["Simple Memory<br/><small>memoryBufferWindow</small>"]
+    N3["Send a message<br/><small>gmail</small>"]
+    N4["Gmail Trigger<br/><small>gmailTrigger</small>"]
+    N1 -.languageModel.-> N0
+    N2 -.memory.-> N0
+    N0 --> N3
+    N4 --> N0
+```
+<!-- ARCHITECTURE:END -->
