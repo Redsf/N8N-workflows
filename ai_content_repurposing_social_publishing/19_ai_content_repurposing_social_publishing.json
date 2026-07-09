@@ -1,56 +1,38 @@
 {
-  "id": "contentRepurpose09",
-  "meta": {
-    "instanceId": "REPLACE_WITH_INSTANCE_ID",
-    "templateCredsSetupCompleted": false
-  },
-  "name": "AI Content Repurposing & Social Publishing System",
-  "tags": [
-    "client-project",
-    "ai-automation",
-    "content"
-  ],
   "nodes": [
     {
-      "id": "c0000000-0000-0000-0000-000000000001",
+      "parameters": {
+        "content": "## 🔁 AI Content Repurposing & Social Publishing System\n\nOne long-form input (blog post or podcast transcript) triggers the workflow. An LLM generates platform-specific versions: LinkedIn post, X thread, Instagram caption. Buffer schedules each post at staggered times, and weekly performance data flows back into Google Sheets. Zero manual scheduling.\n\n## Two triggers in this workflow\n1. **Content Submitted** (Webhook) → generates variants → schedules via Buffer.\n2. **Weekly Performance Pull** (Schedule, Monday 9am) → pulls Buffer analytics → logs to Sheets.\n\n## Setup (about 15 minutes)\n1. Connect OpenAI and Buffer API credentials.\n2. Set your Buffer profile IDs in *Schedule to Buffer*.\n3. Connect the Google Sheet used for logging + performance tracking.",
+        "height": 600,
+        "width": 700,
+        "color": 7
+      },
+      "id": "6c5ad649-9ee0-46ed-bd29-48f848569f11",
       "name": "Overview",
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -560,
-        -400
+        4608,
+        -6128
       ],
-      "parameters": {
-        "color": 7,
-        "width": 700,
-        "height": 600,
-        "content": "## 🔁 AI Content Repurposing & Social Publishing System\n\nOne long-form input (blog post or podcast transcript) triggers the workflow. An LLM generates platform-specific versions: LinkedIn post, X thread, Instagram caption. Buffer schedules each post at staggered times, and weekly performance data flows back into Google Sheets. Zero manual scheduling.\n\n## Two triggers in this workflow\n1. **Content Submitted** (Webhook) → generates variants → schedules via Buffer.\n2. **Weekly Performance Pull** (Schedule, Monday 9am) → pulls Buffer analytics → logs to Sheets.\n\n## Setup (about 15 minutes)\n1. Connect OpenAI and Buffer API credentials.\n2. Set your Buffer profile IDs in *Schedule to Buffer*.\n3. Connect the Google Sheet used for logging + performance tracking."
-      },
       "typeVersion": 1
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000002",
-      "name": "Content Submitted",
-      "type": "n8n-nodes-base.webhook",
-      "position": [
-        -200,
-        -120
-      ],
       "parameters": {
         "httpMethod": "POST",
         "path": "content-repurpose",
-        "responseMode": "onReceived",
         "options": {}
       },
-      "typeVersion": 2.1
+      "id": "17e306f6-a26d-480e-bb6b-5032799d9192",
+      "name": "Content Submitted",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        5488,
+        -6096
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "c749a7ca-47d8-43a5-8fac-0ed8354abbb8"
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000003",
-      "name": "Generate Platform Variants (AI Agent)",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "position": [
-        40,
-        -120
-      ],
       "parameters": {
         "promptType": "define",
         "text": "=Source content:\\n\\n{{ $json.body.content }}",
@@ -59,94 +41,94 @@
           "systemMessage": "You repurpose long-form content into platform-native social posts. Produce a LinkedIn post (professional tone, 100-150 words), an X/Twitter thread (5-7 tweets, numbered array), and an Instagram caption (casual tone, with 5 relevant hashtags)."
         }
       },
+      "id": "8b0ed246-9c6a-4c39-aa5f-a3323448446a",
+      "name": "Generate Platform Variants (AI Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        5728,
+        -6096
+      ],
       "typeVersion": 1.7
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000004",
-      "name": "OpenAI Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "position": [
-        20,
-        60
-      ],
       "parameters": {
         "model": {
           "__rl": true,
           "mode": "list",
           "value": "gpt-5-mini"
         },
+        "builtInTools": {},
         "options": {
           "temperature": 0.7
         }
       },
+      "id": "2bc065b0-e70f-43f6-abb8-4cba28a674c7",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        5712,
+        -5920
+      ],
+      "typeVersion": 1.3,
       "credentials": {
         "openAiApi": {
-          "id": "REPLACE_WITH_CREDENTIAL_ID",
-          "name": "OpenAI account"
+          "id": "WdpcmOEDSJItGCUY",
+          "name": "n8n free OpenAI API credits"
         }
-      },
-      "typeVersion": 1.3
+      }
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000005",
-      "name": "Structured Output Parser",
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "position": [
-        180,
-        60
-      ],
       "parameters": {
         "schemaType": "manual",
         "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"linkedin\": { \"type\": \"string\" },\n    \"xThread\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n    \"instagram\": { \"type\": \"string\" }\n  },\n  \"required\": [\"linkedin\", \"xThread\", \"instagram\"]\n}"
       },
+      "id": "e0893399-04d7-4db5-8111-29c976a2596b",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        5872,
+        -5920
+      ],
       "typeVersion": 1.2
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000006",
-      "name": "Build Scheduling Queue",
-      "type": "n8n-nodes-base.code",
-      "position": [
-        400,
-        -120
-      ],
       "parameters": {
         "jsCode": "const o = $json.output;\nconst now = DateTime.now();\nreturn [\n  { json: { platform: 'linkedin', profileId: 'REPLACE_WITH_BUFFER_LINKEDIN_PROFILE_ID', content: o.linkedin, scheduledAt: now.plus({ hours: 1 }).toISO() } },\n  { json: { platform: 'twitter', profileId: 'REPLACE_WITH_BUFFER_TWITTER_PROFILE_ID', content: o.xThread.join('\\n\\n'), scheduledAt: now.plus({ hours: 4 }).toISO() } },\n  { json: { platform: 'instagram', profileId: 'REPLACE_WITH_BUFFER_INSTAGRAM_PROFILE_ID', content: o.instagram, scheduledAt: now.plus({ hours: 8 }).toISO() } }\n];"
       },
+      "id": "8a10b341-a3b0-4f5a-8747-e22be407788c",
+      "name": "Build Scheduling Queue",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        6080,
+        -6096
+      ],
       "typeVersion": 2
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000007",
+      "parameters": {
+        "options": {}
+      },
+      "id": "8047071d-01be-4544-906f-4aaa4ff82f20",
       "name": "Schedule Each Post",
       "type": "n8n-nodes-base.splitInBatches",
       "position": [
-        620,
-        -120
+        6304,
+        -6096
       ],
-      "parameters": {
-        "batchSize": 1,
-        "options": {}
-      },
       "typeVersion": 3
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000008",
+      "parameters": {},
+      "id": "6f241a8f-dabf-4f71-98d4-1461a9313aec",
       "name": "Scheduling Done",
       "type": "n8n-nodes-base.noOp",
       "position": [
-        860,
-        -260
+        6544,
+        -6240
       ],
-      "parameters": {},
       "typeVersion": 1
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000009",
-      "name": "Schedule to Buffer",
-      "type": "n8n-nodes-base.httpRequest",
-      "position": [
-        860,
-        -60
-      ],
       "parameters": {
         "method": "POST",
         "url": "https://api.bufferapp.com/1/updates/create.json",
@@ -171,32 +153,27 @@
           "timeout": 10000
         }
       },
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "REPLACE_WITH_CREDENTIAL_ID",
-          "name": "Buffer API"
-        }
-      },
+      "id": "411aec0c-1f47-4d28-a2c3-e235a416f4fd",
+      "name": "Schedule to Buffer",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        6544,
+        -6032
+      ],
       "retryOnFail": true,
       "maxTries": 3,
-      "continueOnFail": true,
-      "typeVersion": 4.2
+      "typeVersion": 4.2,
+      "continueOnFail": true
     },
     {
-      "id": "c0000000-0000-0000-0000-00000000000a",
-      "name": "Log Scheduled Post",
-      "type": "n8n-nodes-base.googleSheets",
-      "position": [
-        1080,
-        -60
-      ],
       "parameters": {
-        "resource": "sheet",
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
+          "value": "1CG98ZH-GqK0Fy-r7swB6AJwDAkWbonpg_J-VXgpTZgY",
           "mode": "list",
-          "value": "REPLACE_WITH_SPREADSHEET_ID"
+          "cachedResultName": "Gre tests",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CG98ZH-GqK0Fy-r7swB6AJwDAkWbonpg_J-VXgpTZgY/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
@@ -248,28 +225,27 @@
         },
         "options": {}
       },
+      "id": "e4550ae6-7f64-47e8-aa5b-a751eb5bb5ca",
+      "name": "Log Scheduled Post",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        6768,
+        -6032
+      ],
+      "typeVersion": 4.7,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "REPLACE_WITH_CREDENTIAL_ID",
-          "name": "Google Sheets account"
+          "id": "UnP62D2DzVysUFFb",
+          "name": "Google Sheets OAuth2 API"
         }
-      },
-      "typeVersion": 4.7
+      }
     },
     {
-      "id": "c0000000-0000-0000-0000-00000000000b",
-      "name": "Weekly Performance Pull",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "position": [
-        -200,
-        220
-      ],
       "parameters": {
         "rule": {
           "interval": [
             {
               "field": "weeks",
-              "weeksInterval": 1,
               "triggerAtDay": [
                 1
               ],
@@ -278,93 +254,126 @@
           ]
         }
       },
+      "id": "3f857bef-9609-47a2-88cf-bdc7d4a18576",
+      "name": "Weekly Performance Pull",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        5488,
+        -5760
+      ],
       "typeVersion": 1.2
     },
     {
-      "id": "c0000000-0000-0000-0000-00000000000c",
-      "name": "Fetch Buffer Analytics",
-      "type": "n8n-nodes-base.httpRequest",
-      "position": [
-        40,
-        220
-      ],
       "parameters": {
         "url": "https://api.bufferapp.com/1/profiles/analytics.json",
         "options": {
           "timeout": 10000
         }
       },
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "REPLACE_WITH_CREDENTIAL_ID",
-          "name": "Buffer API"
-        }
-      },
+      "id": "233fdd52-9fbb-4ce6-be24-4b5b9e60ec3b",
+      "name": "Fetch Buffer Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        5728,
+        -5760
+      ],
       "retryOnFail": true,
       "maxTries": 3,
       "typeVersion": 4.2
     },
     {
-      "id": "c0000000-0000-0000-0000-00000000000d",
-      "name": "Log Weekly Performance",
-      "type": "n8n-nodes-base.googleSheets",
-      "position": [
-        280,
-        220
-      ],
       "parameters": {
-        "resource": "sheet",
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
+          "value": "1CG98ZH-GqK0Fy-r7swB6AJwDAkWbonpg_J-VXgpTZgY",
           "mode": "list",
-          "value": "REPLACE_WITH_SPREADSHEET_ID"
+          "cachedResultName": "Gre tests",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CG98ZH-GqK0Fy-r7swB6AJwDAkWbonpg_J-VXgpTZgY/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
-          "mode": "name",
-          "value": "Weekly Performance"
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CG98ZH-GqK0Fy-r7swB6AJwDAkWbonpg_J-VXgpTZgY/edit#gid=0"
         },
         "columns": {
-          "mappingMode": "autoMapInputData",
-          "matchingColumns": [
-            "profileId"
-          ],
+          "mappingMode": "defineBelow",
           "value": {},
-          "schema": []
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Student name",
+              "displayName": "Student name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "E-mail",
+              "displayName": "E-mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Course Name",
+              "displayName": "Course Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Registration date",
+              "displayName": "Registration date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
+      "id": "45578500-2f17-441b-ade8-9500d0822053",
+      "name": "Log Weekly Performance",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        5968,
+        -5760
+      ],
+      "typeVersion": 4.7,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "REPLACE_WITH_CREDENTIAL_ID",
-          "name": "Google Sheets account"
+          "id": "UnP62D2DzVysUFFb",
+          "name": "Google Sheets OAuth2 API"
         }
-      },
-      "typeVersion": 4.7
+      }
     },
     {
-      "id": "c0000000-0000-0000-0000-00000000000e",
+      "parameters": {},
+      "id": "e0c82c04-0fbe-4353-b1ad-0efc0c328325",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "position": [
-        -200,
-        460
+        5488,
+        -5520
       ],
-      "parameters": {},
       "typeVersion": 1
     },
     {
-      "id": "c0000000-0000-0000-0000-00000000000f",
-      "name": "Notify Ops",
-      "type": "n8n-nodes-base.slack",
-      "position": [
-        40,
-        460
-      ],
       "parameters": {
-        "resource": "message",
-        "operation": "post",
+        "authentication": "oAuth2",
         "select": "channel",
         "channelId": {
           "__rl": true,
@@ -372,32 +381,43 @@
           "value": "REPLACE_WITH_CHANNEL_ID",
           "cachedResultName": "ops-alerts"
         },
-        "text": "=🚨 AI Content Repurposing System failed: {{ $json.execution.error.message }}",
+        "text": "= AI Content Repurposing System failed: {{ $json.execution.error.message }}",
         "otherOptions": {}
       },
+      "id": "0a5228b3-53e5-4228-aee7-bc8936052d53",
+      "name": "Notify Ops",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        5728,
+        -5520
+      ],
+      "typeVersion": 2.3,
+      "webhookId": "9575a37c-21ba-4847-8cee-8df04e302bc1",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "REPLACE_WITH_CREDENTIAL_ID",
-          "name": "Slack account"
+          "id": "KmwuYU8S5TfeT2Mf",
+          "name": "Slack OAuth2 API"
         }
-      },
-      "typeVersion": 2.3
+      }
     }
   ],
-  "active": false,
-  "pinData": {},
-  "settings": {
-    "executionOrder": "v1",
-    "saveManualExecutions": true,
-    "errorWorkflow": ""
-  },
-  "versionId": "content-repurpose-v1",
   "connections": {
     "Content Submitted": {
       "main": [
         [
           {
             "node": "Generate Platform Variants (AI Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Platform Variants (AI Agent)": {
+      "main": [
+        [
+          {
+            "node": "Build Scheduling Queue",
             "type": "main",
             "index": 0
           }
@@ -421,17 +441,6 @@
           {
             "node": "Generate Platform Variants (AI Agent)",
             "type": "ai_outputParser",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate Platform Variants (AI Agent)": {
-      "main": [
-        [
-          {
-            "node": "Build Scheduling Queue",
-            "type": "main",
             "index": 0
           }
         ]
@@ -521,5 +530,12 @@
         ]
       ]
     }
+  },
+  "pinData": {},
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6ab8f18301c57fe5508c3c98c40f1759365371ba574c699a1652064e9d2bc1b3"
   }
 }
