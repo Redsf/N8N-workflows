@@ -11,22 +11,6 @@
   ],
   "nodes": [
     {
-      "id": "s0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -480,
-        -320
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 620,
-        "height": 520,
-        "content": "## 🛒 Abandoned Cart Recovery Engine\n\nFires the moment a Shopify checkout is abandoned, waits, checks if the order completed, then sends a personalised recovery sequence over email and WhatsApp with a time-limited incentive.\n\n**Recovered 14% of abandoned carts, +9% monthly revenue, zero manual follow-up.**\n\n## Setup (about 15 minutes)\n1. **Shopify Trigger**: connect your Shopify Admin API credential, keep topic `checkouts/create`.\n2. **Check Order Status**: point the HTTP Request at your store's `/admin/api/2024-01/orders.json` endpoint with a Shopify Admin credential (header auth).\n3. **Gmail** / **WhatsApp**: connect credentials and set the discount code in *Build Recovery Message*.\n4. **Ops Alerts**: point *Error Trigger → Notify Ops* at your internal Slack channel.\n\nAdjust the wait time in *Wait 15 Min* to match how aggressively you want to recover carts."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "s0000000-0000-0000-0000-000000000002",
       "name": "Checkout Abandoned",
       "type": "n8n-nodes-base.shopifyTrigger",

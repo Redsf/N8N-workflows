@@ -11,22 +11,6 @@
   ],
   "nodes": [
     {
-      "id": "r0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -520,
-        -360
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 680,
-        "height": 560,
-        "content": "## ⭐ AI Review & Reputation Manager\n\nPolls Google Business and Trustpilot hourly. An LLM drafts an on-brand reply for every new review; positive ones publish after a quick Slack approval tap, negative ones escalate to the owner instantly with sentiment and a suggested resolution.\n\n**Every review answered within an hour. Rating climbed 4.2 → 4.7 in 6 months.**\n\n## Setup (about 20 minutes)\n1. **Fetch Google/Trustpilot Reviews**: point each HTTP Request at your review source APIs.\n2. **Draft Reply (AI Agent)**: connect an OpenAI credential.\n3. **Escalate to Owner**: set the Slack channel/user for negative reviews.\n4. **Request Approval**: set the Slack channel for the reply-approval prompt.\n5. **Publish Reply**: point the HTTP Request at your review platform's reply endpoint."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "r0000000-0000-0000-0000-000000000002",
       "name": "Every Hour",
       "type": "n8n-nodes-base.scheduleTrigger",

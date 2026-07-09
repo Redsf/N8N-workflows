@@ -12,22 +12,6 @@
   ],
   "nodes": [
     {
-      "id": "i0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -560,
-        -400
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 700,
-        "height": 620,
-        "content": "## 🧾 Automated Invoice & Document Processing Pipeline\n\nGmail triggers on incoming invoice attachments. PDF text is extracted and key fields pulled with an LLM node: vendor, amount, due date, line items. Data is checked against the vendor list in Postgres; clean invoices push into Xero as draft bills automatically while mismatches route to finance for review.\n\n## Setup (about 20 minutes)\n1. Connect Gmail (set a label filter like `label:invoices has:attachment` in *New Invoice Email*).\n2. Connect OpenAI, Postgres and Xero (header auth) credentials.\n3. Ensure the `vendors` and `invoice_log` tables exist in Postgres (see sticky note on *Log Invoice Record*).\n4. Point *Notify Finance (Mismatch)* at your finance Slack channel."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "i0000000-0000-0000-0000-000000000002",
       "name": "New Invoice Email",
       "type": "n8n-nodes-base.gmailTrigger",

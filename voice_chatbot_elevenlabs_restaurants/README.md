@@ -38,7 +38,7 @@ To test without a live phone call, POST this JSON to the workflow's production w
 4. **Google Drive** — add OAuth2 credentials to **Get folder** and **Download Files**, pointed at your menu/FAQ document folder (currently set to a folder literally named `test-whatsapp`, left over from a related template — rename the filter to your actual folder).
 5. **Run ingestion first** — trigger **When clicking 'Test workflow'** once to populate Qdrant with your restaurant's documents before the voice agent goes live.
 6. **Embed the widget** — once the agent is created on ElevenLabs, add the provided `<elevenlabs-convai>` widget snippet to your website, substituting your real `agent-id`.
-7. **Rewrite the persona** — the sticky notes show a sample system prompt written for "Pizzeria da Michele"; replace it with your own restaurant's name, tone, and menu specifics on the ElevenLabs agent side.
+7. **Rewrite the persona** — step 1 above shows a sample system prompt written for "Pizzeria da Michele"; replace it with your own restaurant's name, tone, and menu specifics on the ElevenLabs agent side.
 
 ---
 

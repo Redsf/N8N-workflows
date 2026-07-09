@@ -6,7 +6,10 @@
       "name": "Document Upload Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "webhookId": "receipt-verify-hook",
       "parameters": {
         "httpMethod": "POST",
@@ -20,7 +23,10 @@
       "name": "Normalize Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, 0],
+      "position": [
+        240,
+        0
+      ],
       "parameters": {
         "jsCode": "const b = ($input.first().json.body) || {};\nreturn [{\n  json: {\n    documentId: b.document_id || ('doc_' + Date.now()),\n    guestId: b.guest_id || 'unknown',\n    bookingId: b.booking_id || '',\n    imageUrl: b.image_url || b.imageUrl || '',\n    docType: b.doc_type || 'receipt',\n    expectedAmount: (b.expected_amount != null) ? Number(b.expected_amount) : null,\n    expectedCurrency: String(b.currency || 'EUR').toUpperCase(),\n    receivedAt: new Date().toISOString()\n  }\n}];"
       }
@@ -30,7 +36,10 @@
       "name": "GPT Vision Extract",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 0],
+      "position": [
+        480,
+        0
+      ],
       "onError": "continueErrorOutput",
       "retryOnFail": true,
       "maxTries": 2,
@@ -46,7 +55,10 @@
         "options": {}
       },
       "credentials": {
-        "openAiApi": { "id": "REPLACE_OPENAI", "name": "OpenAI account" }
+        "openAiApi": {
+          "id": "REPLACE_OPENAI",
+          "name": "OpenAI account"
+        }
       }
     },
     {
@@ -54,7 +66,10 @@
       "name": "Parse Extraction",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [720, -60],
+      "position": [
+        720,
+        -60
+      ],
       "parameters": {
         "jsCode": "const res = $input.first().json;\nlet content = '{}';\ntry { content = res.choices[0].message.content; } catch (e) {}\nlet parsed = {};\ntry { parsed = JSON.parse(content); } catch (e) { parsed = { confidence: 0 }; }\nconst prev = $node['Normalize Input'].json;\nreturn [{\n  json: {\n    documentId: prev.documentId,\n    guestId: prev.guestId,\n    bookingId: prev.bookingId,\n    expectedAmount: prev.expectedAmount,\n    expectedCurrency: prev.expectedCurrency,\n    vendor: parsed.vendor ?? null,\n    date: parsed.document_date ?? null,\n    total: (parsed.total != null) ? Number(parsed.total) : null,\n    currency: parsed.currency ? String(parsed.currency).toUpperCase() : null,\n    lineItems: parsed.line_items ?? [],\n    confidence: (parsed.confidence != null) ? Number(parsed.confidence) : 0\n  }\n}];"
       }
@@ -64,7 +79,10 @@
       "name": "Validate Against Booking",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, -60],
+      "position": [
+        960,
+        -60
+      ],
       "parameters": {
         "jsCode": "const d = $input.first().json;\nconst reasons = [];\nconst tolerance = 0.02;\nif (d.confidence < 0.6) reasons.push('Low extraction confidence');\nif (d.total == null) reasons.push('Total not found');\nif (d.currency && d.expectedCurrency && d.currency !== d.expectedCurrency) {\n  reasons.push('Currency mismatch: got ' + d.currency + ' expected ' + d.expectedCurrency);\n}\nif (d.total != null && d.expectedAmount != null) {\n  const diff = Math.abs(d.total - d.expectedAmount);\n  const allowed = Math.abs(d.expectedAmount) * tolerance;\n  if (diff > allowed) reasons.push('Amount mismatch: got ' + d.total + ' expected ' + d.expectedAmount);\n}\nlet verdict = 'APPROVED';\nif (reasons.length > 0) {\n  verdict = (d.confidence < 0.6 || d.total == null) ? 'REJECTED' : 'REVIEW';\n}\nreturn [{\n  json: Object.assign({}, d, {\n    verdict: verdict,\n    reasons: reasons.length ? reasons : ['All checks passed'],\n    processedAt: new Date().toISOString()\n  })\n}];"
       }
@@ -74,18 +92,28 @@
       "name": "Auto Approve?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [1200, -60],
+      "position": [
+        1200,
+        -60
+      ],
       "parameters": {
         "options": {},
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
           "combinator": "and",
           "conditions": [
             {
               "id": "cond-approved",
               "leftValue": "={{ $json.verdict }}",
               "rightValue": "APPROVED",
-              "operator": { "type": "string", "operation": "equals" }
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
             }
           ]
         }
@@ -96,17 +124,27 @@
       "name": "Flag For Review",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
-      "position": [1440, -220],
+      "position": [
+        1440,
+        -220
+      ],
       "parameters": {
         "resource": "message",
         "operation": "post",
         "select": "channel",
-        "channelId": { "__rl": true, "mode": "name", "value": "finance-review" },
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "finance-review"
+        },
         "text": "=:mag: *Document needs review* ({{ $json.verdict }})\nDocument: {{ $json.documentId }}  Booking: {{ $json.bookingId }}\nVendor: {{ $json.vendor }}  Total: {{ $json.total }} {{ $json.currency }}\nExpected: {{ $json.expectedAmount }} {{ $json.expectedCurrency }}\nReasons: {{ $json.reasons.join('; ') }}",
         "otherOptions": {}
       },
       "credentials": {
-        "slackApi": { "id": "REPLACE_SLACK", "name": "Slack account" }
+        "slackApi": {
+          "id": "REPLACE_SLACK",
+          "name": "Slack account"
+        }
       }
     },
     {
@@ -114,7 +152,10 @@
       "name": "Build Error Verdict",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [720, 200],
+      "position": [
+        720,
+        200
+      ],
       "parameters": {
         "jsCode": "const prev = $node['Normalize Input'].json;\nreturn [{\n  json: {\n    documentId: prev.documentId,\n    guestId: prev.guestId,\n    bookingId: prev.bookingId,\n    expectedAmount: prev.expectedAmount,\n    expectedCurrency: prev.expectedCurrency,\n    vendor: null,\n    date: null,\n    total: null,\n    currency: null,\n    lineItems: [],\n    confidence: 0,\n    verdict: 'ERROR',\n    reasons: ['Vision extraction failed after retries'],\n    processedAt: new Date().toISOString()\n  }\n}];"
       }
@@ -124,11 +165,22 @@
       "name": "Record Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1680, 0],
+      "position": [
+        1680,
+        0
+      ],
       "parameters": {
         "operation": "append",
-        "documentId": { "__rl": true, "mode": "id", "value": "REPLACE_SHEET_ID" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "Verifications" },
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Verifications"
+        },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
@@ -152,7 +204,10 @@
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": { "id": "REPLACE_SHEETS", "name": "Google Sheets account" }
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_SHEETS",
+          "name": "Google Sheets account"
+        }
       }
     },
     {
@@ -160,7 +215,10 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1920, 0],
+      "position": [
+        1920,
+        0
+      ],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ ({ documentId: $json.documentId, verdict: $json.verdict, reasons: $json.reasons }) }}",
@@ -172,7 +230,10 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [480, 420],
+      "position": [
+        480,
+        420
+      ],
       "parameters": {}
     },
     {
@@ -180,96 +241,152 @@
       "name": "Alert Engineering",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
-      "position": [720, 420],
+      "position": [
+        720,
+        420
+      ],
       "parameters": {
         "resource": "message",
         "operation": "post",
         "select": "channel",
-        "channelId": { "__rl": true, "mode": "name", "value": "automation-alerts" },
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "automation-alerts"
+        },
         "text": "=:rotating_light: *Receipt verification workflow failed*\nWorkflow: {{ $json.workflow.name }}\nNode: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}",
         "otherOptions": {}
       },
       "credentials": {
-        "slackApi": { "id": "REPLACE_SLACK", "name": "Slack account" }
-      }
-    },
-    {
-      "id": "wf2-sticky-overview",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [-760, -200],
-      "parameters": {
-        "color": 7,
-        "width": 560,
-        "height": 860,
-        "content": "## \ud83e\uddfe Vision AI Receipt & Document Verification\n\nReceives a receipt or invoice image, reads it with GPT 4o Vision, validates the extracted total and currency against the expected booking values, then auto approves clean documents and flags anything suspicious for human review. Every result is logged to Google Sheets.\n\n**Perfect for:** hospitality finance and operations teams that need to verify guest receipts, deposits and supplier invoices at scale.\n\n---\n\n## How it works\n\n1. **Document Upload Webhook** \u2014 Receives the document image URL plus the expected amount and currency.\n2. **Normalize Input** \u2014 Cleans the payload into a consistent shape.\n3. **GPT Vision Extract** \u2014 Calls the OpenAI vision API to read the document into structured JSON. Retries on failure.\n4. **Parse Extraction** \u2014 Safely parses the model output into typed fields.\n5. **Validate Against Booking** \u2014 Checks total, currency and confidence against the expected values and assigns a verdict.\n6. **Auto Approve?** \u2014 Branches on whether the verdict is APPROVED.\n7. **Flag For Review** \u2014 Posts non approved documents to the finance review channel *(review path)*.\n8. **Build Error Verdict** \u2014 If the vision call fails, builds an ERROR verdict so nothing is silently dropped *(error path)*.\n9. **Record Result** \u2014 Appends the full result to Google Sheets.\n10. **Respond** \u2014 Returns the verdict to the caller.\n11. **Error Trigger \u2192 Alert Engineering** \u2014 Catches any unhandled failure and alerts the team.\n\n---\n\n## Setup (~10 minutes)\n\n1. **OpenAI** \u2014 Connect your key in the *GPT Vision Extract* node (uses the OpenAI credential).\n2. **Slack** \u2014 Connect your account in *Flag For Review* and *Alert Engineering*.\n3. **Google Sheets** \u2014 Connect in *Record Result* and set your sheet id and a tab named Verifications.\n> Send a POST to *Document Upload Webhook* with image_url, expected_amount, currency, guest_id and booking_id. The image URL must be publicly reachable by the OpenAI API."
-      }
-    },
-    {
-      "id": "wf2-sticky-intake",
-      "name": "Section Intake",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [-80, -140],
-      "parameters": {
-        "color": 5,
-        "width": 480,
-        "height": 320,
-        "content": "## 1\ufe0f\u20e3 Intake\n\nThe **Document Upload Webhook** receives the document image URL together with the expected amount and currency for the booking. **Normalize Input** flattens the request body into a predictable structure and assigns a document id so every downstream node works from the same fields."
-      }
-    },
-    {
-      "id": "wf2-sticky-vision",
-      "name": "Section Vision",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [440, -140],
-      "parameters": {
-        "color": 3,
-        "width": 480,
-        "height": 540,
-        "content": "## 2\ufe0f\u20e3 Vision Extraction\n\n**GPT Vision Extract** sends the image to the OpenAI vision model and forces a strict JSON response, retrying once on a transient failure. **Parse Extraction** safely parses that response into typed fields. If extraction fails entirely, the error output routes to **Build Error Verdict** so the document is still logged rather than lost."
-      }
-    },
-    {
-      "id": "wf2-sticky-validate",
-      "name": "Section Validate",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [940, -140],
-      "parameters": {
-        "color": 6,
-        "width": 640,
-        "height": 540,
-        "content": "## 3\ufe0f\u20e3 Validation & Routing\n\n**Validate Against Booking** compares the extracted total and currency against the expected values within a 2 percent tolerance and gates on extraction confidence, producing an APPROVED, REVIEW, REJECTED or ERROR verdict. **Auto Approve?** sends clean documents straight to logging and routes everything else to **Flag For Review** in Slack."
-      }
-    },
-    {
-      "id": "wf2-sticky-logging",
-      "name": "Section Logging",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [1600, -200],
-      "parameters": {
-        "color": 4,
-        "width": 540,
-        "height": 760,
-        "content": "## 4\ufe0f\u20e3 Logging & Error Handling\n\n**Record Result** appends the vendor, totals, verdict, reasons and confidence to Google Sheets for a full audit trail, and **Respond** returns the verdict to the caller. The **Error Trigger** fires on any unhandled failure and **Alert Engineering** posts the failing node and message to the alerts channel."
+        "slackApi": {
+          "id": "REPLACE_SLACK",
+          "name": "Slack account"
+        }
       }
     }
   ],
   "connections": {
-    "Document Upload Webhook": { "main": [[{ "node": "Normalize Input", "type": "main", "index": 0 }]] },
-    "Normalize Input": { "main": [[{ "node": "GPT Vision Extract", "type": "main", "index": 0 }]] },
-    "GPT Vision Extract": { "main": [[{ "node": "Parse Extraction", "type": "main", "index": 0 }], [{ "node": "Build Error Verdict", "type": "main", "index": 0 }]] },
-    "Parse Extraction": { "main": [[{ "node": "Validate Against Booking", "type": "main", "index": 0 }]] },
-    "Validate Against Booking": { "main": [[{ "node": "Auto Approve?", "type": "main", "index": 0 }]] },
-    "Auto Approve?": { "main": [[{ "node": "Record Result", "type": "main", "index": 0 }], [{ "node": "Flag For Review", "type": "main", "index": 0 }, { "node": "Record Result", "type": "main", "index": 0 }]] },
-    "Build Error Verdict": { "main": [[{ "node": "Record Result", "type": "main", "index": 0 }]] },
-    "Record Result": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] },
-    "Error Trigger": { "main": [[{ "node": "Alert Engineering", "type": "main", "index": 0 }]] }
+    "Document Upload Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "GPT Vision Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT Vision Extract": {
+      "main": [
+        [
+          {
+            "node": "Parse Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error Verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Extraction": {
+      "main": [
+        [
+          {
+            "node": "Validate Against Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Against Booking": {
+      "main": [
+        [
+          {
+            "node": "Auto Approve?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Approve?": {
+      "main": [
+        [
+          {
+            "node": "Record Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flag For Review",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Record Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Error Verdict": {
+      "main": [
+        [
+          {
+            "node": "Record Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Result": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Alert Engineering",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "pinData": {}
 }

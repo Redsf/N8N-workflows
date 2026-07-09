@@ -11,22 +11,6 @@
   ],
   "nodes": [
     {
-      "id": "w0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -560,
-        -420
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 720,
-        "height": 640,
-        "content": "## 💬 WhatsApp AI Sales Agent\n\nEvery inbound WhatsApp message feeds into an AI agent that runs RAG lookups against the product catalog in Pinecone, answers questions, checks calendar availability, and books appointments directly. Low-confidence replies route to a human via Slack instead of guessing.\n\n## Setup (about 25 minutes)\n1. Connect WhatsApp Business Cloud, OpenAI, Pinecone and Google Calendar credentials.\n2. Set your Pinecone index name in *Product Catalog (RAG Tool)*.\n3. Set the target calendar in *Book Appointment (Tool)*.\n4. Point *Route to Human* at your sales team's Slack channel.\n\nThe agent's system message instructs it to end replies with `HANDOFF:true` when it isn't confident — the Code node after it parses that flag to decide whether a human should take over."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "w0000000-0000-0000-0000-000000000002",
       "name": "Incoming WhatsApp Message",
       "type": "n8n-nodes-base.whatsAppTrigger",

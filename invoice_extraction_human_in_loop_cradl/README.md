@@ -43,7 +43,7 @@ The extracted Cradl AI output that feeds the sheet looks roughly like:
 
 ## Setup (~20 minutes)
 
-1. **Cradl AI** — create a free account (the sticky note links a signup flow pre-templated for `n8n/invoices-gmail-to-sheets.json`), define an extraction agent for invoices, and set up human-in-the-loop reviewers/validators inside the Cradl AI dashboard. Add the credential to **Extract invoice details with AI** and replace the hardcoded `agentId` with your own agent's ID.
+1. **Cradl AI** — [create a free account](https://rc.app.cradl.ai/login?redirect=signup&template=n8n%2Finvoices-gmail-to-sheets.json) (pre-templated for `n8n/invoices-gmail-to-sheets.json`), define an extraction agent for invoices, and set up human-in-the-loop reviewers/validators inside the Cradl AI dashboard. Add the credential to **Extract invoice details with AI** and replace the hardcoded `agentId` with your own agent's ID.
 2. **Gmail** — connect an OAuth credential to **Gmail Trigger** and **Mark a message as read**. Adjust the search filter (`has:attachment subject:invoice`) in **Gmail Trigger** to match your inbox conventions — e.g. add `to:invoices@mycompany.com` if invoices land in a shared mailbox.
 3. **Google Sheets** — connect credentials to **Add invoice line to Google Sheets** and set the target spreadsheet (`documentId`) and sheet (`sheetName`, currently pointing at `gid=0`). Map the extracted fields to your sheet's columns if your column layout differs from Cradl AI's default output.
 4. **Extraction fields** — the fields Cradl AI extracts are defined in your Cradl AI agent, not in n8n; update the agent definition in Cradl AI's dashboard if you need different fields per invoice line.

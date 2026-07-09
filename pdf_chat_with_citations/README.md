@@ -32,7 +32,7 @@ This uses n8n's built-in chat trigger. Send a message through the chat panel on 
 Which email provider does the creator of Bitcoin use?
 ```
 
-(This matches the demo question suggested in the workflow's own sticky note, since the ingested document defaults to the Bitcoin whitepaper.) Expect a reply combining a direct answer with a citation like `[bitcoin.pdf, lines 3-5]`.
+(This matches the default ingested document, the Bitcoin whitepaper.) Expect a reply combining a direct answer with a citation like `[bitcoin.pdf, lines 3-5]`.
 
 ## Setup (~20 minutes)
 

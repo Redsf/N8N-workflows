@@ -14,7 +14,7 @@ Built for retailers or support teams who want first-line WhatsApp support answer
    - If not a message, the branch ends (status notifications are ignored).
    - If it is a message, it proceeds to the agent.
 4. **AI Agent** (conversational agent) reads the message text, powered by **OpenAI Chat Model** and **Window Buffer Memory** for context, with a system prompt tuned for an electronics store: answer with product info, troubleshooting steps, and support guidance, using the retrieved knowledge base.
-5. **Only message** replies with "You can only send text messages" when the incoming message isn't plain text (image, audio, etc. fall through this path from the IF node's second output in practice, per the sticky note's description of the flow).
+5. **Only message** replies with "You can only send text messages" when the incoming message isn't plain text (image, audio, etc. fall through this path from the IF node's second output in practice).
 6. **Send** (WhatsApp node) sends the agent's `output` back to the same WhatsApp contact (`wa_id`) that sent the original message.
 
 **Knowledge base ingestion (manual trigger, run separately):**
@@ -44,7 +44,7 @@ This workflow is driven by Meta's WhatsApp Cloud API webhook, not a request you'
 ## Setup (~30 minutes)
 
 1. **Meta WhatsApp Cloud API** — add WhatsApp API credentials to **Only message** and **Send**. Both nodes hardcode `phoneNumberId: 470271332838881` — replace it with your own WhatsApp Business phone number ID.
-2. **Webhook configuration** — **Verify** and **Respond** must share the exact same path (already set to `f0d2e6f6-8fda-424d-b377-0bd191343c20` in this export, but you should regenerate/confirm it matches what you register). Set **Verify** to GET and **Respond** to POST in your n8n webhook settings, then register the production URL in the Meta for Developers app as the callback URL. Delete/disable **Verify** after the handshake succeeds if you prefer, per the workflow's own sticky note.
+2. **Webhook configuration** — **Verify** and **Respond** must share the exact same path (already set to `f0d2e6f6-8fda-424d-b377-0bd191343c20` in this export, but you should regenerate/confirm it matches what you register). Set **Verify** to GET and **Respond** to POST in your n8n webhook settings, then register the production URL in the Meta for Developers app as the callback URL. Delete/disable **Verify** after the handshake succeeds if you prefer.
 3. **OpenAI** — add your API key to **OpenAI Chat Model** and **Embeddings OpenAI**.
 4. **Qdrant** — add API credentials (header auth) to **Create collection**, **Refresh collection**, and **Qdrant Vector Store**. Replace the `QDRANTURL` and `COLLECTION` placeholders visible in the HTTP Request URLs and the vector store's collection field.
 5. **Google Drive** — add OAuth2 credentials to **Get folder** and **Download Files**, and point the folder filter at your own document source (currently set to a folder literally named `test-whatsapp`).

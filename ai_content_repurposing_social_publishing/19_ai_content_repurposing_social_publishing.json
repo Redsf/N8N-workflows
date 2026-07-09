@@ -2,22 +2,6 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## 🔁 AI Content Repurposing & Social Publishing System\n\nOne long-form input (blog post or podcast transcript) triggers the workflow. An LLM generates platform-specific versions: LinkedIn post, X thread, Instagram caption. Buffer schedules each post at staggered times, and weekly performance data flows back into Google Sheets. Zero manual scheduling.\n\n## Two triggers in this workflow\n1. **Content Submitted** (Webhook) → generates variants → schedules via Buffer.\n2. **Weekly Performance Pull** (Schedule, Monday 9am) → pulls Buffer analytics → logs to Sheets.\n\n## Setup (about 15 minutes)\n1. Connect OpenAI and Buffer API credentials.\n2. Set your Buffer profile IDs in *Schedule to Buffer*.\n3. Connect the Google Sheet used for logging + performance tracking.",
-        "height": 600,
-        "width": 700,
-        "color": 7
-      },
-      "id": "6c5ad649-9ee0-46ed-bd29-48f848569f11",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        4608,
-        -6128
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "content-repurpose",
         "options": {}

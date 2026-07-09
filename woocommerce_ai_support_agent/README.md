@@ -39,7 +39,7 @@ Has my last order shipped yet?
 ## Setup (~20 minutes)
 
 1. **WooCommerce** — add a WooCommerce API credential to **WooCommerce - Get User** and **WooCommerce Get Orders**. The order-lookup HTTP node has the store URL (`woo-pleasantly-swag-werewolf3.wpcomstaging.com`) hardcoded — change it to your store's REST API base URL.
-2. **DHL** — add a DHL API credential to the **DHL** node, or replace it with your own carrier's node (the sticky notes call out UPS as a common alternative) if you don't ship via DHL.
+2. **DHL** — add a DHL API credential to the **DHL** node, or replace it with your own carrier's node (UPS is a common alternative) if you don't ship via DHL.
 3. **OpenAI** — add an API key to **OpenAI Chat Model**.
 4. **Encryption password** — the `Decrypt email address`, `Encrypt email`, and `Decrypt email` (example) Code nodes all hardcode `'a random password'` for AES key derivation. Replace it with a real shared secret used identically in your website backend, and keep the backend encryption logic in sync with the `decrypt()` function in this workflow.
 5. **Go live** — disable/delete **Mock Data**, enable **Decrypt email address**, and enable the workflow. Until then, `Mock Data` overrides the email with `james@brown.com` regardless of what the chat sends, which is convenient for testing but must be turned off before production traffic hits it.

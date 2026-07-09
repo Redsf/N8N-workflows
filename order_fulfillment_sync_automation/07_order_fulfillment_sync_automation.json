@@ -11,22 +11,6 @@
   ],
   "nodes": [
     {
-      "id": "o0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -560,
-        -400
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 700,
-        "height": 620,
-        "content": "## 📦 Order & Fulfillment Sync Automation\n\nEvery new Shopify order flows through n8n to the courier's API for booking, writes back the tracking number, and messages the customer at each delivery stage over email and WhatsApp. Failed bookings and address mismatches route to an ops channel in Slack.\n\n**Manual entry errors down 95%, 3 hours a day back for the ops team.**\n\n## Two independent triggers in this workflow\n1. **New Order Placed** (Shopify Trigger, orders/create) → books the courier and sends the first tracking notification.\n2. **Poll Delivery Status** (Schedule Trigger, every 30 min) → checks courier status for orders in flight and notifies the customer only when the stage changes.\n\n## Setup (about 20 minutes)\n1. Connect Shopify Admin API credential on the trigger.\n2. Point *Book Courier* at your courier's booking endpoint.\n3. Connect Gmail and WhatsApp credentials for customer messages.\n4. Set the Slack ops channel for booking failures."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "o0000000-0000-0000-0000-000000000002",
       "name": "New Order Placed",
       "type": "n8n-nodes-base.shopifyTrigger",

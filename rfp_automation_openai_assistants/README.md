@@ -38,7 +38,7 @@ curl --location 'https://<n8n_webhook_url>' \
 2. **Google Docs** — add OAuth2 credentials to **Create new RFP Response Document**, **Add Metadata to Response Doc**, and **Record Question & Answer in Response Doc**. Update the hardcoded `folderId` (`1y0I8MH32maIWCJh767mRE_NMHC6A3bUu`) in **Create new RFP Response Document** to a Drive folder you own.
 3. **Gmail** — add OAuth2 credentials to **Send Email Notification**; the recipient comes from the webhook's `reply_to` field, so no hardcoding needed there.
 4. **Slack** — add API credentials to **Send Chat Notification**, and update the hardcoded channel name (`RFP-channel`) to match your workspace.
-5. **Webhook security** — **Wait for Request** is a public POST endpoint with no authentication configured. Add header auth, a shared secret check, or restrict access at the network level before using this in production, as the workflow's own sticky note warns.
+5. **Webhook security** — **Wait for Request** is a public POST endpoint with no authentication configured. Add header auth, a shared secret check, or restrict access at the network level before using this in production.
 6. **PDF-only extraction** — **Get RFP Data** assumes the uploaded RFP is a text-based PDF; scanned/image-only PDFs will yield poor or empty extraction results from **Extract Questions From RFP**.
 7. **Execution link exposure** — **Add Metadata to Response Doc** writes an execution URL using `http://localhost:5678/...`; update this to your actual n8n instance URL (via `$execution` and instance environment variables) if you want that link to resolve for reviewers.
 

@@ -55,7 +55,7 @@ which the agent then forwards to the `personal_shopper` WooCommerce tool.
 
 1. **OpenAI** — add your API key to **OpenAI Chat Model**, **OpenAI Chat Model1**, **OpenAI Chat Model2**, **Embeddings OpenAI**, and **Embeddings OpenAI3**.
 2. **WooCommerce** — add store API credentials (consumer key/secret) to the **personal_shopper** node.
-3. **Qdrant** — add API credentials to **Qdrant Vector Store** and **Qdrant Vector Store1**, and to the **HTTP Request** node used to clear the collection. Create the collection in Qdrant first, and replace the placeholder URL/collection name referenced in the sticky note above the ingestion branch.
+3. **Qdrant** — add API credentials to **Qdrant Vector Store** and **Qdrant Vector Store1**, and to the **HTTP Request** node used to clear the collection. Create the collection in Qdrant first, and replace the placeholder `QDRANTURL`/collection-name values used across the ingestion branch.
 4. **Google Drive** — add OAuth2 credentials to **Google Drive1** and **Google Drive2** for pulling the store-info documents to embed.
 5. **Run ingestion first** — trigger **When clicking 'Test workflow'** once so the Qdrant collection has content before the chat agent goes live. Re-run it whenever the source documents change; there's no scheduled re-sync.
 6. **Adjust the store persona** — the system prompts on **Information Extractor** and **AI Agent** are written for a shoe/bag/clothing retailer (and partly in Italian). Rewrite them to match your actual product catalog and language before deploying.

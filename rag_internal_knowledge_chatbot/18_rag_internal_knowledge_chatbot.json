@@ -12,22 +12,6 @@
   ],
   "nodes": [
     {
-      "id": "k0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -600,
-        -460
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 760,
-        "height": 700,
-        "content": "## 📚 RAG-Powered Internal Knowledge Chatbot\n\nCompany docs from Notion and Drive sync into a vector store every night. A Slack mention triggers retrieval, and an LLM answers with a source link attached. New docs index automatically, so answers stay current with zero manual updates.\n\n## Two independent flows in this workflow\n1. **Nightly Index Sync** (Schedule, 2am) → pulls Notion pages + Drive files → chunks + embeds → upserts into Pinecone.\n2. **Slack Q&A** (Slack Trigger, app_mention) → AI Agent retrieves from Pinecone and replies in-thread with a source link.\n\n## Setup (about 25 minutes)\n1. Connect Notion, Google Drive, OpenAI and Pinecone credentials.\n2. Set your Pinecone index name in both *Pinecone: Insert Docs* and *Knowledge Base (RAG Tool)*.\n3. Connect Slack and enable the `app_mention` event on the Slack app, scoped to your #ask-docs channel."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "k0000000-0000-0000-0000-000000000002",
       "name": "Nightly Sync (2am)",
       "type": "n8n-nodes-base.scheduleTrigger",

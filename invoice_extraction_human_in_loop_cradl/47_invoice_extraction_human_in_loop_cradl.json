@@ -4,69 +4,6 @@
   "tags": [],
   "nodes": [
     {
-      "id": "9473a15a-fc6f-4df3-978a-4c79612d37c8",
-      "name": "Sticky Note",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        16,
-        16
-      ],
-      "parameters": {
-        "width": 416,
-        "height": 784,
-        "content": "### How it works\n1. Invoices are imported from GMail  \n2. Data is extracted with Cradl AI  \n3. The extracted data is then written to Google Sheets  \n\n### Setup\n* **Cradl AI action**. Click [here](https://rc.app.cradl.ai/login?redirect=signup&template=n8n%2Finvoices-gmail-to-sheets.json) to create a free Cradl AI account. Choose _n8n_ when prompted for integrations, then follow the setup instructions in the node.  \n* **GMail trigger**. Connect with GMail and customize email filters. For example, if you have a shared mailbox where you receive inboxes you may want to add `to:invoices@mycompany.com` to the _Search filter_ parameter. \n* **Google Sheets action**. Connect your credentials and map the extracted fields from the Cradl AI output to Google Sheets.  \n\n### Customize\n* The fields that are extracted can be easily customized by logging into your Cradl AI account and updating your agent definition.  \n* Validation rules and reviewers (e.g. from your accounting team) can be added as **human-in-the-loop validators** directly in your Cradl AI account.\n\n### Tutorial\n\n@[youtube](yjVJ8w2U1_M)\n\n"
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "e6bfed03-8f7e-445c-957a-15751fd28472",
-      "name": "Sticky Note1",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        448,
-        16
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 480,
-        "height": 528,
-        "content": "### Pull invoices from GMail\nThis trigger starts the workflow by getting your invoice file. You can easily swap it with other triggers that fetch files (PDFs or images) from sources like Gmail, webhooks, or cloud storage."
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "9c70a3ee-8624-44a2-af98-357e239ec196",
-      "name": "Sticky Note3",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1392,
-        16
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 464,
-        "height": 368,
-        "content": "### Export invoice to Google Sheets\nYou can easily swap this out for other destinations, such as accounting tools like Xero or QuickBooks, or a database or data warehouse."
-      },
-      "typeVersion": 1
-    },
-    {
-      "id": "455675b8-434d-46d7-99a5-f2f022764e3d",
-      "name": "Sticky Note4",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        944,
-        16
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 432,
-        "height": 368,
-        "content": "### Extract and validate invoice\nThis node extracts and validates data from invoices. It also includes built-in human-in-the-loop capabilities, so you can review, approve, or correct the data  through a simple interface. [Read more.](https://docs.cradl.ai)"
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "4dfaa619-a6f9-4122-ade0-35c83a80994b",
       "name": "Gmail Trigger",
       "type": "n8n-nodes-base.gmailTrigger",

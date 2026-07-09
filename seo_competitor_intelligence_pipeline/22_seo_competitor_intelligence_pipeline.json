@@ -12,22 +12,6 @@
   ],
   "nodes": [
     {
-      "id": "e0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -560,
-        -360
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 700,
-        "height": 560,
-        "content": "## 📈 SEO & Competitor Intelligence Reporting Pipeline\n\nA weekly scheduled trigger runs the full pipeline: rank data from the SEMrush API, traffic from GA4, competitor changes via a scraper node. An LLM summarizes the biggest movers and anomalies in plain language, and the formatted report lands in Slack and email every Monday morning.\n\n## Setup (about 15 minutes)\n1. Connect SEMrush, GA4 and OpenAI credentials.\n2. Point *Scrape Competitor Pages* at the URLs you track.\n3. Set the client email in *Email Report* and the agency Slack channel in *Post to Slack*."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "e0000000-0000-0000-0000-000000000002",
       "name": "Every Monday 7am",
       "type": "n8n-nodes-base.scheduleTrigger",

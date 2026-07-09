@@ -29,7 +29,7 @@ Built for finance teams and analysts who want a private, self-hosted document in
 
 ## Note
 
-This exported workflow only contains the ingestion/sync half of the system. The sticky note inside the canvas also describes a Local File Trigger and a chat Q&A path (Chat Trigger, Question and Answer Chain, Mistral Cloud Chat Model, Vector Store Retriever, a second Qdrant Vector Store, and a second Mistral embeddings node) that answer user questions against the indexed documents — none of those nodes are present in the actual workflow JSON. Anyone reusing this template will need to add the folder-watch trigger and the retrieval/chat side before it functions as a full assistant.
+This exported workflow only contains the ingestion/sync half of the system. Sticky notes in the original export also described a Local File Trigger and a chat Q&A path (Chat Trigger, Question and Answer Chain, Mistral Cloud Chat Model, Vector Store Retriever, a second Qdrant Vector Store, and a second Mistral embeddings node) that answer user questions against the indexed documents — none of those nodes are present in the actual workflow JSON. Anyone reusing this template will need to add the folder-watch trigger and the retrieval/chat side before it functions as a full assistant.
 
 ---
 

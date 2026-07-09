@@ -23,11 +23,11 @@ Built for social media teams who want to keep a themed Instagram account (in thi
 
 ## Setup (about 20 minutes)
 
-1. **RapidAPI (Instagram Scraper API2)** — subscribe to the API and paste the key into **Rapid Api params** (`x-rapid-api-key`). Used by both **get top trends on instagram #blender3d** and **get top trends on instagram #isometric**. Free tier is capped at 500 requests/month per the workflow's own sticky note warning.
+1. **RapidAPI (Instagram Scraper API2)** — subscribe to the API and paste the key into **Rapid Api params** (`x-rapid-api-key`). Used by both **get top trends on instagram #blender3d** and **get top trends on instagram #isometric**. Free tier is capped at 500 requests/month.
 2. **Replicate** — add your API token to **Replicate params** (`replicate_token`), used by **Generate image on flux**.
 3. **Instagram Business Account** — set the account ID in **Instagram params** (`instagram_business_account_id`); required by **Prepare data on Instagram** and **Publish Media on Instagram**.
 4. **Facebook Graph API** credential — attach to **Prepare data on Instagram**, **Check Status Of Media Before Uploaded**, **Publish Media on Instagram**, and **Check status of post**.
-5. **Telegram** — set the chat ID in **Telegram Params** (`telegram_chat_id`), and attach Telegram API credentials to **Telegram**, **Telegram1**, **Telegram2**, and **send error message to telegram**. You must message the bot first before it can push notifications, per the workflow's sticky note.
+5. **Telegram** — set the chat ID in **Telegram Params** (`telegram_chat_id`), and attach Telegram API credentials to **Telegram**, **Telegram1**, **Telegram2**, and **send error message to telegram**. You must message the bot first before it can push notifications.
 6. **OpenAI** — add API credentials to **Analyze Image and give the content** and **Analyze Content And Generate Instagram Caption** (both GPT-4o-mini).
 7. **Postgres** — add credentials to **Check Data on Database Is Exist** and **insert data on db**, and create the `top_trends` table first:
    ```sql

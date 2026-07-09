@@ -43,7 +43,7 @@ The **Unsubscribe Form** (path `free-factoids-unsubscribe`) expects:
 
 ## Setup (~20 minutes)
 
-1. **Airtable** — copy the sample base (linked in the in-canvas sticky note) and point every Airtable node (**Create Subscriber**, **Update Subscriber**, **Search daily**, **Search weekly**, **Search surprise**, **Log Last Sent**) at your copy's base ID and `Table 1`.
+1. **Airtable** — copy the [sample base](https://airtable.com/appL3dptT6ZTSzY9v/shrLukHafy5bwDRfD) and point every Airtable node (**Create Subscriber**, **Update Subscriber**, **Search daily**, **Search weekly**, **Search surprise**, **Log Last Sent**) at your copy's base ID and `Table 1`.
 2. **Gmail** — add OAuth2 credentials to **confirmation email1** and **Send Message**.
 3. **Groq** — add an API key to **Groq Chat Model** (used by the Content Generation Agent for factoid generation).
 4. **OpenAI** — add an API key to **Generate Image** (used only for illustration generation, not text).

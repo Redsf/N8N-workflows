@@ -12,22 +12,6 @@
   ],
   "nodes": [
     {
-      "id": "d0000000-0000-0000-0000-000000000001",
-      "name": "Overview",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -560,
-        -380
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 700,
-        "height": 580,
-        "content": "## 📊 Automated Client Ad Reporting\n\nEvery Monday, pulls spend and results from the Meta and Google Ads APIs, blends GA4 conversions, and writes a branded performance report with an LLM summary of what moved and why. Lands in the client's inbox and Slack.\n\n**12 hours a month back per client, no report shipped late since.**\n\n## Setup (about 20 minutes)\n1. Connect Meta Ads, Google Ads and GA4 credentials on the three HTTP Request nodes (or swap in native nodes if you prefer).\n2. Connect an OpenAI credential for the summary.\n3. Set the client email in *Email Report to Client* and the agency Slack channel in *Post to Agency Channel*."
-      },
-      "typeVersion": 1
-    },
-    {
       "id": "d0000000-0000-0000-0000-000000000002",
       "name": "Every Monday 8am",
       "type": "n8n-nodes-base.scheduleTrigger",
