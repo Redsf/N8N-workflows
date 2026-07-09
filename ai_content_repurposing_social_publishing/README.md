@@ -1,5 +1,9 @@
 # AI Content Repurposing & Social Publishing System
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Turns one long-form piece of content — a blog post or podcast transcript — into platform-native social posts, then schedules each one through Buffer at staggered times so they don't all go out at once. A second weekly flow pulls Buffer's analytics back into Google Sheets so performance stays visible without logging into Buffer directly.
 
 Built for content and marketing teams who publish long-form content regularly and want social distribution handled automatically instead of manually rewriting and scheduling each variant.

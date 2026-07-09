@@ -1,5 +1,9 @@
 # Appointment Reminder Sender
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Every morning it reads an appointment sheet, finds tomorrow's bookings, emails each patient a reminder, and posts a same-day summary to the front desk's Slack channel.
 
 Built for clinics, dental practices and small healthcare offices that want reminders to go out reliably without front-desk staff doing it by hand every day.

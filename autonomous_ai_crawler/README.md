@@ -1,5 +1,9 @@
 # Autonomous AI Crawler
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An AI agent autonomously visits each company's website, follows internal links across multiple pages, and extracts every social media profile URL it can find into a clean, structured JSON record — then writes the enriched result back to a database.
 
 Built for growth, sales-ops, and lead-enrichment teams who need to enrich a list of companies with social profile links at scale, without hand-writing a scraper for every site's markup.

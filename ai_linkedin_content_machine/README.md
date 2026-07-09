@@ -1,5 +1,9 @@
 # AI LinkedIn Content Machine
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An end-to-end content pipeline that researches trending AI and tech topics across Reddit, RSS news feeds and Google Trends, writes a fully-formatted LinkedIn post with a matching AI-generated image, runs the draft through an automated quality gate, and publishes it straight to LinkedIn.
 
 Built for founders, consultants and thought leaders in the AI/tech space who want a steady stream of on-brand LinkedIn content without spending an hour a day writing and formatting posts.

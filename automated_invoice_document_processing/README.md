@@ -1,5 +1,9 @@
 # Automated Invoice & Document Processing Pipeline
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Watches a Gmail inbox for incoming invoice emails, extracts the PDF text, and uses an LLM to pull out structured fields (vendor, amount, due date, line items). Each invoice is checked against a known vendor list in Postgres: recognized vendors are pushed into Xero automatically as draft bills, while unrecognized ones are routed to finance for manual review. Every invoice is logged to Postgres either way.
 
 Built for finance and accounts-payable teams who want invoices captured and entered into their accounting system automatically, with a safety net for anything that doesn't match a known vendor.

@@ -1,5 +1,9 @@
 # AI Newsletter Generator (RSS to Email)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A workflow that pulls the latest AI news from The Verge and TechCrunch, filters it down to the last 24 hours, summarizes it into a clean numbered digest with an LLM, and emails the finished newsletter to a subscriber list.
 
 Built for solo creators or small teams running a niche AI/tech newsletter who want the research-and-drafting grunt work automated, while still reviewing the final send.

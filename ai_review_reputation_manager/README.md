@@ -1,5 +1,9 @@
 # AI Review & Reputation Manager
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Polls Google Business Profile and Trustpilot every hour, drafts an on-brand reply for every new review with an LLM, and routes each one by sentiment: negative reviews escalate straight to the owner in Slack, positive ones wait for a one-tap approval before the reply gets published back to the platform.
 
 Built for local businesses and multi-location brands that want every review answered quickly without a person drafting each response from scratch.

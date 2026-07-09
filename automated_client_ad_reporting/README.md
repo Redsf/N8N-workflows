@@ -1,5 +1,9 @@
 # Automated Client Ad Reporting
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Every Monday morning, this workflow pulls the last 7 days of spend and performance from Meta Ads and Google Ads, blends in GA4 conversions and revenue, and generates a branded performance report with an AI-written summary of what moved and why. The report lands in the client's inbox and in the agency's Slack channel automatically.
 
 Built for marketing agencies and in-house paid media teams who need consistent, on-time client reporting without a Monday morning scramble to pull numbers from three different dashboards.

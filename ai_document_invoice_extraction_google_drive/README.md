@@ -1,5 +1,9 @@
 # AI Document & Invoice Extraction from Google Drive
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Watches a Google Drive folder for newly uploaded invoices, converts each file to a format GPT-4o can read, classifies the document type, extracts structured line-item data with a schema tailored to invoices, receipts, or purchase orders, and writes the result into Google Sheets — routing low-confidence extractions to a separate review tab instead of mixing them in with clean data.
 
 Built for finance and back-office teams who receive vendor documents by upload and want structured, sheet-ready data without manual re-keying, while still catching extractions that need a human to double-check.

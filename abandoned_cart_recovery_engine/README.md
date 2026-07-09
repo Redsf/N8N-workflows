@@ -1,5 +1,9 @@
 # Abandoned Cart Recovery Engine
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Fires the moment a Shopify checkout is abandoned, waits 15 minutes, checks whether the order completed, and if not sends a personalized recovery message over email and WhatsApp with a discount code.
 
 Built for ecommerce brands running Shopify that want to win back abandoned checkouts without a marketer manually chasing every cart.
