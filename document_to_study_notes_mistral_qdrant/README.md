@@ -1,5 +1,9 @@
 # Document to Study Notes (Mistral + Qdrant)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A folder-watching pipeline that turns any dropped-in document (PDF, DOCX, or plain text) into a set of study aids — a study guide, a briefing document, and a timeline — using retrieval-augmented generation. Files land in a watched directory, get summarized and embedded into a Qdrant vector store, then get interviewed by an LLM chain that generates each note type from the source material, writing finished Markdown files back next to the original.
 
 Built for anyone processing recurring source material (course readings, meeting transcripts, research papers) who wants consistent, structured study notes generated automatically instead of summarizing by hand.

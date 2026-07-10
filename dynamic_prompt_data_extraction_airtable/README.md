@@ -1,5 +1,9 @@
 # Dynamic Prompt Data Extraction (Airtable)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A workflow that turns Airtable column descriptions into live, user-editable LLM prompts: upload a PDF into a designated "File" column, and every other column whose description contains an extraction instruction gets auto-filled by an LLM reading that PDF — no code or template changes needed to add a new field, just add a column and describe what it should contain.
 
 Built for teams who want non-technical users to define what data gets extracted from documents (by editing an Airtable column description) without touching the underlying n8n workflow.

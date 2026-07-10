@@ -1,5 +1,9 @@
 # AI-Screened CV Intake Pipeline
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An AI recruiting assistant that takes job applications through a public form, stores the submitted resume in Google Drive, screens the candidate against a job description with GPT-4.1 mini, emails the applicant a confirmation, and logs a structured fit assessment to a tracking spreadsheet.
 
 Built for HR and recruiting teams who want every application automatically triaged with a consistent, evidence-based screening report instead of a human reading each resume cold.

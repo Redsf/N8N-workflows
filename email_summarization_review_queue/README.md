@@ -1,5 +1,9 @@
 # Email Summarization & Review Queue
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An inbox-to-draft pipeline that reads incoming emails via IMAP, summarizes them, drafts a reply using a company knowledge base, and routes the draft to a human for approval before anything is sent — with reviewer feedback looping back into a rewrite if the draft isn't good enough.
 
 Built for support or business inboxes where AI-drafted replies are useful but a human should always have final sign-off before a message goes out.

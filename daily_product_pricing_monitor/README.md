@@ -1,5 +1,9 @@
 # Daily Product Pricing Monitor
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A scheduled competitive-pricing watchdog that reads a product catalog from Google Sheets, looks up live competitor prices for each item via Google Shopping, flags products that are priced too high or too low against the market, and sends a daily summary report by Slack and email.
 
 Built for e-commerce and retail teams who need to catch pricing drift against competitors every morning without manually shopping around for every SKU.

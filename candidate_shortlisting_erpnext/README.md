@@ -1,5 +1,9 @@
 # AI Candidate Shortlisting (ERPNext)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An end-to-end recruitment automation that reacts to new ERPNext Job Applicant records, downloads and reads the candidate's resume, scores their fit against the job description with an AI agent, and updates ERPNext plus notifies the candidate — all without a recruiter touching the applicant record.
 
 Built for HR teams running ERPNext who want AI-driven, consistent first-pass screening instead of manually reading every resume.

@@ -1,5 +1,9 @@
 # Conversational AI Interview Agent
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An open-ended, form-driven interview bot that lets an LLM conduct a live qualitative interview instead of a human researcher. A respondent starts a session, the AI asks a question, the respondent answers through a form, and the loop repeats indefinitely until the AI detects a request to stop — at which point the transcript is saved to Google Sheets and the respondent is shown a completion page with their own answers.
 
 Built for researchers, product teams, or CX groups who need to run open-ended interviews (satisfaction surveys, UX research, exit interviews) at scale without scheduling a human interviewer for every session.

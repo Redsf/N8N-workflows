@@ -1,5 +1,9 @@
 # Branded AI Website Chatbot
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A white-labeled chat widget for a business website that qualifies leads, checks the founder's Outlook calendar for real availability, books meetings directly onto the calendar, and — for enquiries that aren't ready to book — emails a detailed summary to a human. The whole thing runs as one workflow that calls itself as a sub-workflow to keep the calendar/email logic separate from the conversational agent.
 
 Built for consultancies, agencies, or solo founders who want a website chatbot that can actually schedule a meeting, not just collect a "contact us" form submission.

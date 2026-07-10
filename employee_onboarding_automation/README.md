@@ -1,5 +1,9 @@
 # AI Employee Onboarding Automation
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A form-triggered onboarding workflow that takes new-hire details, generates a full set of personalized onboarding communications with an LLM (welcome email, manager notice, HR notice, IT access request, Slack announcements), attaches the company handbook and policy documents, and fans everything out to the new hire, their manager, HR, IT and the team Slack channels — while logging the hire to a tracking spreadsheet.
 
 Built for HR teams who want new-hire day-one communications handled automatically and consistently, without a person manually copy-pasting the same onboarding checklist into six different messages.

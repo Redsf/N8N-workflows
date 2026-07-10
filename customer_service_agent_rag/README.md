@@ -1,5 +1,9 @@
 # Customer Service Agent with RAG
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An email-based support agent that watches a Gmail inbox for incoming customer questions, answers them by retrieving relevant knowledge from a Supabase vector store, and rewrites the raw answer into a polished, professional email reply.
 
 Built for small support teams who want first-line email responses grounded in their own knowledge base (policies, FAQs, product docs) without hiring a dedicated support agent for routine questions.

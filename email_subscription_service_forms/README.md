@@ -1,5 +1,9 @@
 # Email Subscription Service (Forms + Airtable + AI)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A self-contained "learn something every day" subscription service: users sign up through an n8n form, choose a topic and a daily/weekly/surprise cadence, and receive AI-generated factoids with an accompanying illustration by email — all without any external backend, using Airtable as the subscriber database.
 
 Built for anyone who wants to demonstrate a full subscribe/send/unsubscribe email product using only n8n forms, a scheduled trigger, and an AI content pipeline.

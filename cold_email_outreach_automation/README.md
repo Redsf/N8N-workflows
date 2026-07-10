@@ -1,5 +1,9 @@
 # Cold Email Outreach Automation
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A full cold-outreach sequencer that reads leads from Google Sheets, writes a personalized first-touch email with an LLM, sends it via Gmail, waits, checks the same thread for a reply, and — if there's no reply — generates and sends a follow-up email automatically. Every step updates lead status back in the source spreadsheet.
 
 Built for a small sales or agency team running one-person cold email campaigns who want personalized, on-brand outreach without manually tracking replies in a CRM.

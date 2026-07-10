@@ -1,5 +1,9 @@
 # Ecommerce Order Notifier and Logger
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Receives every new store order through a webhook, logs it to a Google Sheet for reporting, and alerts the right Slack channel depending on order value.
 
 Built for small online store owners and ecommerce operations teams who want every order tracked and high-value orders flagged for priority attention, without checking the storefront dashboard manually.

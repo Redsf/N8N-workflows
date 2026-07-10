@@ -1,5 +1,9 @@
 # BambooHR Policies & Benefits Chatbot
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An internal HR chatbot that answers employee questions about company policies and benefits by embedding BambooHR documents into a vector store, and that can also look up a specific employee or find the most senior contact in a department. Two flows share one workflow: a manual ingestion run that indexes policy PDFs from BambooHR, and a chat-driven agent that answers questions and delegates people lookups to itself as a sub-workflow.
 
 Built for HR teams who want a single self-serve assistant that covers both "what does our 401k policy say" and "who do I contact in Finance" without a human touching either question.
