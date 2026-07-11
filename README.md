@@ -5,6 +5,8 @@ A collection of 73 production-style n8n automations covering AI agents, RAG know
 These solve real operational problems: recovering abandoned carts, qualifying and routing leads, extracting data from invoices, answering questions with grounded AI, and keeping teams informed without manual busywork.
 
 > **By [Redowan Ahmed Farhan](https://github.com/Redsf)** — AI Automation Engineer. Several of these workflows are the credential-free reference builds of systems I've shipped to production for clients. The numbers below are results from those live deployments.
+>
+> 🏅 **Official n8n creator** — selected workflows from this portfolio are published on n8n's template marketplace: [n8n.io/creators/redowanfarhan →](https://n8n.io/creators/redowanfarhan/)
 
 ## Real-world impact
 
@@ -151,6 +153,7 @@ Built primarily on **n8n**, with LLM providers (OpenAI, Groq, Google Gemini, Mis
 **Redowan Ahmed Farhan** — AI Automation Engineer building n8n workflows, AI agents, and RAG systems that automate real business operations.
 
 - 💼 LinkedIn — [redowan-ahmed-farhan](https://linkedin.com/in/redowan-ahmed-farhan)
+- 🏅 n8n creator profile — [n8n.io/creators/redowanfarhan](https://n8n.io/creators/redowanfarhan/)
 - ✉️ Email — redowanfarhan@gmail.com
 - 📍 Dhaka, Bangladesh · Open to freelance and full-time automation roles
 
