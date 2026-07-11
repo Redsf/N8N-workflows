@@ -1,16 +1,17 @@
 {
   "id": "YNjXTXnvpFdWW1Ao",
-  "name": "PDF invoice data extraction with human-in-the-loop from GMail to Google Sheets",
+  "name": "PDF Invoice Extraction with Human-in-the-Loop (Pro)",
   "tags": [],
   "nodes": [
     {
-      "id": "4dfaa619-a6f9-4122-ade0-35c83a80994b",
+      "id": "c4ca8096-2150-4a4f-af83-3b9e8c030248",
       "name": "Gmail Trigger",
       "type": "n8n-nodes-base.gmailTrigger",
       "position": [
-        528,
-        176
+        -160,
+        160
       ],
+      "typeVersion": 1.3,
       "parameters": {
         "simple": false,
         "filters": {
@@ -27,129 +28,755 @@
             }
           ]
         }
-      },
-      "typeVersion": 1.3
+      }
     },
     {
-      "id": "06f5c847-bcd8-4e59-8105-8ef52fe8e2b4",
-      "name": "Filter PDF attachments",
+      "id": "ca02d52b-9dc1-4658-b3a0-30898cd59757",
+      "name": "Filter & Flag Attachments",
       "type": "n8n-nodes-base.code",
       "position": [
-        752,
-        176
+        80,
+        160
       ],
+      "typeVersion": 2,
       "parameters": {
-        "jsCode": "let results = [];\n\nfor (const item of $input.all()) {\n  for (key of Object.keys(item.binary)) {\n     if (item.binary[key].fileExtension === \"pdf\") { \n      results.push({\n            json: {\n                fileName: item.binary[key].fileName,\n            },\n            binary: {\n                data: item.binary[key],\n            }\n        });\n       } \n    }\n  \n}\n\nreturn results;"
-      },
-      "typeVersion": 2
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Flag each Gmail Trigger item: does it actually have a PDF attachment?\n// This also fixes a real bug in the original workflow: messages matched by the\n// search query but WITHOUT a PDF attachment were never marked as read, so\n// the every-minute poll would keep re-fetching them forever.\nconst results = [];\n\nfor (const item of $input.all()) {\n  const headers = item.json.headers || {};\n  const base = {\n    messageId: item.json.id,\n    threadId: item.json.threadId,\n    subject: headers.subject || item.json.subject || '(no subject)',\n    from: headers.from || item.json.from || ''\n  };\n\n  const binaryKeys = item.binary ? Object.keys(item.binary) : [];\n  const pdfKeys = binaryKeys.filter(k => item.binary[k].fileExtension === 'pdf');\n\n  if (pdfKeys.length === 0) {\n    results.push({ json: { ...base, hasPdf: false, fileName: null } });\n    continue;\n  }\n\n  // One output item per PDF attachment found on the message.\n  for (const key of pdfKeys) {\n    results.push({\n      json: { ...base, hasPdf: true, fileName: item.binary[key].fileName },\n      binary: { data: item.binary[key] }\n    });\n  }\n}\n\nreturn results;\n"
+      }
     },
     {
-      "id": "1edb5ef8-6d08-42e7-9e5a-04f1ea3e74f5",
-      "name": "Add invoice line to Google Sheets",
-      "type": "n8n-nodes-base.googleSheets",
+      "id": "a185bbae-46a2-4b02-b61d-d815040c48b0",
+      "name": "Has PDF?",
+      "type": "n8n-nodes-base.if",
       "position": [
-        1648,
-        176
+        320,
+        160
       ],
+      "typeVersion": 2.3,
       "parameters": {
-        "options": {},
-        "operation": "append",
-        "sheetName": {
-          "__rl": true,
-          "mode": "list",
-          "value": "gid=0"
-        },
-        "documentId": {
-          "__rl": true,
-          "mode": "list"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "84a7f526-61f3-4cb4-9f5b-bf1c858dbf13",
+              "leftValue": "={{ $json.hasPdf }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
         }
-      },
-      "typeVersion": 4.7
+      }
     },
     {
-      "id": "bd9f8503-d8f1-4bbe-9031-cbc9bced3ca4",
-      "name": "Mark a message as read",
+      "id": "26c32560-46cc-4e13-953d-daf124652db6",
+      "name": "No Attachment Notice",
       "type": "n8n-nodes-base.gmail",
       "position": [
-        624,
-        384
+        560,
+        380
       ],
-      "webhookId": "f5563794-d977-4bc4-a950-f11ca5b11029",
+      "typeVersion": 2.2,
       "parameters": {
-        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
-        "operation": "markAsRead"
+        "resource": "message",
+        "operation": "reply",
+        "messageId": "={{ $json.messageId }}",
+        "emailType": "text",
+        "message": "This message matched our invoice search but no PDF attachment was found. Flagging for manual check.",
+        "options": {
+          "appendAttribution": false
+        }
       },
-      "typeVersion": 2.2
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      }
     },
     {
-      "id": "f35fd706-2b80-4dd3-bd67-d04b8556dbcd",
+      "id": "83d293c8-9f35-4742-a9bc-ef002ba70a21",
       "name": "Extract invoice details with AI",
       "type": "@cradl/n8n-nodes-cradlai.cradlAi",
       "position": [
-        1120,
-        176
+        560,
+        40
       ],
-      "webhookId": "1999cf96-f246-46f1-a0d9-92dad756dd02",
+      "typeVersion": 1,
+      "webhookId": "d5e14889-bcc4-4623-8def-a69f7a2e212a",
       "parameters": {
         "agentId": "cradl:agent:556e3aa0d2214b6c899c631b78a5cd43",
         "documentBinaryData": "data"
       },
-      "typeVersion": 1
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
     },
     {
-      "id": "44382756-645b-43a6-ac4b-8c857e4a71af",
+      "id": "d5d64226-d8ca-4a50-912b-4ee25966d2fd",
+      "name": "Validate & Score",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        800,
+        40
+      ],
+      "typeVersion": 2,
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "// Score the AI-extracted invoice for completeness and internal consistency.\n// ASSUMPTION (please verify against a real execution): the cradl agent returns\n// body.output.{invoice_number, vendor_name, currency, invoice_total, invoice_lines[].amount}.\n// Adjust the field paths below if your agent's schema differs.\nconst j = $json;\nconst out = (j.body && j.body.output) || {};\n\nconst invoiceNumber = out.invoice_number || out.invoiceNumber || '';\nconst vendorName = out.vendor_name || out.vendorName || '';\nconst currency = out.currency || '';\nconst invoiceTotal = Number(out.invoice_total ?? out.invoiceTotal ?? NaN);\nconst lines = Array.isArray(out.invoice_lines) ? out.invoice_lines : [];\n\nconst lineSum = lines.reduce((sum, l) => {\n  const amt = Number(l.amount ?? l.total ?? l.line_total ?? 0);\n  return sum + (isNaN(amt) ? 0 : amt);\n}, 0);\n\nconst issues = [];\nif (!invoiceNumber) issues.push('missing invoice number');\nif (!vendorName) issues.push('missing vendor name');\nif (!currency) issues.push('missing currency');\nif (lines.length === 0) issues.push('no line items extracted');\nif (!isNaN(invoiceTotal) && lines.length > 0) {\n  const diff = Math.abs(invoiceTotal - lineSum);\n  if (diff > 0.01 * Math.max(1, invoiceTotal)) {\n    issues.push(`line items sum (${lineSum.toFixed(2)}) does not match invoice total (${invoiceTotal.toFixed(2)})`);\n  }\n} else if (isNaN(invoiceTotal)) {\n  issues.push('missing or unreadable invoice total');\n}\n\nconst needsReview = issues.length > 0;\n\nreturn [{\n  json: {\n    ...$json,\n    invoiceNumber,\n    vendorName,\n    currency,\n    invoiceTotal: isNaN(invoiceTotal) ? null : invoiceTotal,\n    lineSum,\n    issues,\n    needsReview\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "8b936101-c4ca-48a0-8eeb-8fa826caf84c",
+      "name": "Fetch Existing Invoice Numbers",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1040,
+        40
+      ],
+      "typeVersion": 4.7,
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR INVOICE SHEET"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR TAB"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "eeb14e92-e7fd-4c50-ba5f-0a0063ea49a2",
+      "name": "Duplicate Check",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1280,
+        40
+      ],
+      "typeVersion": 2,
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Runs once per execution. Cross-references every invoice extracted this run\n// (from \"Validate & Score\") against every invoice_number already on record\n// (from \"Fetch Existing Invoice Numbers\"), without relying on 1:1 item pairing,\n// which breaks here because the two branches have different item counts.\nconst invoices = $('Validate & Score').all().map(i => i.json);\nconst existingRows = $input.all().map(i => i.json);\n\n// ASSUMPTION: the Google Sheet has a column literally named \"invoice_number\".\n// Update the key below if your header differs.\nconst existingNumbers = new Set(\n  existingRows.map(r => String(r.invoice_number || '').trim()).filter(Boolean)\n);\n\nreturn invoices.map(inv => ({\n  json: {\n    ...inv,\n    isDuplicate: existingNumbers.has(String(inv.invoiceNumber || '').trim())\n  }\n}));\n"
+      }
+    },
+    {
+      "id": "a921e301-a525-471a-821a-c1f867e976bd",
+      "name": "Already Recorded?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1520,
+        40
+      ],
+      "typeVersion": 2.3,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4e4b6d7d-1142-404f-9b01-d01d0ce636f4",
+              "leftValue": "={{ $json.isDuplicate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "1d125181-1882-45ed-b5d3-90db925a5724",
+      "name": "Skip Duplicate",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1760,
+        220
+      ],
+      "typeVersion": 1,
+      "parameters": {}
+    },
+    {
+      "id": "71661dae-eaa2-4e6b-b024-d5bfb393fc8e",
+      "name": "Needs Review?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1760,
+        -60
+      ],
+      "typeVersion": 2.3,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7c7694b1-767b-4cca-92f6-4696a62a9987",
+              "leftValue": "={{ $json.needsReview }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "cf65efc3-f6d6-4fb4-85fd-6bee8edbf5e4",
+      "name": "Request Approval (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        2000,
+        -160
+      ],
+      "typeVersion": 2.5,
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR AP CHANNEL"
+        },
+        "message": "*Invoice needs review*\nVendor: {{ $json.vendorName || 'unknown' }}\nInvoice #: {{ $json.invoiceNumber || 'unknown' }}\nTotal: {{ $json.invoiceTotal }} {{ $json.currency }}\nIssues: {{ $json.issues.join(', ') }}\n\nApprove to record it as-is, or decline to send it for manual entry.",
+        "responseType": "approval",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Send to Manual Entry"
+          }
+        },
+        "options": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_ME",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "id": "c9419571-7bf0-4e4f-83ee-8d7e39c29bcc",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2240,
+        -160
+      ],
+      "typeVersion": 2.3,
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bb7738d5-1a46-43a6-9ce0-610f931d560c",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "481351ef-ae6a-4b23-a31e-a2762dc43866",
+      "name": "Notify Manual Entry Needed",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        2480,
+        -60
+      ],
+      "typeVersion": 2.5,
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR AP CHANNEL"
+        },
+        "message": "This invoice was declined for auto-recording and needs manual entry:\nVendor: {{ $('Validate & Score').item.json.vendorName }}\nInvoice #: {{ $('Validate & Score').item.json.invoiceNumber }}\nSubject: {{ $('Filter & Flag Attachments').item.json.subject }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_ME",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "id": "99858af4-c23a-4f2d-8dc9-53b7a0f2abaa",
       "name": "Split out each invoice line",
       "type": "n8n-nodes-base.splitOut",
       "position": [
-        1472,
-        176
+        2000,
+        120
+      ],
+      "typeVersion": 1,
+      "parameters": {
+        "fieldToSplitOut": "body.output.invoice_lines",
+        "include": "allOtherFields",
+        "options": {}
+      }
+    },
+    {
+      "id": "28e4a250-9ae7-480b-8cee-03bee63780d4",
+      "name": "Add invoice line to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2240,
+        120
+      ],
+      "typeVersion": 4.7,
+      "parameters": {
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR INVOICE SHEET"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR TAB"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "2b17aaac-390d-4482-a556-8be115f7b489",
+      "name": "Label & Archive",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        2480,
+        120
+      ],
+      "typeVersion": 2.2,
+      "parameters": {
+        "resource": "message",
+        "operation": "addLabels",
+        "messageId": "={{ $('Filter & Flag Attachments').item.json.messageId }}",
+        "labelIds": []
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "1c0a0a84-6276-41b3-8eeb-e40aed94c2d3",
+      "name": "Mark as Read",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        2720,
+        160
+      ],
+      "typeVersion": 2.2,
+      "parameters": {
+        "resource": "message",
+        "operation": "markAsRead",
+        "messageId": "={{ $('Filter & Flag Attachments').item.json.messageId }}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "49ce08c7-0f54-4e43-82f9-3eb2888ec5e7",
+      "name": "On Workflow Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -160,
+        600
+      ],
+      "typeVersion": 1,
+      "parameters": {}
+    },
+    {
+      "id": "8ab88ede-9dc0-43f7-9bfc-cbb5ca5d5e78",
+      "name": "Notify Failure",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        80,
+        600
+      ],
+      "typeVersion": 2.5,
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "SELECT YOUR ALERTS CHANNEL"
+        },
+        "message": "Invoice extraction workflow failed: {{ $json.execution.error.message }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_ME",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "id": "0e08a0c7-aef8-43e2-9f1a-af07b8b54357",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        -160
       ],
       "parameters": {
-        "include": "allOtherFields",
-        "options": {},
-        "fieldToSplitOut": "body.output.invoice_lines"
-      },
-      "typeVersion": 1
+        "content": "## Invoice extraction (upgraded)\n\n**Before activating, you must:**\n1. Re-select all credentials marked `REPLACE_ME` (Gmail, Google Sheets, Slack) \u2014 imported JSON cannot carry your credential IDs across accounts.\n2. Pick your real spreadsheet + tab in **both** Google Sheets nodes.\n3. Pick your real Slack channel in the two Slack sendAndWait nodes.\n4. Pick or create a Gmail label in **Label & Archive** (e.g. \"Invoices/Processed\").\n5. In n8n workflow Settings, set **Error Workflow** to this same workflow so the error branch fires.\n\n**Verify before trusting validation:** run one real invoice through and check the actual field names cradl returns under `body.output` \u2014 the Validate & Score node currently assumes invoice_number, vendor_name, currency, invoice_total, invoice_lines[].amount.",
+        "height": 280,
+        "width": 620,
+        "color": 4
+      }
+    },
+    {
+      "id": "27a60dc8-d069-4e14-841e-c8c0dade022c",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        340
+      ],
+      "parameters": {
+        "content": "### Bug fix\nOriginal workflow never marked \"invoice\"-subject emails as read when no PDF was attached, so it re-processed them every minute forever. This branch now replies once and lets the email fall through (still needs a Mark-as-Read wire if you want it silenced \u2014 see note in Has PDF? false branch).",
+        "height": 140,
+        "width": 300,
+        "color": 5
+      }
+    },
+    {
+      "id": "9c9269c7-7550-4375-b5e8-7a659c7b5a3a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        780,
+        260
+      ],
+      "parameters": {
+        "content": "### Validation\nFlags missing fields and checks that line items sum to the invoice total (1% tolerance). Anything flagged routes to human approval instead of auto-filing.",
+        "height": 160,
+        "width": 300,
+        "color": 6
+      }
+    },
+    {
+      "id": "200116d9-c589-4ca8-b545-6ab19bb12539",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        260
+      ],
+      "parameters": {
+        "content": "### Duplicate protection\nCross-references invoice_number against the whole sheet before filing, so a re-sent or re-processed email can't create a second row.",
+        "height": 160,
+        "width": 300,
+        "color": 3
+      }
+    },
+    {
+      "id": "5f56f38d-5d0a-4ab2-83a9-9393cd58a54b",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        -320
+      ],
+      "parameters": {
+        "content": "### Human-in-the-loop (the part that was missing)\nLow-confidence or inconsistent invoices go to Slack for a real approve/decline decision before anything touches the sheet.",
+        "height": 140,
+        "width": 340,
+        "color": 7
+      }
+    },
+    {
+      "id": "955e322e-9132-4873-81ea-9c9901121a17",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        460
+      ],
+      "parameters": {
+        "content": "### Error handling\nThis Error Trigger only fires if you point this workflow's own \"Error Workflow\" setting at itself (Settings gear -> Error Workflow). Otherwise failures happen silently, same as the original.",
+        "height": 200,
+        "width": 460,
+        "color": 2
+      }
     }
   ],
-  "active": false,
-  "pinData": {},
-  "settings": {
-    "binaryMode": "separate",
-    "executionOrder": "v1"
-  },
-  "versionId": "6269e7c4-ba42-4a78-95df-8321480b01eb",
   "connections": {
     "Gmail Trigger": {
       "main": [
         [
           {
-            "node": "Filter PDF attachments",
+            "node": "Filter & Flag Attachments",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter PDF attachments": {
+    "Filter & Flag Attachments": {
       "main": [
         [
           {
-            "node": "Mark a message as read",
+            "node": "Has PDF?",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Has PDF?": {
+      "main": [
+        [
           {
             "node": "Extract invoice details with AI",
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "No Attachment Notice",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
-    "Mark a message as read": {
+    "No Attachment Notice": {
       "main": [
-        []
+        [
+          {
+            "node": "Mark as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract invoice details with AI": {
+      "main": [
+        [
+          {
+            "node": "Validate & Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Score": {
+      "main": [
+        [
+          {
+            "node": "Fetch Existing Invoice Numbers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Existing Invoice Numbers": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Check": {
+      "main": [
+        [
+          {
+            "node": "Already Recorded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Recorded?": {
+      "main": [
+        [
+          {
+            "node": "Skip Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Needs Review?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Mark as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Review?": {
+      "main": [
+        [
+          {
+            "node": "Request Approval (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split out each invoice line",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Approval (Slack)": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Split out each invoice line",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Manual Entry Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Manual Entry Needed": {
+      "main": [
+        [
+          {
+            "node": "Mark as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Split out each invoice line": {
@@ -163,16 +790,46 @@
         ]
       ]
     },
-    "Extract invoice details with AI": {
+    "Add invoice line to Google Sheets": {
       "main": [
         [
           {
-            "node": "Split out each invoice line",
+            "node": "Label & Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label & Archive": {
+      "main": [
+        [
+          {
+            "node": "Mark as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On Workflow Error": {
+      "main": [
+        [
+          {
+            "node": "Notify Failure",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "binaryMode": "separate",
+    "executionOrder": "v1",
+    "errorWorkflow": "YNjXTXnvpFdWW1Ao"
+  },
+  "versionId": "caf4b6b3-8b5d-4a5c-b7e6-a50bf4f92c83"
 }
