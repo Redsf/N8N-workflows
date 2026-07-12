@@ -1,5 +1,9 @@
 # Financial Documents Assistant (Qdrant + Mistral)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Keeps a Qdrant vector store in sync with a local folder of financial documents. As bank statements and similar files are added, changed, or removed, the workflow re-embeds them with Mistral and updates the vector collection so a downstream chat agent can answer questions grounded in the current document set.
 
 Built for finance teams and analysts who want a private, self-hosted document index over their own bank statements rather than uploading sensitive files to a third-party assistant.

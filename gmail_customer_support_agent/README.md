@@ -1,5 +1,9 @@
 # Gmail Customer Support Agent
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An AI support agent that monitors a Gmail inbox, classifies each incoming email as a delivery inquiry, refund request, or general question, and replies in the sender's thread with a policy-accurate, on-brand response signed with their first name.
 
 Built for a Dhaka-based online retailer that wants consistent, policy-compliant replies to order, delivery, and refund emails without a support team manually triaging every message.

@@ -1,5 +1,9 @@
 # FAQ Enrichment at Scale
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A batch content-generation workflow that turns a spreadsheet of services and categories into complete, AI-polished FAQ pages. It reads rows from Google Sheets, applies one of four question-and-answer templates depending on the row type (native n8n integration, credential-only integration, non-native/HTTP-only integration, or category), fills in any answer gaps with an LLM, and writes the finished JSON to Google Drive before pushing it to a CMS.
 
 Built for content or marketing teams who need to produce dozens or hundreds of consistent, on-brand FAQ entries without hand-writing each one.
