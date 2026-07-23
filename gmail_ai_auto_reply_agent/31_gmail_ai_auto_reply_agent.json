@@ -33,7 +33,7 @@
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "bbFHFebZmcdzhurG",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account"
         }
       }
@@ -73,7 +73,7 @@
       "webhookId": "4a25efe2-cfc4-4ec1-84e1-1adca6497b50",
       "credentials": {
         "gmailOAuth2": {
-          "id": "aHcgQQsf06BLwOqC",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -99,7 +99,7 @@
       "name": "Gmail Trigger",
       "credentials": {
         "gmailOAuth2": {
-          "id": "aHcgQQsf06BLwOqC",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }

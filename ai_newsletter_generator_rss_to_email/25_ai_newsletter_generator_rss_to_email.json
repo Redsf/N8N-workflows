@@ -167,7 +167,7 @@
       "webhookId": "d5e50ba4-b87a-449d-8b45-3bb151eff47e",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -213,7 +213,7 @@
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "zUI77WGbebONKXmE",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account 2"
         }
       }
@@ -355,7 +355,7 @@
       "name": "Groq Chat Model1",
       "credentials": {
         "groqApi": {
-          "id": "zUI77WGbebONKXmE",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account 2"
         }
       }

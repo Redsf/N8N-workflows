@@ -31,7 +31,7 @@
       "name": "Google Drive Trigger",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "x5JxKW8iGNYxLE9O",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive OAuth2 API"
         }
       }
@@ -56,7 +56,7 @@
       "name": "Download file",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "x5JxKW8iGNYxLE9O",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive OAuth2 API"
         }
       }
@@ -98,7 +98,7 @@
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
-          "id": "J8zCphYzxllzomFl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }
@@ -117,7 +117,7 @@
       "name": "Embeddings OpenAI1",
       "credentials": {
         "openAiApi": {
-          "id": "J8zCphYzxllzomFl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }
@@ -145,7 +145,7 @@
       "name": "Supabase_Vectors",
       "credentials": {
         "supabaseApi": {
-          "id": "M6E16KGwyZsvv8ce",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Postgres"
         }
       }
@@ -165,7 +165,7 @@
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
-          "id": "bPa7vxS6nIJr0kAf",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Postgres account"
         }
       }
@@ -191,7 +191,7 @@
       "name": "Supabase Vector Store",
       "credentials": {
         "supabaseApi": {
-          "id": "M6E16KGwyZsvv8ce",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Postgres"
         }
       }
@@ -210,7 +210,7 @@
       "name": "Embeddings OpenAI",
       "credentials": {
         "openAiApi": {
-          "id": "J8zCphYzxllzomFl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }
@@ -246,7 +246,7 @@
       "webhookId": "772175e3-ca3a-4e79-8cad-c05c41070ed9",
       "credentials": {
         "telegramApi": {
-          "id": "ZdzLsH6bidKBAH3I",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -270,7 +270,7 @@
       "webhookId": "cb242491-db31-4312-8802-f77ac3cac473",
       "credentials": {
         "telegramApi": {
-          "id": "ZdzLsH6bidKBAH3I",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }

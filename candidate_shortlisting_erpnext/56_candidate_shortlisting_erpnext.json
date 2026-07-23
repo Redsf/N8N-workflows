@@ -62,7 +62,7 @@
       },
       "credentials": {
         "erpNextApi": {
-          "id": "PInpnsxvPkvaiW0z",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ERPNext account"
         }
       },
@@ -126,7 +126,7 @@
       },
       "credentials": {
         "erpNextApi": {
-          "id": "PInpnsxvPkvaiW0z",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ERPNext account"
         }
       },
@@ -147,7 +147,7 @@
       },
       "credentials": {
         "erpNextApi": {
-          "id": "PInpnsxvPkvaiW0z",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ERPNext account"
         }
       },
@@ -167,7 +167,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "pKFvSpPWSRFpnBoB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -246,7 +246,7 @@
       },
       "credentials": {
         "erpNextApi": {
-          "id": "PInpnsxvPkvaiW0z",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ERPNext account"
         }
       },
@@ -278,7 +278,7 @@
       },
       "credentials": {
         "erpNextApi": {
-          "id": "PInpnsxvPkvaiW0z",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ERPNext account"
         }
       },
@@ -366,7 +366,7 @@
       },
       "credentials": {
         "erpNextApi": {
-          "id": "PInpnsxvPkvaiW0z",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ERPNext account"
         }
       },
@@ -558,7 +558,7 @@
       },
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "9gy3uvf3pmBdpEsq",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft Outlook Al Ansari"
         }
       },
@@ -579,7 +579,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "E8IjegSMj5LTd8lA",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp Syncbricks Access Token Never Expires"
         }
       },

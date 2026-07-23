@@ -56,7 +56,7 @@
       "typeVersion": 1.3,
       "credentials": {
         "openAiApi": {
-          "id": "WdpcmOEDSJItGCUY",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -219,7 +219,7 @@
       "typeVersion": 4.7,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "UnP62D2DzVysUFFb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -339,7 +339,7 @@
       "typeVersion": 4.7,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "UnP62D2DzVysUFFb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -379,7 +379,7 @@
       "webhookId": "9575a37c-21ba-4847-8cee-8df04e302bc1",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "KmwuYU8S5TfeT2Mf",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       }

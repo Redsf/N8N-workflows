@@ -91,7 +91,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "GcIVVl98RcazYBaB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       },
@@ -112,7 +112,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "GcIVVl98RcazYBaB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       },
@@ -133,7 +133,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "GcIVVl98RcazYBaB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       },
@@ -382,7 +382,7 @@
       },
       "credentials": {
         "postgres": {
-          "id": "sBHQ2psBsfnHkFrZ",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Postgres account"
         }
       },
@@ -451,7 +451,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "GcIVVl98RcazYBaB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       },
@@ -583,7 +583,7 @@
       },
       "credentials": {
         "postgres": {
-          "id": "sBHQ2psBsfnHkFrZ",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Postgres account"
         }
       },
@@ -612,7 +612,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "1TwEayhZUT90fq8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -644,7 +644,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "1TwEayhZUT90fq8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -680,7 +680,7 @@
       },
       "credentials": {
         "facebookGraphApi": {
-          "id": "ZFxxxLfZ25M7Va6r",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Facebook Graph account"
         }
       },
@@ -715,7 +715,7 @@
       },
       "credentials": {
         "facebookGraphApi": {
-          "id": "ZFxxxLfZ25M7Va6r",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Facebook Graph account"
         }
       },
@@ -747,7 +747,7 @@
       },
       "credentials": {
         "facebookGraphApi": {
-          "id": "ZFxxxLfZ25M7Va6r",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Facebook Graph account"
         }
       },
@@ -782,7 +782,7 @@
       },
       "credentials": {
         "facebookGraphApi": {
-          "id": "ZFxxxLfZ25M7Va6r",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Facebook Graph account"
         }
       },

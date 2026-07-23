@@ -162,7 +162,7 @@
       "webhookId": "7a84ee26-36e1-4897-abdf-557b20507911",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "1AsKHO9uRLHtJCBh",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -209,7 +209,7 @@
       "webhookId": "eee9943a-d23e-4506-8523-580afc31a5f0",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -242,7 +242,7 @@
       "name": "Get products from sheets",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "jyOKBVYAE10WagHy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Newzz"
         }
       }
@@ -273,7 +273,7 @@
       "webhookId": "0e58e214-1b80-45b1-95f6-462d5e7adaf1",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "1AsKHO9uRLHtJCBh",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -425,7 +425,7 @@
       "name": "Log to Price History Sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "jyOKBVYAE10WagHy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Newzz"
         }
       }

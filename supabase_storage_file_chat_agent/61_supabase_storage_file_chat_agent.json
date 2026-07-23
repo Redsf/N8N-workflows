@@ -23,7 +23,7 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "t8AQJzvZvrOMDLec",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account My Airtable Gen"
         }
       },
@@ -97,7 +97,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "fLfRtaXbR0EVD0pl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -128,7 +128,7 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "t8AQJzvZvrOMDLec",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account My Airtable Gen"
         }
       },
@@ -191,7 +191,7 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "t8AQJzvZvrOMDLec",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account My Airtable Gen"
         }
       },
@@ -214,7 +214,7 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "t8AQJzvZvrOMDLec",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account My Airtable Gen"
         }
       },
@@ -287,7 +287,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "zJhr5piyEwVnWtaI",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi club"
         }
       },
@@ -307,7 +307,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "SphXAX7rlwRLkiox",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Test club key"
         }
       },
@@ -326,7 +326,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "SphXAX7rlwRLkiox",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Test club key"
         }
       },
@@ -434,7 +434,7 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "t8AQJzvZvrOMDLec",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account My Airtable Gen"
         }
       },
@@ -492,7 +492,7 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "t8AQJzvZvrOMDLec",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account My Airtable Gen"
         }
       },

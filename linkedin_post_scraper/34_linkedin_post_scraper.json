@@ -53,7 +53,7 @@
       "name": "Run an Actor and get dataset",
       "credentials": {
         "apifyOAuth2Api": {
-          "id": "8sLZ8EzoPIndqPY0",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Apify account"
         }
       }
@@ -89,7 +89,7 @@
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "bbFHFebZmcdzhurG",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account"
         }
       }
@@ -188,7 +188,7 @@
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
-          "id": "LtZDFdPYLRxD8V9a",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -269,7 +269,7 @@
       "name": "Append row in sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "mdws24e0gm4wKxlL",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       }

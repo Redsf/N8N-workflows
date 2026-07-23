@@ -72,7 +72,7 @@
       },
       "credentials": {
         "googleDocsOAuth2Api": {
-          "id": "V0G0vi1DRj7Cqbp9",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Docs account"
         }
       },
@@ -91,7 +91,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -117,7 +117,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "VfK3js0YdqBdQLGP",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       },
@@ -140,7 +140,7 @@
       },
       "credentials": {
         "gmailOAuth2": {
-          "id": "Sf5Gfl9NiFTNXFWb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       },
@@ -168,7 +168,7 @@
       },
       "credentials": {
         "googleDocsOAuth2Api": {
-          "id": "V0G0vi1DRj7Cqbp9",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Docs account"
         }
       },
@@ -196,7 +196,7 @@
       },
       "credentials": {
         "googleDocsOAuth2Api": {
-          "id": "V0G0vi1DRj7Cqbp9",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Docs account"
         }
       },
@@ -224,7 +224,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },

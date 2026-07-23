@@ -1,5 +1,7 @@
 # n8n Workflow Portfolio
 
+[![validate](https://github.com/Redsf/n8n-workflows/actions/workflows/validate.yml/badge.svg)](https://github.com/Redsf/n8n-workflows/actions/workflows/validate.yml)
+
 A collection of 59 production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
 
 These solve real operational problems: recovering abandoned carts, qualifying and routing leads, extracting data from invoices, answering questions with grounded AI, and keeping teams informed without manual busywork.
@@ -36,7 +38,37 @@ no images needed, renders directly on GitHub: **[ARCHITECTURE.md →](ARCHITECTU
 3. In n8n, go to **Workflows → Import from File** and select the `.json` file.
 4. Connect the credentials listed in the workflow's README, then activate it.
 
-Credentials are referenced by name only — no API keys, tokens, or secrets are stored in any of these files.
+Credentials are referenced by name only. No API keys, tokens, or secrets are stored in any of these files, and every credential ID is the `REPLACE_WITH_CREDENTIAL_ID` placeholder rather than an ID from a real n8n instance.
+
+## Quality checks
+
+Every push runs [`scripts/validate_workflows.py`](scripts/validate_workflows.py)
+across all 59 workflows, plus a gitleaks scan of the working tree.
+
+**Blocking (fails the build):**
+
+- Invalid JSON, or a file that isn't an n8n export
+- A live API key pattern anywhere in the file
+- A credential ID that isn't the public placeholder — these leak which credential a private instance used and break import for everyone else
+
+**Advisory (reported, doesn't block):**
+
+- No active Error Trigger — failures pass unnoticed
+- Nodes not connected to anything
+- Disabled nodes left on the canvas
+
+The advisory checks are deliberately not blocking, because they describe
+reliability posture rather than correctness. Worth knowing: **15 of 59
+workflows currently have an active Error Trigger.** The rest will fail silently
+if you activate them as-is. The validator tells you which ones on every run.
+
+Run it locally before opening a PR:
+
+```bash
+python scripts/validate_workflows.py .
+```
+
+Add `--strict` to treat the advisory warnings as failures.
 
 ## Workflows
 

@@ -100,7 +100,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "CDX6QM4gLYanh0P4",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -125,7 +125,7 @@
       },
       "credentials": {
         "smtp": {
-          "id": "hRjP3XbDiIQqvi7x",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SMTP info@n3witalia.com"
         }
       },
@@ -150,7 +150,7 @@
       },
       "credentials": {
         "smtp": {
-          "id": "hRjP3XbDiIQqvi7x",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SMTP info@n3witalia.com"
         }
       },
@@ -175,7 +175,7 @@
       },
       "credentials": {
         "smtp": {
-          "id": "hRjP3XbDiIQqvi7x",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SMTP info@n3witalia.com"
         }
       },
@@ -200,7 +200,7 @@
       },
       "credentials": {
         "smtp": {
-          "id": "hRjP3XbDiIQqvi7x",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SMTP info@n3witalia.com"
         }
       },
@@ -225,7 +225,7 @@
       },
       "credentials": {
         "smtp": {
-          "id": "hRjP3XbDiIQqvi7x",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SMTP info@n3witalia.com"
         }
       },
@@ -330,7 +330,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "JYR6a64Qecd6t8Hb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -435,7 +435,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "JYR6a64Qecd6t8Hb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -540,7 +540,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "JYR6a64Qecd6t8Hb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -645,7 +645,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "JYR6a64Qecd6t8Hb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -750,7 +750,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "JYR6a64Qecd6t8Hb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },

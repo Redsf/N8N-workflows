@@ -57,7 +57,7 @@
       },
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "nv0cz3C6VZDzEgtR",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft365 Email Account"
         }
       },
@@ -79,7 +79,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "l2JgpErNc5namHVH",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAI account"
         }
       },
@@ -106,7 +106,7 @@
       },
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "nv0cz3C6VZDzEgtR",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft365 Email Account"
         }
       },
@@ -181,7 +181,7 @@
       },
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "nv0cz3C6VZDzEgtR",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft365 Email Account"
         }
       },
@@ -260,7 +260,7 @@
       },
       "credentials": {
         "mondayComApi": {
-          "id": "wur9UFaP9YKCFZly",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Monday.com - API User"
         }
       },
@@ -362,7 +362,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Bgr0Fi30Oek2jpXT",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -466,7 +466,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Bgr0Fi30Oek2jpXT",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -501,7 +501,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Bgr0Fi30Oek2jpXT",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -536,7 +536,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Bgr0Fi30Oek2jpXT",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -572,7 +572,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Bgr0Fi30Oek2jpXT",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },

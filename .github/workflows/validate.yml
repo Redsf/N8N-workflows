@@ -1,0 +1,36 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Workflow lint, secret scan, eval self-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Fails the build on invalid JSON, leaked API keys, or instance-specific
+      # n8n credential IDs. Reliability gaps (missing Error Trigger, orphaned
+      # nodes) are reported as warnings and do not block.
+      - name: Validate n8n workflow exports
+        run: python scripts/validate_workflows.py .
+
+      # Working-tree scan only: published files are what matter here, and
+      # --no-git keeps the run fast and deterministic as history grows.
+      - name: Scan for committed secrets
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source=/repo --no-git --redact --verbose
+
+      - name: Check eval suite imports and test cases parse
+        if: hashFiles('evals/**') != ''
+        run: python evals/selfcheck.py

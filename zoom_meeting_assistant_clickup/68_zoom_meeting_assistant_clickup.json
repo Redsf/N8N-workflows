@@ -22,7 +22,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "EjchNb5GBqYh0Cqn",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -70,7 +70,7 @@
       },
       "credentials": {
         "zoomOAuth2Api": {
-          "id": "MmccxSST1g202tG2",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Zoom account"
         }
       },
@@ -129,7 +129,7 @@
       },
       "credentials": {
         "zoomOAuth2Api": {
-          "id": "MmccxSST1g202tG2",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Zoom account"
         }
       },
@@ -188,7 +188,7 @@
       },
       "credentials": {
         "zoomOAuth2Api": {
-          "id": "MmccxSST1g202tG2",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Zoom account"
         }
       },
@@ -220,7 +220,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "EjchNb5GBqYh0Cqn",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -291,7 +291,7 @@
       },
       "credentials": {
         "smtp": {
-          "id": "OFGEnOq5l8U8Lb3U",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SMTP account"
         }
       },
@@ -364,7 +364,7 @@
       },
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "DNMkqql32uwVETij",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft Outlook account"
         }
       },
@@ -451,7 +451,7 @@
       },
       "credentials": {
         "clickUpOAuth2Api": {
-          "id": "KYxmoCCdfSkwWlXE",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "ClickUp account"
         }
       },
@@ -474,7 +474,7 @@
       },
       "credentials": {
         "zoomOAuth2Api": {
-          "id": "MmccxSST1g202tG2",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Zoom account"
         }
       },

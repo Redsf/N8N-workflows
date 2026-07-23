@@ -110,7 +110,7 @@
       },
       "credentials": {
         "slackOAuth2Api": {
-          "id": "3XUm67E2jVrrkrwz",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       },

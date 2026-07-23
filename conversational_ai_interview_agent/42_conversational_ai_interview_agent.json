@@ -313,7 +313,7 @@
       },
       "credentials": {
         "redis": {
-          "id": "AbPH1yYQ924bVUqm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Upstash (ai interviewer)"
         }
       },
@@ -335,7 +335,7 @@
       },
       "credentials": {
         "redis": {
-          "id": "AbPH1yYQ924bVUqm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Upstash (ai interviewer)"
         }
       },
@@ -357,7 +357,7 @@
       },
       "credentials": {
         "redis": {
-          "id": "AbPH1yYQ924bVUqm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Upstash (ai interviewer)"
         }
       },
@@ -379,7 +379,7 @@
       },
       "credentials": {
         "redis": {
-          "id": "AbPH1yYQ924bVUqm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Upstash (ai interviewer)"
         }
       },
@@ -574,7 +574,7 @@
       },
       "credentials": {
         "groqApi": {
-          "id": "YQVoV5K9FREww7t1",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account"
         }
       },
@@ -687,7 +687,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "FsFwFchwmgtBu5l7",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -738,7 +738,7 @@
       },
       "credentials": {
         "redis": {
-          "id": "AbPH1yYQ924bVUqm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Upstash (ai interviewer)"
         }
       },
@@ -761,7 +761,7 @@
       },
       "credentials": {
         "redis": {
-          "id": "AbPH1yYQ924bVUqm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Upstash (ai interviewer)"
         }
       },

@@ -112,7 +112,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "hTFmsPFO2Gt7fFL0",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive OAuth2 API"
         }
       },
@@ -144,7 +144,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "hTFmsPFO2Gt7fFL0",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive OAuth2 API"
         }
       },
@@ -220,7 +220,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "WdpcmOEDSJItGCUY",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       },
@@ -279,7 +279,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "WdpcmOEDSJItGCUY",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       },
@@ -333,7 +333,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "UnP62D2DzVysUFFb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       },
@@ -373,7 +373,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "UnP62D2DzVysUFFb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       },

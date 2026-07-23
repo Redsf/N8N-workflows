@@ -22,7 +22,7 @@
       "name": "Gmail Trigger",
       "credentials": {
         "gmailOAuth2": {
-          "id": "aHcgQQsf06BLwOqC",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -93,7 +93,7 @@
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
-          "id": "LtZDFdPYLRxD8V9a",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -135,7 +135,7 @@
       "name": "Supabase Vector Store",
       "credentials": {
         "supabaseApi": {
-          "id": "Ud4xb4fiXV9NBgoq",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Supabase account"
         }
       }
@@ -154,7 +154,7 @@
       "name": "Embeddings OpenAI",
       "credentials": {
         "openAiApi": {
-          "id": "LtZDFdPYLRxD8V9a",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -196,7 +196,7 @@
       "name": "OpenAI Chat Model1",
       "credentials": {
         "openAiApi": {
-          "id": "LtZDFdPYLRxD8V9a",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }

@@ -4,3 +4,5 @@ Thumbs.db
 .env
 .vscode/
 .idea/
+__pycache__/
+*.py[cod]

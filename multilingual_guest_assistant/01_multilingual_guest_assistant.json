@@ -70,7 +70,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "REPLACE_OPENAI",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAI account"
         }
       }
@@ -160,7 +160,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "REPLACE_SLACK",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -247,7 +247,7 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "REPLACE_WA_AUTH",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp Cloud API"
         }
       }
@@ -277,7 +277,7 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "REPLACE_VIBER_AUTH",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Viber Bot Token"
         }
       }
@@ -322,7 +322,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "REPLACE_SHEETS",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       }
@@ -376,7 +376,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "REPLACE_SLACK",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }

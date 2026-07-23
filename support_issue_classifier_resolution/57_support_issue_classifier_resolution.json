@@ -17,7 +17,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -37,7 +37,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -57,7 +57,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -77,7 +77,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -116,7 +116,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -144,7 +144,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -166,7 +166,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -202,7 +202,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -224,7 +224,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -309,7 +309,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -450,7 +450,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "VfK3js0YdqBdQLGP",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       },
@@ -478,7 +478,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -501,7 +501,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -609,7 +609,7 @@
       },
       "credentials": {
         "jiraSoftwareCloudApi": {
-          "id": "IH5V74q6PusewNjD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Jira SW Cloud account"
         }
       },
@@ -633,7 +633,7 @@
       },
       "credentials": {
         "notionApi": {
-          "id": "iHBHe7ypzz4mZExM",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Notion account"
         }
       },
@@ -662,7 +662,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "VfK3js0YdqBdQLGP",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       },

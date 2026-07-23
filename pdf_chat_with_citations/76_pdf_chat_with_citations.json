@@ -28,7 +28,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "VQtv7frm7eLiEDnd",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account 7"
         }
       },
@@ -117,7 +117,7 @@
       },
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "176",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account (David)"
         }
       },
@@ -161,7 +161,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "VQtv7frm7eLiEDnd",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account 7"
         }
       },
@@ -180,7 +180,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "VQtv7frm7eLiEDnd",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account 7"
         }
       },
@@ -307,7 +307,7 @@
       },
       "credentials": {
         "pineconeApi": {
-          "id": "eDN8BmzFKMhUNsia",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "PineconeApi account (David)"
         }
       },
@@ -333,7 +333,7 @@
       },
       "credentials": {
         "pineconeApi": {
-          "id": "eDN8BmzFKMhUNsia",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "PineconeApi account (David)"
         }
       },

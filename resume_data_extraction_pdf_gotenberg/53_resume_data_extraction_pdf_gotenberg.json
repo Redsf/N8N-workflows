@@ -17,7 +17,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "jazew1WAaSRrjcHp",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAI (workfloows@gmail.com)"
         }
       },
@@ -63,7 +63,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "jazew1WAaSRrjcHp",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAI (workfloows@gmail.com)"
         }
       },
@@ -141,7 +141,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "lStLV4zzcrQO9eAM",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram (Resume Extractor)"
         }
       },
@@ -247,7 +247,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "lStLV4zzcrQO9eAM",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram (Resume Extractor)"
         }
       },
@@ -576,7 +576,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "lStLV4zzcrQO9eAM",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram (Resume Extractor)"
         }
       },

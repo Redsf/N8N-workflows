@@ -280,7 +280,7 @@
       },
       "credentials": {
         "wooCommerceApi": {
-          "id": "Rm7eydPl5IQwnlhw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WooCommerce account"
         }
       },
@@ -348,7 +348,7 @@
       },
       "credentials": {
         "wooCommerceApi": {
-          "id": "Rm7eydPl5IQwnlhw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WooCommerce account"
         }
       },
@@ -416,7 +416,7 @@
       },
       "credentials": {
         "dhlApi": {
-          "id": "AYAwLZA02lSGlGTd",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "DHL account Jan"
         }
       },
@@ -459,7 +459,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "h7YcjvQLK5VrUYLz",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi Jan"
         }
       },

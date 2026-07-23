@@ -99,7 +99,7 @@
       },
       "credentials": {
         "gmailOAuth2": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -165,7 +165,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       }
@@ -294,7 +294,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -357,7 +357,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -410,7 +410,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       }
@@ -432,7 +432,7 @@
       },
       "credentials": {
         "gmailOAuth2": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -453,7 +453,7 @@
       },
       "credentials": {
         "gmailOAuth2": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -494,7 +494,7 @@
       },
       "credentials": {
         "slackApi": {
-          "id": "REPLACE_ME",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -509,7 +509,7 @@
         -160
       ],
       "parameters": {
-        "content": "## Invoice extraction (upgraded)\n\n**Before activating, you must:**\n1. Re-select all credentials marked `REPLACE_ME` (Gmail, Google Sheets, Slack) \u2014 imported JSON cannot carry your credential IDs across accounts.\n2. Pick your real spreadsheet + tab in **both** Google Sheets nodes.\n3. Pick your real Slack channel in the two Slack sendAndWait nodes.\n4. Pick or create a Gmail label in **Label & Archive** (e.g. \"Invoices/Processed\").\n5. In n8n workflow Settings, set **Error Workflow** to this same workflow so the error branch fires.\n\n**Verify before trusting validation:** run one real invoice through and check the actual field names cradl returns under `body.output` \u2014 the Validate & Score node currently assumes invoice_number, vendor_name, currency, invoice_total, invoice_lines[].amount.",
+        "content": "## Invoice extraction (upgraded)\n\n**Before activating, you must:**\n1. Re-select all credentials marked `REPLACE_ME` (Gmail, Google Sheets, Slack) — imported JSON cannot carry your credential IDs across accounts.\n2. Pick your real spreadsheet + tab in **both** Google Sheets nodes.\n3. Pick your real Slack channel in the two Slack sendAndWait nodes.\n4. Pick or create a Gmail label in **Label & Archive** (e.g. \"Invoices/Processed\").\n5. In n8n workflow Settings, set **Error Workflow** to this same workflow so the error branch fires.\n\n**Verify before trusting validation:** run one real invoice through and check the actual field names cradl returns under `body.output` — the Validate & Score node currently assumes invoice_number, vendor_name, currency, invoice_total, invoice_lines[].amount.",
         "height": 280,
         "width": 620,
         "color": 4
@@ -525,7 +525,7 @@
         340
       ],
       "parameters": {
-        "content": "### Bug fix\nOriginal workflow never marked \"invoice\"-subject emails as read when no PDF was attached, so it re-processed them every minute forever. This branch now replies once and lets the email fall through (still needs a Mark-as-Read wire if you want it silenced \u2014 see note in Has PDF? false branch).",
+        "content": "### Bug fix\nOriginal workflow never marked \"invoice\"-subject emails as read when no PDF was attached, so it re-processed them every minute forever. This branch now replies once and lets the email fall through (still needs a Mark-as-Read wire if you want it silenced — see note in Has PDF? false branch).",
         "height": 140,
         "width": 300,
         "color": 5

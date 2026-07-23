@@ -80,7 +80,7 @@
       "name": "Generate AI Content",
       "credentials": {
         "groqApi": {
-          "id": "zUI77WGbebONKXmE",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account 2"
         }
       }
@@ -113,7 +113,7 @@
       "webhookId": "c42625b8-cb93-40d7-ac11-fcdf80ef5024",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -138,7 +138,7 @@
       "webhookId": "345eab7c-4975-4cb3-ab7f-976eff48fc1c",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -163,7 +163,7 @@
       "webhookId": "b6351493-e0ac-49c9-afaf-32cf7f4d85c4",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -188,7 +188,7 @@
       "webhookId": "d9cd0efe-b473-4080-b32b-6d55684ea162",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -219,7 +219,7 @@
       "webhookId": "889b155b-2823-4f57-b154-3a11fa9975e8",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "1AsKHO9uRLHtJCBh",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }
@@ -276,7 +276,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "6rOJeFV0a1Iz5B3N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -301,7 +301,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "6rOJeFV0a1Iz5B3N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -442,7 +442,7 @@
       "name": "Append row in sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "jyOKBVYAE10WagHy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Newzz"
         }
       }
@@ -473,7 +473,7 @@
       "webhookId": "9c6acc78-9e39-4afb-8985-6dd635e73a08",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "1AsKHO9uRLHtJCBh",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack account"
         }
       }

@@ -54,7 +54,7 @@
       },
       "credentials": {
         "qdrantApi": {
-          "id": "iyQ6MQiVaF3VMBmt",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "QdrantApi account"
         }
       },
@@ -73,7 +73,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "CDX6QM4gLYanh0P4",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -119,7 +119,7 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "qhny6r5ql9wwotpn",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Qdrant API (Hetzner)"
         }
       },
@@ -154,7 +154,7 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "qhny6r5ql9wwotpn",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Qdrant API (Hetzner)"
         }
       },
@@ -188,7 +188,7 @@
       },
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "HEy5EuZkgPZVEa9w",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       },
@@ -219,7 +219,7 @@
       },
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "HEy5EuZkgPZVEa9w",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       },
@@ -272,7 +272,7 @@
       },
       "credentials": {
         "qdrantApi": {
-          "id": "iyQ6MQiVaF3VMBmt",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "QdrantApi account"
         }
       },
@@ -291,7 +291,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "CDX6QM4gLYanh0P4",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -323,7 +323,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "CDX6QM4gLYanh0P4",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -370,7 +370,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "CDX6QM4gLYanh0P4",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },

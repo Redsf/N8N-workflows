@@ -664,7 +664,7 @@
       },
       "credentials": {
         "wordpressApi": {
-          "id": "dk1CzqTOkihXrjym",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Wordpress account"
         }
       },

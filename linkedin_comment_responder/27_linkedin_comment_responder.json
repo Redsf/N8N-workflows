@@ -68,7 +68,7 @@
       ],
       "credentials": {
         "linkedInOAuth2Api": {
-          "id": "u9opNuspgI9kfdXu",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "LinkedIn OAuth2 API"
         }
       }
@@ -228,7 +228,7 @@
       ],
       "credentials": {
         "linkedInOAuth2Api": {
-          "id": "u9opNuspgI9kfdXu",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "LinkedIn OAuth2 API"
         }
       }
@@ -260,7 +260,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -326,7 +326,7 @@
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "oXnwriZz9nEYi4PB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account"
         }
       }

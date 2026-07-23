@@ -21,7 +21,7 @@
       "name": "OpenAI — PO Model",
       "credentials": {
         "openAiApi": {
-          "id": "J8zCphYzxllzomFl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }
@@ -55,7 +55,7 @@
       "webhookId": "7429339d-0d75-4feb-a855-4a31e9d92f21",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "DR8S4brArLOtXGTw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       },
@@ -85,7 +85,7 @@
       "webhookId": "cde02339-53cf-4ee7-9916-8b6832d3b2f3",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "DR8S4brArLOtXGTw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       }
@@ -297,7 +297,7 @@
       "name": "Update Inventory — Reorder Triggered",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -470,7 +470,7 @@
       "name": "Log to Reorder Log Sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -502,7 +502,7 @@
       "notesInFlow": false,
       "credentials": {
         "slackOAuth2Api": {
-          "id": "DR8S4brArLOtXGTw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       }
@@ -769,7 +769,7 @@
       "name": "Update Last Checked Date",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -836,7 +836,7 @@
       "name": "Get Active Products",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }

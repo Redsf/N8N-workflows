@@ -26,7 +26,7 @@
       },
       "credentials": {
         "pineconeApi": {
-          "id": "bQTNry52ypGLqt47",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "PineconeApi account"
         }
       },
@@ -45,7 +45,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "jLOqyTR4yTT1nYKi",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -148,7 +148,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "jLOqyTR4yTT1nYKi",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -167,7 +167,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "tQLWnWRzD8aebYvp",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -192,7 +192,7 @@
       },
       "credentials": {
         "pineconeApi": {
-          "id": "bQTNry52ypGLqt47",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "PineconeApi account"
         }
       },
@@ -220,7 +220,7 @@
       },
       "credentials": {
         "googleDocsOAuth2Api": {
-          "id": "nnE7RqZglLn8XarL",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Docs account"
         }
       },
@@ -239,7 +239,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "jLOqyTR4yTT1nYKi",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -272,7 +272,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "sRJmS2k8zdqVjtJL",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -299,7 +299,7 @@
       },
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "uixLsi5TmrfwXPeB",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       },

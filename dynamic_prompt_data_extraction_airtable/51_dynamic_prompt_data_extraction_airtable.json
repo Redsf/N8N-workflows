@@ -419,7 +419,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -438,7 +438,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -460,7 +460,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -498,7 +498,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -529,7 +529,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -644,7 +644,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -674,7 +674,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -805,7 +805,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -898,7 +898,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -940,7 +940,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -966,7 +966,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },

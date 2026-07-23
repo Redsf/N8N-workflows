@@ -19,7 +19,7 @@
       },
       "credentials": {
         "whatsAppTriggerApi": {
-          "id": "H3uYNtpeczKMqtYm",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp OAuth account"
         }
       },
@@ -41,7 +41,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -63,7 +63,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -85,7 +85,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -107,7 +107,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -129,7 +129,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -151,7 +151,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -363,7 +363,7 @@
       },
       "credentials": {
         "whatsAppApi": {
-          "id": "9SFJPeqrpChOkAmw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "WhatsApp account"
         }
       },
@@ -428,7 +428,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "dSxo6ns5wn658r8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -463,7 +463,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "dSxo6ns5wn658r8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -498,7 +498,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "dSxo6ns5wn658r8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -518,7 +518,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "dSxo6ns5wn658r8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -538,7 +538,7 @@
       },
       "credentials": {
         "googlePalmApi": {
-          "id": "dSxo6ns5wn658r8N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       },

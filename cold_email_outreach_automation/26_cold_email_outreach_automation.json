@@ -30,7 +30,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -104,7 +104,7 @@
       "webhookId": "c4e70ce5-6f57-4b4c-95c5-ebd0ce6d4710",
       "credentials": {
         "gmailOAuth2": {
-          "id": "D95JhkKejtMqu0rL",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail OAuth2 API"
         }
       }
@@ -267,7 +267,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -298,7 +298,7 @@
       "alwaysOutputData": false,
       "credentials": {
         "gmailOAuth2": {
-          "id": "D95JhkKejtMqu0rL",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail OAuth2 API"
         }
       }
@@ -464,7 +464,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -502,7 +502,7 @@
       "webhookId": "45c3f096-0075-423e-a59e-e0573e370099",
       "credentials": {
         "gmailOAuth2": {
-          "id": "D95JhkKejtMqu0rL",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail OAuth2 API"
         }
       }
@@ -666,7 +666,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "KTdseBniYkWJNvWv",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       }
@@ -700,7 +700,7 @@
       "webhookId": "3c45e5f8-6439-4d45-a56e-14d108f49d32",
       "credentials": {
         "slackOAuth2Api": {
-          "id": "DR8S4brArLOtXGTw",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       },
@@ -737,7 +737,7 @@
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
-          "id": "J8zCphYzxllzomFl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }
@@ -838,7 +838,7 @@
       "name": "OpenAI Chat Model1",
       "credentials": {
         "openAiApi": {
-          "id": "J8zCphYzxllzomFl",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       }

@@ -45,7 +45,7 @@
       "typeVersion": 1,
       "credentials": {
         "openAiApi": {
-          "id": "WdpcmOEDSJItGCUY",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -110,7 +110,7 @@
       "typeVersion": 1.1,
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "z8Pk7c2w7ybfwgSf",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft Outlook OAuth2 API"
         }
       }
@@ -213,7 +213,7 @@
       "typeVersion": 4.2,
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "z8Pk7c2w7ybfwgSf",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft Outlook OAuth2 API"
         }
       }
@@ -406,7 +406,7 @@
       "webhookId": "75f1bc62-3fde-4892-97f2-d3dfbf1ee0bc",
       "credentials": {
         "microsoftOutlookOAuth2Api": {
-          "id": "z8Pk7c2w7ybfwgSf",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Microsoft Outlook OAuth2 API"
         }
       }

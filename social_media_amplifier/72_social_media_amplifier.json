@@ -284,7 +284,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "BxLldDZTAZvuWVbr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -305,7 +305,7 @@
       },
       "credentials": {
         "linkedInOAuth2Api": {
-          "id": "S7G2oyLAmzhWuYFQ",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "LinkedIn account"
         }
       },
@@ -462,7 +462,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "BxLldDZTAZvuWVbr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -505,7 +505,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "BxLldDZTAZvuWVbr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -619,7 +619,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "BxLldDZTAZvuWVbr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -640,7 +640,7 @@
       },
       "credentials": {
         "twitterOAuth2Api": {
-          "id": "YQyS9lQTpZtZkefS",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "X account"
         }
       },
@@ -725,7 +725,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "IfJo4dG8AUORk6f0",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -747,7 +747,7 @@
       },
       "credentials": {
         "telegramApi": {
-          "id": "1RZApQ3BwJxFn9jp",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       },

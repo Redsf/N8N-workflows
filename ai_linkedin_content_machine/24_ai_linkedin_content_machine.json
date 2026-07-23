@@ -104,7 +104,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "XJSH09UxiP4H9oxD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -213,7 +213,7 @@
       "name": "Reddit",
       "credentials": {
         "apifyOAuth2Api": {
-          "id": "16iHkfOqmFpnEEoI",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Apify OAuth2 API"
         }
       }
@@ -278,7 +278,7 @@
       "name": "Google_trends search",
       "credentials": {
         "serpApi": {
-          "id": "pYcRBXRwtuAdZM9n",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "SerpApi account"
         }
       }
@@ -316,7 +316,7 @@
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
-          "id": "XJSH09UxiP4H9oxD",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -342,7 +342,7 @@
       "name": "Generate an image",
       "credentials": {
         "googlePalmApi": {
-          "id": "kpWC5x3HCzShxCVr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -361,7 +361,7 @@
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "kpWC5x3HCzShxCVr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Gemini(PaLM) Api account"
         }
       }

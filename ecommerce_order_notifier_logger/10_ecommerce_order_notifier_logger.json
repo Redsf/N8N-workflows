@@ -122,7 +122,7 @@
       },
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "542sEl8Ubi0hta4Q",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Sheets OAuth2 API"
         }
       },
@@ -184,7 +184,7 @@
       },
       "credentials": {
         "slackOAuth2Api": {
-          "id": "3XUm67E2jVrrkrwz",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       },
@@ -213,7 +213,7 @@
       },
       "credentials": {
         "slackOAuth2Api": {
-          "id": "3XUm67E2jVrrkrwz",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Slack OAuth2 API"
         }
       },

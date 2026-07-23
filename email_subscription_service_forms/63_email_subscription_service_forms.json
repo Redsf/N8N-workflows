@@ -48,7 +48,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -83,7 +83,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -108,7 +108,7 @@
       },
       "credentials": {
         "gmailOAuth2": {
-          "id": "Sf5Gfl9NiFTNXFWb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       },
@@ -482,7 +482,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -517,7 +517,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -767,7 +767,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -961,7 +961,7 @@
       },
       "credentials": {
         "airtableTokenApi": {
-          "id": "Und0frCQ6SNVX3VV",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Airtable Personal Access Token account"
         }
       },
@@ -1099,7 +1099,7 @@
       },
       "credentials": {
         "groqApi": {
-          "id": "02xZ4o87lUMUFmbT",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Groq account"
         }
       },
@@ -1120,7 +1120,7 @@
       },
       "credentials": {
         "openAiApi": {
-          "id": "8gccIjcuf3gvaoEr",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "OpenAi account"
         }
       },
@@ -1166,7 +1166,7 @@
       },
       "credentials": {
         "gmailOAuth2": {
-          "id": "Sf5Gfl9NiFTNXFWb",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       },

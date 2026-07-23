@@ -67,7 +67,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "6rOJeFV0a1Iz5B3N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -92,7 +92,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "6rOJeFV0a1Iz5B3N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -140,7 +140,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "u9inNwyMXrInhD8l",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "n8n free OpenAI API credits"
         }
       }
@@ -167,7 +167,7 @@
       "name": "Demo download",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "6rOJeFV0a1Iz5B3N",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -222,7 +222,7 @@
       "webhookId": "62da9a18-63d5-4cea-bc78-aa13f174fa8c",
       "credentials": {
         "gmailOAuth2": {
-          "id": "hwkGRzmPHuB6NuZy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -408,7 +408,7 @@
       "name": "Append row in sheet",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "jyOKBVYAE10WagHy",
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
           "name": "Newzz"
         }
       }
