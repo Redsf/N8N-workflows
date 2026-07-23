@@ -88,35 +88,7 @@ list itself is always the source of truth.
 
 ---
 
-## 4. Invoice Extraction (LlamaParse + OpenAI)
-[`invoice_extraction_llamaparse/71_invoice_extraction_llamaparse.json`](invoice_extraction_llamaparse)
-
-```mermaid
-flowchart TD
-    A[Gmail Trigger\nReceiving Invoices] --> B{Should Process\nEmail?}
-    B -->|yes| C[HTTP Request\nUpload to LlamaParse]
-    C --> D[Wait\nStay within service limits]
-    D --> E[HTTP Request\nGet Processing Status]
-    E --> F{Is Job\nReady?}
-    F -->|no| D
-    F -->|yes| G[HTTP Request\nGet Parsed Invoice Data]
-    G --> H[LLM Chain\nApply Data Extraction Rules\nOpenAI Model + Structured Output Parser]
-    H --> I[Set\nMap Output]
-    I --> J[Google Sheets\nAppend to Reconciliation Sheet]
-    J --> K[Gmail\nAdd 'invoice synced' Label]
-```
-
-**What it does:** Watches a Gmail inbox, filters which emails are actually invoices, sends the PDF
-to LlamaParse for structured extraction, polls until parsing completes, then runs the result
-through an LLM chain with a **structured output parser** — guaranteed-shape JSON, not free text.
-Clean data lands in a reconciliation sheet; the source email gets labeled so nothing double-processes.
-
-This is the reference build behind the invoice-automation testimonial — same pipeline shape as
-the version that took a client's month-end close from three days of manual entry to near zero.
-
----
-
-## 5. CV / Applicant Screening Pipeline
+## 4. CV / Applicant Screening Pipeline
 [`cv_processing_workflow/33_cv_processing_workflow.json`](cv_processing_workflow)
 
 ```mermaid
@@ -136,7 +108,7 @@ Candidate gets an automatic confirmation the moment they apply.
 
 ---
 
-## 6. AI Voice Chatbot (ElevenLabs, RAG-grounded)
+## 5. AI Voice Chatbot (ElevenLabs, RAG-grounded)
 [`voice_chatbot_elevenlabs_restaurants/75_voice_chatbot_elevenlabs_restaurants.json`](voice_chatbot_elevenlabs_restaurants)
 
 ```mermaid

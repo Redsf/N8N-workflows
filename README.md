@@ -1,6 +1,6 @@
 # n8n Workflow Portfolio
 
-A collection of 63 production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
+A collection of 59 production-style n8n automations covering AI agents, RAG knowledge systems, e-commerce operations, real estate, and HR document processing. Each workflow lives in its own folder as a ready-to-import JSON file with a README explaining what it does, how it's wired, and how to configure it.
 
 These solve real operational problems: recovering abandoned carts, qualifying and routing leads, extracting data from invoices, answering questions with grounded AI, and keeping teams informed without manual busywork.
 
@@ -26,7 +26,7 @@ These solve real operational problems: recovering abandoned carts, qualifying an
 
 ## Architecture diagrams
 
-Six of the flagship workflows above are broken down node-by-node with Mermaid flowcharts —
+Five of the flagship workflows above are broken down node-by-node with Mermaid flowcharts —
 no images needed, renders directly on GitHub: **[ARCHITECTURE.md →](ARCHITECTURE.md)**
 
 ## How to use a workflow
@@ -51,91 +51,87 @@ Credentials are referenced by name only — no API keys, tokens, or secrets are 
 | 05 | [RAG-Powered Internal Knowledge Chatbot](rag_internal_knowledge_chatbot) | Nightly sync from Notion and Google Drive into Pinecone, with a Slack-triggered Q&A agent. |
 | 06 | [HR & IT Helpdesk Chatbot with Audio Transcription](hr_it_helpdesk_chatbot_audio_transcription) | Telegram helpdesk bot that transcribes voice notes and answers from a PGVector knowledge base. |
 | 07 | [Customer Service Agent with RAG](customer_service_agent_rag) | Reads incoming support emails and drafts grounded replies from a Supabase vector store. |
-| 08 | [RAG Model with Supabase](rag_model_supabase) | Google Drive documents indexed into Supabase, queried through a chat-triggered agent. |
-| 09 | [RAG Model with Supabase & Postgres](rag_model_supabase_postgres) | Adds Telegram as a second interface and Postgres-backed chat memory on top of a Supabase RAG pipeline. |
-| 10 | [Chat With Files in Supabase Storage](supabase_storage_file_chat_agent) | Agent that answers questions against files held in Supabase Storage without a separate ingestion step. |
-| 11 | [Zoom AI Meeting Assistant](zoom_meeting_assistant_clickup) | Turns a Zoom recording into a mailed summary, ClickUp tasks, and a scheduled follow-up call. |
-| 12 | [Branded AI Website Chatbot](branded_website_chatbot) | Embeddable chatbot that books meetings against a live calendar and routes availability requests through itself as a sub-workflow. |
-| 13 | [Chat With PDFs (Cited Sources)](pdf_chat_with_citations) | Pinecone-backed PDF Q&A agent that quotes the exact source passage behind every answer. |
-| 14 | [Stock Earnings Report RAG Analysis](stock_earnings_rag_analysis) | Ingests earnings-call PDFs and answers analyst questions with a Gemini + Pinecone retrieval agent. |
+| 08 | [RAG Model with Supabase & Postgres](rag_model_supabase_postgres) | Adds Telegram as a second interface and Postgres-backed chat memory on top of a Supabase RAG pipeline. |
+| 09 | [Chat With Files in Supabase Storage](supabase_storage_file_chat_agent) | Agent that answers questions against files held in Supabase Storage without a separate ingestion step. |
+| 10 | [Zoom AI Meeting Assistant](zoom_meeting_assistant_clickup) | Turns a Zoom recording into a mailed summary, ClickUp tasks, and a scheduled follow-up call. |
+| 11 | [Branded AI Website Chatbot](branded_website_chatbot) | Embeddable chatbot that books meetings against a live calendar and routes availability requests through itself as a sub-workflow. |
+| 12 | [Chat With PDFs (Cited Sources)](pdf_chat_with_citations) | Pinecone-backed PDF Q&A agent that quotes the exact source passage behind every answer. |
+| 13 | [Stock Earnings Report RAG Analysis](stock_earnings_rag_analysis) | Ingests earnings-call PDFs and answers analyst questions with a Gemini + Pinecone retrieval agent. |
 
 ### Customer Communication & Support
 
 | # | Workflow | Summary |
 |---|----------|---------|
-| 15 | [WhatsApp AI Sales Agent](whatsapp_ai_sales_agent) | Pinecone-grounded sales agent on WhatsApp with calendar booking and conversation memory. |
-| 16 | [Cold Email Outreach Automation](cold_email_outreach_automation) | Batches prospects from a sheet, personalizes outreach with an LLM, and sends with rate limiting. |
-| 17 | [Gmail AI Auto-Reply Agent](gmail_ai_auto_reply_agent) | Watches a Gmail inbox and drafts context-aware replies automatically. |
-| 18 | [Gmail Customer Support Agent](gmail_customer_support_agent) | Triages and answers customer support emails with an LLM agent and conversation memory. |
-| 19 | [Modular AI Email Routing Classifier](modular_email_routing_classifier) | Configurable text-classifier front end that routes incoming e-commerce emails to the right handling branch. |
-| 20 | [WhatsApp AI Auto-Responder](whatsapp_ai_auto_responder) | Answers incoming WhatsApp messages automatically with an LLM agent, no manual reply needed. |
-| 21 | [AI Sales Meeting Prep via WhatsApp (Apify)](whatsapp_sales_meeting_prep_apify) | Scrapes a prospect's public profile with Apify, briefs an LLM, and delivers a meeting-prep summary over WhatsApp. |
-| 22 | [Customer Support Issue Classifier & Resolution](support_issue_classifier_resolution) | Classifies incoming support issues by type/severity with an AI text classifier and routes them to resolution. |
-| 23 | [Email Summarization & Review Queue](email_summarization_review_queue) | Summarizes inbox email with AI and queues drafts for human review before anything sends. |
-| 24 | [Outlook AI Email Assistant (Monday + Airtable)](outlook_ai_assistant_monday_airtable) | Drafts Outlook replies with contact context pulled live from Monday.com and Airtable. |
-| 25 | [Complete Business WhatsApp RAG Chatbot](whatsapp_business_rag_chatbot) | Full retrieval-augmented WhatsApp Business chatbot answering from a Qdrant knowledge base. |
-| 26 | [AI Voice Chatbot for Restaurants (ElevenLabs)](voice_chatbot_elevenlabs_restaurants) | Voice-in, voice-out customer service agent for restaurants using ElevenLabs speech synthesis over an n8n RAG backend. |
+| 14 | [WhatsApp AI Sales Agent](whatsapp_ai_sales_agent) | Pinecone-grounded sales agent on WhatsApp with calendar booking and conversation memory. |
+| 15 | [Cold Email Outreach Automation](cold_email_outreach_automation) | Batches prospects from a sheet, personalizes outreach with an LLM, and sends with rate limiting. |
+| 16 | [Gmail AI Auto-Reply Agent](gmail_ai_auto_reply_agent) | Watches a Gmail inbox and drafts context-aware replies automatically. |
+| 17 | [Gmail Customer Support Agent](gmail_customer_support_agent) | Triages and answers customer support emails with an LLM agent and conversation memory. |
+| 18 | [Modular AI Email Routing Classifier](modular_email_routing_classifier) | Configurable text-classifier front end that routes incoming e-commerce emails to the right handling branch. |
+| 19 | [WhatsApp AI Auto-Responder](whatsapp_ai_auto_responder) | Answers incoming WhatsApp messages automatically with an LLM agent, no manual reply needed. |
+| 20 | [AI Sales Meeting Prep via WhatsApp (Apify)](whatsapp_sales_meeting_prep_apify) | Scrapes a prospect's public profile with Apify, briefs an LLM, and delivers a meeting-prep summary over WhatsApp. |
+| 21 | [Customer Support Issue Classifier & Resolution](support_issue_classifier_resolution) | Classifies incoming support issues by type/severity with an AI text classifier and routes them to resolution. |
+| 22 | [Email Summarization & Review Queue](email_summarization_review_queue) | Summarizes inbox email with AI and queues drafts for human review before anything sends. |
+| 23 | [Outlook AI Email Assistant (Monday + Airtable)](outlook_ai_assistant_monday_airtable) | Drafts Outlook replies with contact context pulled live from Monday.com and Airtable. |
+| 24 | [Complete Business WhatsApp RAG Chatbot](whatsapp_business_rag_chatbot) | Full retrieval-augmented WhatsApp Business chatbot answering from a Qdrant knowledge base. |
+| 25 | [AI Voice Chatbot for Restaurants (ElevenLabs)](voice_chatbot_elevenlabs_restaurants) | Voice-in, voice-out customer service agent for restaurants using ElevenLabs speech synthesis over an n8n RAG backend. |
 
 ### E-commerce & Operations
 
 | # | Workflow | Summary |
 |---|----------|---------|
-| 27 | [Vision AI Receipt & Document Verification](vision_receipt_verification) | Validates receipt/invoice images against expected booking values with GPT-4o Vision and routes exceptions for review. |
-| 28 | [Abandoned Cart Recovery Engine](abandoned_cart_recovery_engine) | Shopify checkout-abandonment recovery sequence with timed follow-ups across email and WhatsApp. |
-| 29 | [Order & Fulfillment Sync Automation](order_fulfillment_sync_automation) | Syncs new Shopify orders to a database and polls delivery status, notifying customers and staff. |
-| 30 | [Ecommerce Order Notifier & Logger](ecommerce_order_notifier_logger) | Webhook-driven order intake that logs to Google Sheets and alerts the team on Slack. |
-| 31 | [Daily Product Pricing Monitor](daily_product_pricing_monitor) | Scheduled competitor price checks with Slack/email alerts when prices move outside range. |
-| 32 | [Real-Time Inventory & Auto-Reorder Pipeline](realtime_inventory_auto_reorder_pipeline) | Monitors stock levels and uses an AI agent to decide and trigger reorders before stockouts. |
-| 33 | [WooCommerce AI Support Agent](woocommerce_ai_support_agent) | Storefront support agent that answers order and product questions directly against the WooCommerce API. |
-| 34 | [Personal Shopper RAG Chatbot (WooCommerce)](personal_shopper_rag_woocommerce) | Product-recommendation chatbot grounded in a Google Drive catalog via retrieval-augmented generation. |
+| 26 | [Vision AI Receipt & Document Verification](vision_receipt_verification) | Validates receipt/invoice images against expected booking values with GPT-4o Vision and routes exceptions for review. |
+| 27 | [Abandoned Cart Recovery Engine](abandoned_cart_recovery_engine) | Shopify checkout-abandonment recovery sequence with timed follow-ups across email and WhatsApp. |
+| 28 | [Order & Fulfillment Sync Automation](order_fulfillment_sync_automation) | Syncs new Shopify orders to a database and polls delivery status, notifying customers and staff. |
+| 29 | [Ecommerce Order Notifier & Logger](ecommerce_order_notifier_logger) | Webhook-driven order intake that logs to Google Sheets and alerts the team on Slack. |
+| 30 | [Daily Product Pricing Monitor](daily_product_pricing_monitor) | Scheduled competitor price checks with Slack/email alerts when prices move outside range. |
+| 31 | [Real-Time Inventory & Auto-Reorder Pipeline](realtime_inventory_auto_reorder_pipeline) | Monitors stock levels and uses an AI agent to decide and trigger reorders before stockouts. |
+| 32 | [WooCommerce AI Support Agent](woocommerce_ai_support_agent) | Storefront support agent that answers order and product questions directly against the WooCommerce API. |
+| 33 | [Personal Shopper RAG Chatbot (WooCommerce)](personal_shopper_rag_woocommerce) | Product-recommendation chatbot grounded in a Google Drive catalog via retrieval-augmented generation. |
 
 ### Real Estate & Appointment Scheduling
 
 | # | Workflow | Summary |
 |---|----------|---------|
-| 35 | [Appointment Reminder Sender](appointment_reminder_sender) | Daily scheduled reminders pulled from a bookings sheet, sent by email with a Slack digest. |
-| 36 | [Real Estate Lead Capture and Route](real_estate_lead_capture_and_route) | Qualifies and routes inbound property leads to the right agent with validation and rejection handling. |
+| 34 | [Appointment Reminder Sender](appointment_reminder_sender) | Daily scheduled reminders pulled from a bookings sheet, sent by email with a Slack digest. |
 
 ### Marketing, Content & Growth
 
 | # | Workflow | Summary |
 |---|----------|---------|
-| 37 | [Negative Review Monitor](negative_review_monitor) | Polls review sources on a schedule and alerts the team the moment a negative review appears. |
-| 38 | [AI Review & Reputation Manager](ai_review_reputation_manager) | LLM-drafted responses to incoming reviews, batched hourly with Slack approval routing. |
-| 39 | [Automated Client Ad Reporting](automated_client_ad_reporting) | Weekly ad-performance pull, summarized by an LLM, and emailed to clients automatically. |
-| 40 | [Hacker News "Who is Hiring" Scraper](hacker_news_hiring_scraper) | Extracts and filters relevant job listings from the monthly HN hiring thread into Airtable. |
-| 41 | [AI Content Repurposing & Social Publishing](ai_content_repurposing_social_publishing) | Turns one submitted piece of content into multiple platform-ready posts and tracks weekly performance. |
-| 42 | [SEO & Competitor Intelligence Pipeline](seo_competitor_intelligence_pipeline) | Weekly SEO and competitor data pull, summarized by an LLM and delivered by email. |
-| 43 | [AI LinkedIn Content Machine](ai_linkedin_content_machine) | Sources trending topics via Apify/SerpAPI and drafts and publishes LinkedIn posts with AI. |
-| 44 | [AI Newsletter Generator (RSS → Email)](ai_newsletter_generator_rss_to_email) | Aggregates RSS feeds, curates and writes a newsletter draft, and emails it out. |
-| 45 | [Comment Responder for LinkedIn](linkedin_comment_responder) | Scheduled scan of LinkedIn post comments with AI-drafted replies logged for review. |
-| 46 | [LinkedIn Post Scraper](linkedin_post_scraper) | Form-triggered LinkedIn scraping and AI analysis pipeline with results written to Google Sheets. |
-| 47 | [Instagram Trend Content Generator](instagram_trend_content_generator) | Finds trending topics and generates on-brand Instagram post copy and images with AI image generation. |
-| 48 | [FAQ Enrichment at Scale](faq_enrichment_at_scale) | Scans website pages and auto-generates FAQ sections at scale using AI, batched for SEO content coverage. |
-| 49 | [Email Subscription Service (Forms + Airtable + AI)](email_subscription_service_forms) | Form-driven newsletter sign-up pipeline that stores subscribers in Airtable and personalizes the welcome flow with AI. |
-| 50 | [AI-Powered Social Media Amplifier](social_media_amplifier) | Pulls trending Hacker News/GitHub items and drafts ready-to-post Twitter/LinkedIn amplification content. |
+| 35 | [Negative Review Monitor](negative_review_monitor) | Polls review sources on a schedule and alerts the team the moment a negative review appears. |
+| 36 | [AI Review & Reputation Manager](ai_review_reputation_manager) | LLM-drafted responses to incoming reviews, batched hourly with Slack approval routing. |
+| 37 | [Automated Client Ad Reporting](automated_client_ad_reporting) | Weekly ad-performance pull, summarized by an LLM, and emailed to clients automatically. |
+| 38 | [Hacker News "Who is Hiring" Scraper](hacker_news_hiring_scraper) | Extracts and filters relevant job listings from the monthly HN hiring thread into Airtable. |
+| 39 | [AI Content Repurposing & Social Publishing](ai_content_repurposing_social_publishing) | Turns one submitted piece of content into multiple platform-ready posts and tracks weekly performance. |
+| 40 | [SEO & Competitor Intelligence Pipeline](seo_competitor_intelligence_pipeline) | Weekly SEO and competitor data pull, summarized by an LLM and delivered by email. |
+| 41 | [AI LinkedIn Content Machine](ai_linkedin_content_machine) | Sources trending topics via Apify/SerpAPI and drafts and publishes LinkedIn posts with AI. |
+| 42 | [AI Newsletter Generator (RSS → Email)](ai_newsletter_generator_rss_to_email) | Aggregates RSS feeds, curates and writes a newsletter draft, and emails it out. |
+| 43 | [Comment Responder for LinkedIn](linkedin_comment_responder) | Scheduled scan of LinkedIn post comments with AI-drafted replies logged for review. |
+| 44 | [LinkedIn Post Scraper](linkedin_post_scraper) | Form-triggered LinkedIn scraping and AI analysis pipeline with results written to Google Sheets. |
+| 45 | [Instagram Trend Content Generator](instagram_trend_content_generator) | Finds trending topics and generates on-brand Instagram post copy and images with AI image generation. |
+| 46 | [FAQ Enrichment at Scale](faq_enrichment_at_scale) | Scans website pages and auto-generates FAQ sections at scale using AI, batched for SEO content coverage. |
+| 47 | [Email Subscription Service (Forms + Airtable + AI)](email_subscription_service_forms) | Form-driven newsletter sign-up pipeline that stores subscribers in Airtable and personalizes the welcome flow with AI. |
+| 48 | [AI-Powered Social Media Amplifier](social_media_amplifier) | Pulls trending Hacker News/GitHub items and drafts ready-to-post Twitter/LinkedIn amplification content. |
 
 ### HR & Document Automation
 
 | # | Workflow | Summary |
 |---|----------|---------|
-| 51 | [Automated Invoice & Document Processing Pipeline](automated_invoice_document_processing) | Extracts structured data from emailed invoices with an LLM and writes it to a database. |
-| 52 | [AI Document & Invoice Extraction (Google Drive)](ai_document_invoice_extraction_google_drive) | Watches a Google Drive folder and extracts invoice data with GPT into Google Sheets. |
-| 53 | [AI Employee Onboarding Automation](employee_onboarding_automation) | Form-triggered onboarding that generates welcome content, provisions access requests, and notifies HR/IT/manager. |
-| 54 | [Job Application CV Processing Workflow](cv_processing_workflow) | Parses submitted CVs with an LLM, scores candidates, and logs structured results. |
-| 55 | [Document to Study Notes (Mistral + Qdrant)](document_to_study_notes_mistral_qdrant) | Breaks down source documents into structured study notes using Mistral AI embeddings and a Qdrant vector store. |
-| 56 | [Conversational AI Interview Agent](conversational_ai_interview_agent) | Runs a multi-turn conversational interview through n8n Forms, driven by an AI agent instead of a static question list. |
-| 57 | [RFP Process Automation (OpenAI Assistants)](rfp_automation_openai_assistants) | Automates RFP intake and first-draft response generation using an OpenAI Assistant with file search. |
-| 58 | [Invoice Extraction with Human-in-the-Loop (Cradl AI)](invoice_extraction_human_in_loop_cradl) | Extracts invoice data via Cradl AI, routes low-confidence fields to a human reviewer, and auto-trains the model from corrections. |
-| 59 | [Dynamic Prompt Data Extraction (Airtable)](dynamic_prompt_data_extraction_airtable) | Generic data-extraction pipeline that pulls its prompt template from Airtable, so the extraction schema can change without touching the workflow. |
-| 60 | [Resume Data Extraction & PDF Generation (Gotenberg)](resume_data_extraction_pdf_gotenberg) | Parses a submitted resume, restructures it, and renders a clean output PDF via a self-hosted Gotenberg service. |
-| 61 | [AI Candidate Shortlisting (ERPNext)](candidate_shortlisting_erpnext) | Scores and shortlists job applicants stored in ERPNext using an LLM evaluation against the role's requirements. |
-| 62 | [HR Job Posting & Evaluation Agent](hr_job_posting_evaluation_agent) | Drafts job postings and evaluates incoming applications against them with an AI agent. |
-| 63 | [Invoice Data Extraction (LlamaParse)](invoice_extraction_llamaparse) | Gmail-triggered invoice pipeline using LlamaParse for document parsing ahead of LLM field extraction. |
+| 49 | [Automated Invoice & Document Processing Pipeline](automated_invoice_document_processing) | Extracts structured data from emailed invoices with an LLM and writes it to a database. |
+| 50 | [AI Document & Invoice Extraction (Google Drive)](ai_document_invoice_extraction_google_drive) | Watches a Google Drive folder and extracts invoice data with GPT into Google Sheets. |
+| 51 | [AI Employee Onboarding Automation](employee_onboarding_automation) | Form-triggered onboarding that generates welcome content, provisions access requests, and notifies HR/IT/manager. |
+| 52 | [Job Application CV Processing Workflow](cv_processing_workflow) | Parses submitted CVs with an LLM, scores candidates, and logs structured results. |
+| 53 | [Document to Study Notes (Mistral + Qdrant)](document_to_study_notes_mistral_qdrant) | Breaks down source documents into structured study notes using Mistral AI embeddings and a Qdrant vector store. |
+| 54 | [Conversational AI Interview Agent](conversational_ai_interview_agent) | Runs a multi-turn conversational interview through n8n Forms, driven by an AI agent instead of a static question list. |
+| 55 | [RFP Process Automation (OpenAI Assistants)](rfp_automation_openai_assistants) | Automates RFP intake and first-draft response generation using an OpenAI Assistant with file search. |
+| 56 | [Invoice Extraction with Human-in-the-Loop (Cradl AI)](invoice_extraction_human_in_loop_cradl) | Extracts invoice data via Cradl AI, routes low-confidence fields to a human reviewer, and auto-trains the model from corrections. |
+| 57 | [Dynamic Prompt Data Extraction (Airtable)](dynamic_prompt_data_extraction_airtable) | Generic data-extraction pipeline that pulls its prompt template from Airtable, so the extraction schema can change without touching the workflow. |
+| 58 | [Resume Data Extraction & PDF Generation (Gotenberg)](resume_data_extraction_pdf_gotenberg) | Parses a submitted resume, restructures it, and renders a clean output PDF via a self-hosted Gotenberg service. |
+| 59 | [AI Candidate Shortlisting (ERPNext)](candidate_shortlisting_erpnext) | Scores and shortlists job applicants stored in ERPNext using an LLM evaluation against the role's requirements. |
 
 ## Stack
 
-Built primarily on **n8n**, with LLM providers (OpenAI, Groq, Google Gemini, Mistral, Anthropic Claude, ElevenLabs), vector stores (Pinecone, Supabase, Qdrant, PGVector), document/OCR tooling (LlamaParse, Cradl AI, Gotenberg), and integrations spanning Shopify, WooCommerce, ERPNext, Gmail, Outlook, Slack, WhatsApp, Telegram, Google Workspace, Notion, Airtable, Monday.com, ClickUp, Cal.com, Twilio, Apify, and BambooHR.
+Built primarily on **n8n**, with LLM providers (OpenAI, Groq, Google Gemini, Mistral, Anthropic Claude, ElevenLabs), vector stores (Pinecone, Supabase, Qdrant, PGVector), document/OCR tooling (Cradl AI, Gotenberg), and integrations spanning Shopify, WooCommerce, ERPNext, Gmail, Outlook, Slack, WhatsApp, Telegram, Google Workspace, Notion, Airtable, Monday.com, ClickUp, Cal.com, Twilio, Apify, and BambooHR.
 
 ## About the author
 
