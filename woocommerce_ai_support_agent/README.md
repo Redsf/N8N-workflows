@@ -1,5 +1,9 @@
 # WooCommerce AI Support Agent
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A chat-based customer support agent for a WooCommerce store that can look up a customer's orders and DHL shipment tracking without exposing other customers' data. The agent identifies the requester by an email address that is encrypted client-side and decrypted inside the workflow, then answers questions about order status, dispatch timing, and delivery tracking directly in an embeddable chat widget.
 
 Built for store owners who want to deflect "where is my order" tickets with an AI agent that only ever sees the requesting customer's own orders.

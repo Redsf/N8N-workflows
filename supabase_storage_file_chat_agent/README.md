@@ -1,5 +1,9 @@
 # Chat With Files in Supabase Storage
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A two-part workflow that keeps a Supabase vector store in sync with files sitting in Supabase Storage, then exposes an AI chat agent that answers questions using those files as its knowledge base. New files are automatically detected, downloaded, chunked, embedded, and indexed — no manual re-upload step required.
 
 Built for teams who already store documents in Supabase Storage and want a chatbot that can answer questions grounded in that content, without wiring up a separate document pipeline.

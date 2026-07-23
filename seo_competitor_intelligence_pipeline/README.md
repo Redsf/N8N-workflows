@@ -1,5 +1,9 @@
 # SEO & Competitor Intelligence Reporting Pipeline
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A weekly automated report that pulls keyword ranking data from SEMrush, organic traffic from GA4, and a snapshot of a tracked competitor page, then has an LLM summarize the biggest movers, traffic anomalies, and competitor changes in plain language. The finished report lands in both email and Slack every Monday morning.
 
 Built for SEO agencies and in-house marketing teams who need a recurring client- or stakeholder-facing report without manually pulling three different dashboards every week.

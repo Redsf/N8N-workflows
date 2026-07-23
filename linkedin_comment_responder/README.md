@@ -1,5 +1,9 @@
 # LinkedIn Comment Responder
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A scheduled workflow that polls a specific LinkedIn post for new comments, drafts an AI reply to each one, posts the reply back to LinkedIn, and logs every exchange to Google Sheets.
 
 Built for creators and thought leaders who post regularly on LinkedIn and want to keep engagement high by replying to every comment without manually checking the post throughout the day.

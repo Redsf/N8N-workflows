@@ -1,5 +1,9 @@
 # Invoice Extraction with Human-in-the-Loop (Cradl AI)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A polling workflow that watches a Gmail inbox for invoice attachments, extracts structured line-item data with Cradl AI's document extraction agent, and appends each invoice line to Google Sheets. Cradl AI's own interface provides the human-in-the-loop review step, so accounting staff can approve or correct extracted fields before (or after) they land in the sheet.
 
 Built for finance/accounting teams who receive invoices by email and want structured, line-item-level data in a spreadsheet without manually opening and retyping every PDF.

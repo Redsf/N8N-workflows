@@ -1,5 +1,9 @@
 # Gmail AI Auto-Reply Agent
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An AI agent that watches a Gmail inbox and automatically drafts and sends replies to incoming customer emails, applying a fixed set of company policies (delivery area, refund rules) instead of generic canned responses.
 
 Built for small e-commerce or D2C businesses that get repetitive customer emails about delivery and refunds and want first-line responses handled without a human in the loop.

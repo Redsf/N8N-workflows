@@ -1,5 +1,9 @@
 # Negative Review Monitor
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Polls a review feed every 6 hours, isolates the low-rated reviews, and posts each one straight to a Slack channel so a manager can respond before it turns into a bigger problem.
 
 Built for restaurants, cafes and hospitality venues that want a fast heads-up on bad reviews without checking every platform by hand.

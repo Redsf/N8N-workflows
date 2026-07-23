@@ -1,5 +1,9 @@
 # Multilingual AI Hotel Guest Assistant
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An AI guest assistant that answers WhatsApp and Viber messages in the guest's own language (Greek, English, Bulgarian and more), grounds answers in a hotel knowledge base, escalates sensitive requests to the front desk, and logs every exchange to Google Sheets.
 
 Built for hospitality teams running hotels and vacation rentals that want 24/7 guest support without adding headcount.

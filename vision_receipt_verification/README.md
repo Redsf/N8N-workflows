@@ -1,5 +1,9 @@
 # Vision AI Receipt & Document Verification
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A Vision AI pipeline that reads a receipt or invoice image with GPT 4o Vision, validates the extracted total and currency against the expected booking values, auto approves clean documents, flags the rest for human review, and logs every result to Google Sheets.
 
 Built for hospitality finance and operations teams that need to verify guest receipts, deposits and supplier invoices at scale.

@@ -1,5 +1,9 @@
 # AI-Powered Social Media Amplifier
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A scheduled agent that scans Hacker News for trending posts linking to GitHub projects, writes a tailored Twitter/X post and LinkedIn post for each one, and — after a human-in-the-loop pause — publishes both. An Airtable base acts as the dedupe log and content queue so the same project never gets posted twice.
 
 Built for developer-tool marketers, DevRel teams, or solo builders who want a steady stream of on-brand social content about relevant open-source projects without manually trawling Hacker News every day.

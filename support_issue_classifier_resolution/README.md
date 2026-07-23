@@ -1,5 +1,9 @@
 # Customer Support Issue Classifier & Resolution
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A scheduled housekeeping workflow for JIRA-based support queues that finds tickets no one has touched in a week, figures out what state each one is actually in, and takes the appropriate action automatically — closing resolved tickets, attempting an AI-generated resolution for untouched ones, or nudging participants on stalled ones.
 
 Built for support or engineering teams drowning in long-lived JIRA tickets that need triage but not necessarily a human for every single one.

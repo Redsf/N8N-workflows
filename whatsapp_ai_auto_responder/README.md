@@ -1,5 +1,9 @@
 # WhatsApp AI Auto-Responder
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A WhatsApp chatbot that accepts text, audio, image, and video messages, normalizes each media type into text the LLM can reason over, and replies through a general-knowledge AI agent backed by a Wikipedia tool.
 
 Built as a foundation for any WhatsApp-based assistant — customer support, appointment booking, document triage — where the immediate need is handling all four WhatsApp message types cleanly before layering in business-specific logic.

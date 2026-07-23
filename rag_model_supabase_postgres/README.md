@@ -1,5 +1,9 @@
 # Telegram RAG Assistant with Supabase & Postgres Memory
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A Telegram bot that answers user questions by retrieving relevant chunks from a Supabase vector store, while keeping full conversational context in Postgres — combined with the same Google Drive auto-ingestion pipeline used to populate that knowledge base.
 
 Built for teams that want a Telegram-based internal assistant grounded in their own documents, with persistent per-user conversation memory rather than a stateless chatbot.

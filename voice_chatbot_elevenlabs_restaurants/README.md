@@ -1,5 +1,9 @@
 # AI Voice Chatbot for Restaurants (ElevenLabs)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A voice-based ordering/FAQ assistant for a restaurant, pairing an ElevenLabs conversational voice agent with an n8n-hosted RAG backend. ElevenLabs handles speech-to-text and text-to-speech; n8n handles the actual knowledge lookup and answer generation, exposed to ElevenLabs as a tool the voice agent calls mid-conversation.
 
 Built for restaurants (or similar small businesses) that want a phone- or website-based voice assistant answering menu, hours, and general questions from their own documents, without hand-writing a rules-based IVR script.

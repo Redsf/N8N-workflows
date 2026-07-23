@@ -1,5 +1,9 @@
 # Instagram Trend Content Generator
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An automation that watches trending Instagram hashtags, generates new AI artwork inspired by what's currently performing well, and publishes it to an Instagram Business account on a schedule — with Telegram notifications at every failure point along the way.
 
 Built for social media teams who want to keep a themed Instagram account (in this case, 3D/isometric art) active without a human sourcing inspiration, writing captions, or generating images by hand.

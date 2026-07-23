@@ -1,5 +1,9 @@
 # Real-Time Inventory Auto-Reorder Pipeline
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An inventory monitoring workflow that checks every active product against its reorder threshold, generates an AI-written purchase order for anything running low, posts it to Slack, and logs the reorder back to Google Sheets — skipping products that were already reordered that day.
 
 Built for small operations or e-commerce teams managing inventory in a spreadsheet who want low-stock alerts and purchase-order drafting handled automatically instead of someone eyeballing stock levels.

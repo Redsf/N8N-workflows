@@ -1,5 +1,9 @@
 # Hacker News "Who is Hiring" Scraper
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Scrapes the monthly Hacker News "Ask HN: Who is hiring?" thread, pulls every top-level job comment, structures each posting into clean fields with an LLM, and writes the results to Airtable as a queryable job board.
 
 Built for recruiters, job boards, and developers who want a structured, searchable feed of HN's hiring thread instead of scrolling hundreds of raw comments by hand.

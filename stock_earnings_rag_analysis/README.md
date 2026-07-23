@@ -1,5 +1,9 @@
 # Stock Earnings Report RAG Analysis
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An analyst-style agent that ingests a company's quarterly earnings PDFs (10-Qs, earnings releases) from Google Drive, embeds them into a vector store, and generates a markdown financial report highlighting trends and outliers across the last several quarters — saving the output straight into a Google Doc.
 
 Built for investors, analysts, or finance teams who want a repeatable way to turn a stack of quarterly filings into a structured "what changed and why" report, without manually re-reading each PDF every quarter.

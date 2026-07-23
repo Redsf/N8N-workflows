@@ -1,5 +1,9 @@
 # Modular AI Email Routing Classifier
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A contact-form triage system that reads free-text messages, classifies intent with an LLM, and routes each submission to the right department inbox and logging sheet automatically. Instead of a single shared inbox where every message needs a human to read and forward it, submissions are pre-sorted by topic the moment they arrive.
 
 Built for eCommerce or customer support teams who receive high volumes of contact-form traffic (quote requests, product questions, order issues, general problems) and want first-line routing handled without a person triaging every message.

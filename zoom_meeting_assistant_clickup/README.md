@@ -1,5 +1,9 @@
 # Zoom AI Meeting Assistant (ClickUp)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Pulls the transcript from a recently finished Zoom meeting, generates formal meeting minutes, emails them to attendees, and lets an AI agent extract action items into ClickUp tasks and schedule an Outlook follow-up call — all from a single trigger.
 
 Built for anyone who runs recurring Zoom calls and wants minutes, tasks, and next-meeting scheduling generated automatically instead of typed up by hand afterward.

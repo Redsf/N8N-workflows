@@ -1,5 +1,9 @@
 # RFP Process Automation (OpenAI Assistants)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An automation that takes a raw RFP (Request for Proposal) PDF submitted via webhook, extracts the supplier questionnaire with an LLM, answers each question individually using an OpenAI Assistant grounded in your company's own sales material, and writes the finished Q&A pairs into a shareable Google Doc — closing the loop with an email and Slack notification when it's done.
 
 Built for sales/bid teams who need to turn around RFP responses faster than manually reading a 20-page questionnaire and drafting answers one at a time.

@@ -1,5 +1,9 @@
 # RAG-Powered Internal Knowledge Chatbot
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A Slack-native Q&A bot that answers employee questions from your company's internal documentation. Notion pages and Google Drive files are synced into a Pinecone vector store every night, and mentioning the bot in Slack triggers an AI agent that retrieves the relevant chunks and replies in-thread with a source link attached.
 
 Built for internal ops and knowledge-management teams that want documentation to stay searchable and current without anyone manually re-indexing it.

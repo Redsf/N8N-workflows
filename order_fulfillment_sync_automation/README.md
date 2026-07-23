@@ -1,5 +1,9 @@
 # Order & Fulfillment Sync Automation
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Every new Shopify order flows straight through to a courier's booking API, writes the resulting tracking number back onto the order, and messages the customer over email and WhatsApp. A second, independent loop polls the courier every 30 minutes and notifies customers whenever their shipment's delivery stage changes. Booking failures and stuck shipments route to an ops channel in Slack.
 
 Built for ecommerce operations teams that want shipping bookings and delivery updates handled automatically instead of by manual order entry.

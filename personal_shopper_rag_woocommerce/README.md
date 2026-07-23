@@ -1,5 +1,9 @@
 # Personal Shopper RAG Chatbot (WooCommerce)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A conversational shopping assistant that sits in front of a WooCommerce store, answering both general store questions (hours, address, policies) and product-specific queries (search by keyword, price range, SKU, or category) from the same chat window. It routes each message to the right tool automatically instead of forcing the shopper through a separate search form.
 
 Built for e-commerce brands that want a single chat widget to replace both a FAQ page and a product search bar, without maintaining two separate systems.

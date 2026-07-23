@@ -1,5 +1,9 @@
 # Resume Data Extraction & PDF Generation (Gotenberg)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A Telegram bot that accepts an uploaded resume (PDF), extracts structured data from it with an LLM, reformats each section into HTML, renders it back into a clean PDF via Gotenberg, and sends the regenerated document back to the same Telegram chat.
 
 Built as a reference implementation for turning unstructured resume text into a normalized, structured JSON record — and, as a bonus, demonstrating a self-hosted HTML-to-PDF pipeline that avoids paid PDF-generation APIs.

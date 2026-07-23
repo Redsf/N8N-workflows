@@ -1,5 +1,9 @@
 # AI Sales Meeting Prep via WhatsApp (Apify)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 An hourly meeting-prep assistant that checks Google Calendar for meetings starting soon, researches each attendee's last email thread and LinkedIn activity, and sends a casual pre-meeting briefing to WhatsApp — bullet points on what was last discussed and fresh talking points, so the user never walks into a call cold.
 
 Built for salespeople, founders, or consultants who take a lot of external meetings and want a five-second phone glance to replace ten minutes of manual digging through Gmail and LinkedIn before every call.

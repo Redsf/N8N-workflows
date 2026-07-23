@@ -1,5 +1,9 @@
 # WhatsApp AI Sales Agent
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Every inbound WhatsApp message is handled by an AI sales agent that answers product questions using retrieval-augmented search over a Pinecone product catalog, checks calendar availability, and books appointments directly in Google Calendar. When the agent isn't confident in its answer, or the request falls outside its scope, the conversation is routed to a human in Slack instead of guessing.
 
 Built for sales and support teams running WhatsApp as a primary sales channel who want instant, accurate product answers around the clock without losing complex conversations to a bot.

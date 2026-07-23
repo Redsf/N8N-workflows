@@ -1,5 +1,9 @@
 # Outlook AI Email Assistant (Monday + Airtable)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 Automatically triages a shared Outlook inbox: pulls unflagged, uncategorized mail, cross-references the sender against a CRM contact list synced from Monday.com, classifies each email against configurable Airtable-defined categories, and writes the category (and importance flag for actionable client/supplier mail) straight back onto the Outlook message.
 
 Built for anyone managing a busy business inbox who wants triage rules to live in a spreadsheet instead of buried in Outlook's rule editor, with an LLM making the actual judgment calls.

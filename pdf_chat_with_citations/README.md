@@ -1,5 +1,9 @@
 # Chat With PDFs (Cited Sources)
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A document Q&A chatbot that answers questions from a PDF's content and tells you exactly which chunk of the source document it used to generate the answer, citing the file name and line range. This closes the "where did that answer come from" gap that plain RAG chatbots leave open.
 
 Built for anyone who needs to trust an LLM's answer over a reference document — legal, financial, or technical text — and wants a verifiable pointer back to the source rather than a confident-sounding but unverifiable summary.

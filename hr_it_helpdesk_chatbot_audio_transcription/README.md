@@ -1,5 +1,9 @@
 # HR & IT Helpdesk Chatbot with Audio Transcription
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A Telegram chatbot that answers employee HR and IT questions from a company policy document, accepting both typed messages and voice notes. Voice messages are transcribed with Whisper before being handed to the same AI agent, and a Postgres vector store grounds every answer in the real policy text rather than letting the model improvise.
 
 Built for HR and IT support teams who want to deflect repetitive policy questions through a self-serve Telegram bot instead of a shared inbox, without losing employees who'd rather send a voice note than type.

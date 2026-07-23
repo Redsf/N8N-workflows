@@ -1,5 +1,9 @@
 # Complete Business WhatsApp RAG Chatbot
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A WhatsApp Business chatbot that answers customer questions about products and troubleshooting using a knowledge base embedded from Google Drive documents. It handles the full Meta webhook handshake (verification + message receiving) and replies only to text messages, politely declining anything else.
 
 Built for retailers or support teams who want first-line WhatsApp support answered automatically from their own product documentation, with a human only needed for anything the knowledge base can't cover.

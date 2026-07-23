@@ -1,5 +1,9 @@
 # LinkedIn AI-News Scraper & Rewriter
 
+<!-- CANVAS:START -->
+![Workflow canvas](canvas.png)
+<!-- CANVAS:END -->
+
 A content-sourcing pipeline that scrapes recent posts from a given LinkedIn profile, uses an LLM to filter for genuinely newsworthy AI content, rewrites the approved posts in a natural, non-robotic voice, and logs the results to a spreadsheet for reuse.
 
 Built for content marketers, ghostwriters, or social media teams who track a curated list of LinkedIn creators for AI news and want a ready-to-post, de-hyped rewrite of anything worth resharing — without manually reading every post.
